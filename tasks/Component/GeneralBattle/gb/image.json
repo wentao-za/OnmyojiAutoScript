@@ -3,7 +3,7 @@
     "itemName": "reward",
     "imageName": "gb_reward.png",
     "roiFront": "547,518,172,96",
-    "roiBack": "547,518,172,96",
+    "roiBack": "507,458,202,136",
     "method": "Template matching",
     "threshold": 0.8,
     "description": "奖励，就是那个魂"

@@ -20,6 +20,13 @@ from tasks.Component.config_base import TimeDelta
 from tasks.FrogBoss.assets import FrogBossAssets
 from tasks.FrogBoss.config import Strategy
 
+from datetime import datetime, time
+
+
+now = datetime.now().time()
+def is_active_time(self):
+    """每日 10:00 ~ 22:00 为活动时间"""
+    return 10 <= datetime.now().hour < 22
 
 class ScriptTask(RightActivity, FrogBossAssets, GeneralBattleAssets):
     def run(self):
