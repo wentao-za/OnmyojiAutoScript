@@ -23,12 +23,11 @@ from tasks.FrogBoss.config import Strategy
 from datetime import datetime, time
 
 
-now = datetime.now().time()
-def is_active_time(self):
-    """每日 10:00 ~ 22:00 为活动时间"""
-    return 10 <= datetime.now().hour < 22
 
 class ScriptTask(RightActivity, FrogBossAssets, GeneralBattleAssets):
+
+
+
     def run(self):
         self.enter(self.I_FROG_BOSS_ENTER)
         # 进入主界面
@@ -40,7 +39,16 @@ class ScriptTask(RightActivity, FrogBossAssets, GeneralBattleAssets):
                 logger.info('You have betted')
                 break
             # 休息中
-            if self.appear(self.I_FROG_BOSS_REST):
+            now_time = datetime.now().strftime("%H:%M")
+            start_time = "10:00"
+            end_time = "24:00"
+            #增加活动时间判断，防止误判
+            if start_time <= end_time:
+                active_time = start_time <= now_time <= end_time
+            else:
+                active_time = now_time >= start_time or now_time <= end_time
+                logger.warning('now_time')
+            if not active_time and self.appear(self.I_FROG_BOSS_REST):
                 logger.info('Frog Boss Rest')
                 break
             # 竞猜成功
@@ -294,7 +302,7 @@ class ScriptTask(RightActivity, FrogBossAssets, GeneralBattleAssets):
                     else:
                         bet_rate = ''
                     # 输出博主结论，可省略
-                    # logger.info(f"{name}({details['user_nick']}) has bet on the {bet_result}{bet_rate}")
+                    logger.info(f"{name}({details['user_nick']}) has bet on the {bet_result}{bet_rate}")
 
                     # 根据投注结果更新统计
                     if bet_result == 'LEFT':
