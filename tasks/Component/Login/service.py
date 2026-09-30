@@ -114,7 +114,7 @@ class LoginService(
             if self.appear_then_click(gia.I_I_REJECT, interval=0.8):
                 logger.info("reject invites")
                 continue
-            if self.appear_then_click(self.I_LOGIN_LOGIN_ONMYOJI_GENIE):
+            if self.appear_then_click(self.I_LOGIN_LOGIN_ONMYOJI_GENIE,interval=1):
                 logger.info("click onmyoji genie")
                 continue
             if self.appear(self.I_LOGIN_SPECIFIC_SERVE, interval=0.6) \

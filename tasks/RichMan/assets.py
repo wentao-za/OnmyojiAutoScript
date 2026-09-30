@@ -322,8 +322,8 @@ class RichManAssets:
 	I_S_CONFIRM_WHITE_FOUR = RuleImage(roi_front=(548,486,176,62), roi_back=(509,404,252,231), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_confirm_white_four.png")
 	# description 
 	I_S_CONFIRM_BLACK = RuleImage(roi_front=(547,496,180,62), roi_back=(532,426,214,184), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_confirm_black.png")
-	# description 
-	I_S_BUY_UP = RuleImage(roi_front=(762,412,56,54), roi_back=(762,412,56,54), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_up.png")
+	# 一键增加按钮
+	I_S_BUY_UP = RuleImage(roi_front=(763, 455, 44, 50), roi_back=(763, 455, 44, 50), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_up.png")
 	# 检查黑蛋
 	I_S_CHECK_BLACK = RuleImage(roi_front=(595, 221, 89, 89), roi_back=(595, 221, 89, 89), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_check_black.png")
 	# 检查五星白蛋

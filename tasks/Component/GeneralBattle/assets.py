@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -11,59 +12,59 @@ class GeneralBattleAssets:
 
 
 	# Click Rule Assets
-	# 预设队伍1 
+	# 预设队伍1
 	C_PRESET_TEAM_1 = RuleClick(roi_front=(195,235,464,44), roi_back=(195,235,465,44), name="preset_team_1")
-	# 预设队伍2 
+	# 预设队伍2
 	C_PRESET_TEAM_2 = RuleClick(roi_front=(195,355,465,44), roi_back=(195,355,465,44), name="preset_team_2")
-	# 预设队伍3 
+	# 预设队伍3
 	C_PRESET_TEAM_3 = RuleClick(roi_front=(195,475,465,44), roi_back=(195,475,465,44), name="preset_team_3")
-	# 预设队伍4 
+	# 预设队伍4
 	C_PRESET_TEAM_4 = RuleClick(roi_front=(195,595,465,35), roi_back=(195,595,465,35), name="preset_team_4")
-	# 预设组1 
+	# 预设组1
 	C_PRESET_GROUP_1 = RuleClick(roi_front=(35,240,25,50), roi_back=(35,240,25,50), name="preset_group_1")
-	# 预设组2 
+	# 预设组2
 	C_PRESET_GROUP_2 = RuleClick(roi_front=(35,305,25,50), roi_back=(35,305,25,50), name="preset_group_2")
-	# 预设组3 
+	# 预设组3
 	C_PRESET_GROUP_3 = RuleClick(roi_front=(35,365,25,50), roi_back=(35,365,25,50), name="preset_group_3")
-	# 预设组4 
+	# 预设组4
 	C_PRESET_GROUP_4 = RuleClick(roi_front=(35,430,25,50), roi_back=(35,430,25,50), name="preset_group_4")
-	# 预设组5 
+	# 预设组5
 	C_PRESET_GROUP_5 = RuleClick(roi_front=(35,495,25,50), roi_back=(35,495,25,50), name="preset_group_5")
-	# 预设组6 
+	# 预设组6
 	C_PRESET_GROUP_6 = RuleClick(roi_front=(35,555,25,50), roi_back=(35,555,25,50), name="preset_group_6")
-	# 预设组7 
+	# 预设组7
 	C_PRESET_GROUP_7 = RuleClick(roi_front=(35,615,25,50), roi_back=(35,615,25,50), name="preset_group_7")
-	# 从左开始第一个绿标 
+	# 从左开始第一个绿标
 	C_GREEN_LEFT_1 = RuleClick(roi_front=(183,506,125,108), roi_back=(183,506,125,108), name="green_left_1")
-	# 从左开始第二个绿标 
+	# 从左开始第二个绿标
 	C_GREEN_LEFT_2 = RuleClick(roi_front=(407,474,100,100), roi_back=(407,474,100,100), name="green_left_2")
-	# 从左开始第三个绿标 
+	# 从左开始第三个绿标
 	C_GREEN_LEFT_3 = RuleClick(roi_front=(608,446,64,44), roi_back=(608,446,64,44), name="green_left_3")
-	# 从左开始第四个绿标 
+	# 从左开始第四个绿标
 	C_GREEN_LEFT_4 = RuleClick(roi_front=(769,475,81,98), roi_back=(769,475,81,98), name="green_left_4")
-	# 从左开始第五个绿标 
+	# 从左开始第五个绿标
 	C_GREEN_LEFT_5 = RuleClick(roi_front=(932,473,132,108), roi_back=(932,473,132,108), name="green_left_5")
-	# 绿标阴阳师 
+	# 绿标阴阳师
 	C_GREEN_MAIN = RuleClick(roi_front=(565,555,104,81), roi_back=(565,555,104,81), name="green_main")
-	# 绿标点击 区域,默认为全屏，需要在代码中更新其区域 
+	# 绿标点击 区域,默认为全屏，需要在代码中更新其区域
 	C_GREEN_MARK_AREA = RuleClick(roi_front=(0,0,1280,720), roi_back=(0,0,1280,720), name="green_mark_area")
-	# 战斗的时候有一定的概率随机点击 
+	# 战斗的时候有一定的概率随机点击
 	C_RANDOM_CLICK = RuleClick(roi_front=(104,79,1050,507), roi_back=(255,65,100,100), name="random_click")
-	# 左边随机点击 
+	# 左边随机点击
 	C_RANDOM_LEFT = RuleClick(roi_front=(17,104,55,370), roi_back=(17,104,55,370), name="random_left")
-	# 右边随机点击 
+	# 右边随机点击
 	C_RANDOM_RIGHT = RuleClick(roi_front=(1185,115,79,388), roi_back=(1185,115,79,388), name="random_right")
-	# 上边随机点击 
+	# 上边随机点击
 	C_RANDOM_TOP = RuleClick(roi_front=(250,58,868,68), roi_back=(250,58,868,68), name="random_top")
-	# 下边随机点击 
+	# 下边随机点击
 	C_RANDOM_BOTTOM = RuleClick(roi_front=(462,599,492,78), roi_back=(462,599,492,78), name="random_bottom")
-	# 整体随机点击 
+	# 整体随机点击
 	C_RANDOM_ALL = RuleClick(roi_front=(42,94,1207,543), roi_back=(42,94,1207,543), name="random_all")
 
 
 	# Image Rule Assets
 	# 奖励，就是那个魂 
-	I_REWARD = RuleImage(roi_front=(547,518,172,96), roi_back=(547,518,172,96), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_reward.png")
+	I_REWARD = RuleImage(roi_front=(547,518,172,96), roi_back=(507,458,202,136), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_reward.png")
 	# 预设的小图标 
 	I_PRESET = RuleImage(roi_front=(32,650,47,45), roi_back=(32,650,47,45), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_preset.png")
 	# 准备 
@@ -83,7 +84,7 @@ class GeneralBattleAssets:
 	# 左上角的退出 
 	I_EXIT = RuleImage(roi_front=(14,12,43,41), roi_back=(0,0,91,83), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_exit.png")
 	# 退出确认 
-	I_EXIT_ENSURE = RuleImage(roi_front=(674,388,135,63), roi_back=(674,388,135,63), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_exit_ensure.png")
+	I_EXIT_ENSURE = RuleImage(roi_front=(663,407,181,61), roi_back=(150,150,900,450), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_exit_ensure.png")
 	# 左上角好友图标 
 	I_FRIENDS = RuleImage(roi_front=(89,14,36,36), roi_back=(89,14,36,36), threshold=0.8, method="Template matching", file="./tasks/Component/GeneralBattle/gb/gb_friends.png")
 	# 结算时的统计图标 
