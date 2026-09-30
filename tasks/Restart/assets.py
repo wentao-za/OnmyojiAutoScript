@@ -66,8 +66,6 @@ class RestartAssets:
 	C_LOGIN_SCROLL_CLOSE_AREA = RuleClick(roi_front=(1181,634,28,39), roi_back=(1162,595,77,112), name="login_scroll_close_area")
 	# 登录动画点击屏幕中央区域 
 	C_LOGIN_ANIMATION_CENTER = RuleClick(roi_front=(580,300,120,120), roi_back=(580,300,120,120), name="login_animation_center")
-	# 进入游戏点击位置
-	C_LOGIN_ENTER_GAME = RuleClick(roi_front=(550,567,176,56), roi_back=(550,567,176,56), profile="High", name="login_enter_game")
 
 
 	# Image Rule Assets
@@ -112,8 +110,6 @@ class RestartAssets:
 
 
 	# Ocr Rule Assets
-	# Ocr-description 
-	O_LOGIN_ENTER_GAME_OLD = RuleOcr(roi=(592, 558, 96, 89), area=(587, 553, 106, 99), mode="Single", method="Default",keyword="进入游戏", name="login_enter_game_old")
 	# 进入游戏 
 	O_LOGIN_ENTER_GAME = RuleOcr(roi=(543,530,194,125), area=(543,530,194,125), mode="Full", method="Default", keyword="进入", name="login_enter_game")
 	# 点击屏幕跳过 
@@ -122,3 +118,5 @@ class RestartAssets:
 	O_LOGIN_ANIMATION_SKIP = RuleOcr(roi=(1110,35,100,45), area=(1135,40,70,35), mode="Single", method="Default", keyword="跳过", name="login_animation_skip")
 	# 登录指定角色，默认第一个 
 	O_LOGIN_SPECIFIC_SERVE = RuleOcr(roi=(110,120,350,600), area=(110,120,350,600), mode="Full", method="Default", keyword="", name="login_specific_serve")
+
+
