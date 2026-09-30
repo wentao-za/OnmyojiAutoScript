@@ -52,6 +52,7 @@ class ConfigMenu:
             'KittyShop',
             'DyeTrials',
             'GuguArtStudio',
+            'IbukiArena',
             'LBS',
         ]
         # 开发工具

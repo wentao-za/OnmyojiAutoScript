@@ -24,6 +24,7 @@ from tasks.Dokan.config import Dokan
 from tasks.Script.config import Script
 from tasks.Restart.config import Restart
 from tasks.GlobalGame.config import GlobalGame
+
 # 每日任务-----------------------------------------------------------------------------------------------------
 from tasks.AreaBoss.config import AreaBoss
 from tasks.ExperienceYoukai.config import ExperienceYoukai
@@ -40,6 +41,7 @@ from tasks.Delegation.config import Delegation
 from tasks.WantedQuests.config import WantedQuests
 from tasks.Tako.config import Tako
 from tasks.AutoCheckinBigGod.config import AutoCheckinBigGod
+
 # ----------------------------------------------------------------------------------------------------------------------
 from tasks.Orochi.config import Orochi
 from tasks.OrochiMoans.config import OrochiMoans
@@ -64,6 +66,7 @@ from tasks.FloatParade.config import FloatParade
 from tasks.Quiz.config import Quiz
 from tasks.KittyShop.config import KittyShop
 from tasks.DyeTrials.config import DyeTrials
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 # 肝帝专属---------------------------------------------------------------------------------------------------------------
@@ -84,7 +87,9 @@ from tasks.WeeklyTrifles.config import WeeklyTrifles
 from tasks.MysteryShop.config import MysteryShop
 from tasks.Duel.config import Duel
 from tasks.Chess.config import Chess
+
 # ----------------------------------------------------------------------------------------------------------------------
+
 
 class ConfigModel(ConfigBase):
     config_name: str = "oas"
@@ -132,6 +137,7 @@ class ConfigModel(ConfigBase):
     kitty_shop: KittyShop = Field(default_factory=KittyShop)
     dye_trials: DyeTrials = Field(default_factory=DyeTrials)
     gugu_art_studio: GuguArtStudio = Field(default_factory=GuguArtStudio)
+    ibuki_arena: IbukiArena = Field(default_factory=IbukiArena)
     lbs: LBS = Field(default_factory=LBS)
 
     # 这些是肝帝专属
@@ -159,9 +165,11 @@ class ConfigModel(ConfigBase):
     abyss_shadows: AbyssShadows = Field(default_factory=AbyssShadows)
     guild_banquet: GuildBanquet = Field(default_factory=GuildBanquet)
     demon_retreat: DemonRetreat = Field(default_factory=DemonRetreat)
-    guild_activity_monitor: GuildActivityMonitor = Field(default_factory=GuildActivityMonitor)
+    guild_activity_monitor: GuildActivityMonitor = Field(
+        default_factory=GuildActivityMonitor
+    )
 
-    def __init__(self, config_name: str=None, **data) -> None:
+    def __init__(self, config_name: str =None, **data) -> None:
         """
 
         :param config_name:
@@ -322,7 +330,9 @@ class ConfigModel(ConfigBase):
             properties = {}
             for key, value in sch["properties"].items():
                 if 'items' in value:
-                    properties[key] = re.search(r"/([^/]+)$", value['items']['$ref']).group(1)
+                    properties[key] = re.search(
+                        r"/([^/]+)$", value['items']['$ref']
+                    ).group(1)
                 else:
                     properties[key] = re.search(r"/([^/]+)$", value['$ref']).group(1)
 
@@ -334,13 +344,15 @@ class ConfigModel(ConfigBase):
             # 将 groups的参数，同导出的json一起合并, 用于前端显示
             result = []
             for key, value in groups["properties"].items():
-                # deal with exclude 
+                # deal with exclude
                 if key in jsons and jsons[key] == 0xABCDEF:
                     continue
 
                 item = {}
                 item["name"] = key
-                item["title"] = value["title"] if "title" in value else inflection.underscore(key)
+                item["title"] = (
+                    value["title"] if "title" in value else inflection.underscore(key)
+                )
                 if "description" in value:
                     item["description"] = value["description"]
                 item["default"] = value["default"]
@@ -386,7 +398,12 @@ class ConfigModel(ConfigBase):
         if isinstance(value, str) and len(value) == 11:
             try:
                 date_time = datetime.strptime(value, '%d %H:%M:%S')
-                value = TimeDelta(days=date_time.day, hours=date_time.hour, minutes=date_time.minute, seconds=date_time.second)
+                value = TimeDelta(
+                    days=date_time.day,
+                    hours=date_time.hour,
+                    minutes=date_time.minute,
+                    seconds=date_time.second,
+                )
             except ValueError:
                 pass
         if isinstance(value, str) and len(value) == 19:
@@ -416,7 +433,12 @@ class ConfigModel(ConfigBase):
             return False
 
         # XXX temp implementation to enable oasx control the datetime configuration globally rather than a single task
-        if task == "restart" and group == "task_config" and argument == "reset_task_datetime_enable" and value == True:
+        if (
+            task == "restart"
+            and group == "task_config"
+            and argument == "reset_task_datetime_enable"
+            and value == True
+        ):
             date_time = self.restart.task_config.reset_task_datetime
             logger.info(f"reset_task_datetime={date_time}")
             self.reset_datetime_for_all_enabled_tasks(date_time)
@@ -442,7 +464,9 @@ class ConfigModel(ConfigBase):
             logger.error(e)
             return False
 
-    def copy_task_group(self, task_name: str, group_name: str, source_task: BaseModel) -> bool:
+    def copy_task_group(
+        self, task_name: str, group_name: str, source_task: BaseModel
+    ) -> bool:
         model_task_name = convert_to_underscore(task_name)
         model_group_name = convert_to_underscore(group_name)
         task_object = getattr(self, model_task_name, None)
