@@ -4,7 +4,7 @@
     "roiFront": "512,14,95,32",
     "roiBack": "468,0,175,61",
     "mode": "Single",
-    "method": "Default",
+    "method": "cf_hsv(000096,ff28ff)",
     "keyword": "",
     "description": "金币数量"
   },
@@ -13,7 +13,7 @@
     "roiFront": "743,14,79,31",
     "roiBack": "670,0,175,61",
     "mode": "Single",
-    "method": "Default",
+    "method": "cf_hsv(000096,ff28ff)",
     "keyword": "",
     "description": "体力数量"
   },
@@ -22,7 +22,7 @@
     "roiFront": "929,15,89,32",
     "roiBack": "873,0,175,61",
     "mode": "Single",
-    "method": "Default",
+    "method": "cf_hsv(000096,ff28ff)",
     "keyword": "",
     "description": "勾玉数量"
   },

@@ -134,14 +134,17 @@ class DailyTriflesAssets:
 
 
 	# Image Rule Assets
-	# 蓝票 
+	# 蓝票
 	I_BLUE_TICKET = RuleImage(roi_front=(679,191,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_blue_ticket.png")
-	# 金蛇皮 
+	# 金蛇皮
 	I_GOLD_SKIN = RuleImage(roi_front=(274,394,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_gold_skin.png")
-	# 逢魔皮 
+	# 逢魔皮
 	I_DEMON_SKIN = RuleImage(roi_front=(679,292,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_demon_skin.png")
-	# 现世符咒 
+	# 现世符咒
 	I_PRESENT_WORLD_TICKET = RuleImage(roi_front=(274,294,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_present_world_ticket.png")
+	# 海蛇皮
+	I_SEA_SKIN = RuleImage(roi_front=(578, 291, 93, 70), roi_back=(253, 163, 544, 432), threshold=0.8,
+	                       method="Template matching", file="./tasks/DailyTrifles/stats/stats_sea_skin.png")
 	# 御札
 	I_RETURN_SOUL = RuleImage(roi_front=(477,394,93,68), roi_back=(252,165,543,430), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_return_soul.png")
 	# 切换到资源页面

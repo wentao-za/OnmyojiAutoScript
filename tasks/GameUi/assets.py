@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -31,21 +32,21 @@ class GameUiAssets:
 
 
 	# Image Rule Assets
-	# description 
+	# description
 	I_PAPER_DOLL_CLOSE = RuleImage(roi_front=(1253,102,25,62), roi_back=(1238,58,40,153), threshold=0.8, method="Template matching", file="./tasks/GameUi/additional/additional_paper_doll_close.png")
-	# 庭院进入活动标志 
+	# 庭院进入活动标志
 	I_ACT_LIST_EXPAND = RuleImage(roi_front=(1186,141,40,41), roi_back=(1162,110,92,103), threshold=0.8, method="Template matching", file="./tasks/GameUi/additional/additional_act_list_expand.png")
 
 
 	# Image Rule Assets
-	# 商店弹窗红色关闭 
+	# 商店弹窗红色关闭
 	I_AD_CLOSE_RED = RuleImage(roi_front=(993,130,33,36), roi_back=(953,91,215,121), threshold=0.8, method="Template matching", file="./tasks/GameUi/additional/additional_ad_close_red.png")
 
 
 	# Image Rule Assets
-	# 活动列表页前往活动 
+	# 活动列表页前往活动
 	I_ACT_LIST_GOTO_ACT = RuleImage(roi_front=(1063,627,156,60), roi_back=(1007,552,272,166), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_act_list_goto_act.png")
-	# 活动列表页标志 
+	# 活动列表页标志
 	I_CHECK_ACT_LIST = RuleImage(roi_front=(112,13,125,44), roi_back=(75,3,205,66), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_act_list.png")
 
 
@@ -181,6 +182,14 @@ class GameUiAssets:
 	I_CHECK_SHRIN = RuleImage(roi_front=(80,92,33,97), roi_back=(56,73,84,138), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_shrin.png")
 	# 阴阳寮前往神社 
 	I_GUILD_TO_SHRIN = RuleImage(roi_front=(877,629,49,53), roi_back=(840,602,302,113), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_guild_to_shrin.png")
+	# 协战页面标志 
+	I_CHECK_ASSIT_BATTLE = RuleImage(roi_front=(856,109,31,30), roi_back=(856,109,31,30), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_assit_battle.png")
+	# 组队界面标志备用 
+	I_CHECK_TEAM_TITLE = RuleImage(roi_front=(97,27,67,35), roi_back=(81,0,140,82), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_team_title.png")
+	# 庭院前往纳物库
+	I_MAIN_GOTO_STORAGE = RuleImage(roi_front=(320,620,49,40), roi_back=(285,597,120,100), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_main_goto_storage.png")
+	# 纳物库标志
+	I_CHECK_STORAGE = RuleImage(roi_front=(84,14,104,45), roi_back=(84,14,104,45), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_storage.png")
 
 
 	# Image Rule Assets
@@ -196,7 +205,7 @@ class GameUiAssets:
 	I_ENTERTAINMENT_GOTO_CHESS = RuleImage(roi_front=(304,175,41,127), roi_back=(304,175,41,127), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_entertainment_goto_chess.png")
 	# 百鬼棋局大厅标志
 	I_CHECK_CHESS = RuleImage(roi_front=(1159,592,66,70), roi_back=(1159,592,66,70), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_chess.png")
-	# description 
+	# description
 	I_TOWN_GOTO_DUEL = RuleImage(roi_front=(756,142,48,68), roi_back=(357,126,657,100), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_town_goto_duel.png")
 	# description 
 	I_TOWN_GOTO_DEMON_ENCOUNTER = RuleImage(roi_front=(617,135,51,75), roi_back=(232,121,873,100), threshold=0.7, method="Template matching", file="./tasks/GameUi/page/page_town_goto_demon_encounter.png")
@@ -222,6 +231,14 @@ class GameUiAssets:
 	I_CHECK_KYAKKIYAKOU = RuleImage(roi_front=(1062,564,84,73), roi_back=(68,519,1185,141), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_kyakkiyakou.png")
 	# 逢魔之时新页面标志 
 	I_CHECK_DEMON_ENCOUNTER_2 = RuleImage(roi_front=(501,441,53,122), roi_back=(358,326,370,288), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_demon_encounter_2.png")
+	# 町中前往娱乐区域 
+	I_TOWN_GOTO_ENTERTAINMENT = RuleImage(roi_front=(201,144,35,26), roi_back=(201,144,35,26), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_town_goto_entertainment.png")
+	# 娱乐区域页面标志 
+	I_CHECK_ENTERTAINMENT = RuleImage(roi_front=(151,18,102,40), roi_back=(151,18,102,40), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_entertainment.png")
+	# 娱乐区域前往百鬼棋局 
+	I_ENTERTAINMENT_GOTO_CHESS = RuleImage(roi_front=(304,175,41,127), roi_back=(304,175,41,127), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_entertainment_goto_chess.png")
+	# 百鬼棋局大厅标志 
+	I_CHECK_CHESS = RuleImage(roi_front=(1159,592,66,70), roi_back=(1159,592,66,70), threshold=0.8, method="Template matching", file="./tasks/GameUi/page/page_check_chess.png")
 
 
 	# List Rule Assets
@@ -234,4 +251,5 @@ class GameUiAssets:
 	# 活动列表页爬塔活动文字 
 	L_ACT_LIST_OCR = RuleList(folder="./tasks/GameUi/page", direction="vertical", mode="ocr", roi_back=(50,123,49,553), size=(45, 69), 
 					 array=["版本"])
+
 
