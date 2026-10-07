@@ -40,8 +40,9 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, DuelAssets, SwitchOnmyoji):
             raise TaskEnd('Duel')
         self.conf = self.config.duel
         limit_time = self.conf.duel_config.limit_time
-        self.limit_time: timedelta = timedelta(hours=limit_time.hour, minutes=limit_time.minute,
-                                               seconds=limit_time.second)
+        self.limit_time: timedelta = timedelta(
+            hours=limit_time.hour, minutes=limit_time.minute, seconds=limit_time.second
+        )
         self.prepare_duel()
         while True:
             self.screenshot()
@@ -193,9 +194,14 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, DuelAssets, SwitchOnmyoji):
                 logger.warning('Duel battle timeout[>15 minutes], exit')
                 self.duel_exit_battle()
                 continue
-            if ret is None and not battle_operated:  # 进行战斗前的操作
-                self.ui_click(self.O_BATTLE_HAND, self.O_BATTLE_AUTO, interval=0.8)
-                self.green_mark(self.conf.duel_config.green_enable, self.conf.duel_config.green_mark)
+            if (
+                ret is None and not battle_operated and self.appear(self.O_BATTLE_HAND)
+            ):  # 进行战斗前的操作
+                self.ui_click_until_disappear(self.O_BATTLE_HAND, interval=0.8)
+                self.wait_until_appear(self.O_BATTLE_AUTO, wait_time=10)
+                self.green_mark(
+                    self.conf.duel_config.green_enable, self.conf.duel_config.green_mark
+                )
                 battle_operated = True
                 self.reset_device('BATTLE_STATUS_S')
                 continue
@@ -226,6 +232,8 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, DuelAssets, SwitchOnmyoji):
         roi_h = self.I_DUEL_HONOR.roi_front[3]
         self.O_D_HONOR.roi = [roi_x, roi_y, roi_w, roi_h]
         current, remain, total = self.O_D_HONOR.ocr(self.device.image)
+        if total > 9999:  # OCR 在 4 位数字尾部多粘了一位, 例: 48008 -> 4800
+            total //= 10
         return current == total and remain == 0
 
     def get_and_update_cur_score(self, skip_screenshot: bool = True) -> int:
@@ -333,4 +341,3 @@ if __name__ == '__main__':
     t = ScriptTask(c, d)
 
     t.run()
-
