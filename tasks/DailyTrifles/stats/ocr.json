@@ -1,0 +1,38 @@
+[
+  {
+    "itemName": "gold_count",
+    "roiFront": "512,14,95,32",
+    "roiBack": "468,0,175,61",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "金币数量"
+  },
+  {
+    "itemName": "sushi_count",
+    "roiFront": "743,14,79,31",
+    "roiBack": "670,0,175,61",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "体力数量"
+  },
+  {
+    "itemName": "jade_count",
+    "roiFront": "929,15,89,32",
+    "roiBack": "873,0,175,61",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "勾玉数量"
+  },
+  {
+    "itemName": "common_count",
+    "roiFront": "931,148,78,31",
+    "roiBack": "931,148,78,31",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "通用数量识别"
+  }
+]

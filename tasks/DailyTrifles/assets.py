@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -133,6 +134,32 @@ class DailyTriflesAssets:
 
 
 	# Image Rule Assets
+	# 蓝票 
+	I_BLUE_TICKET = RuleImage(roi_front=(679,191,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_blue_ticket.png")
+	# 金蛇皮 
+	I_GOLD_SKIN = RuleImage(roi_front=(274,394,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_gold_skin.png")
+	# 逢魔皮 
+	I_DEMON_SKIN = RuleImage(roi_front=(679,292,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_demon_skin.png")
+	# 现世符咒 
+	I_PRESENT_WORLD_TICKET = RuleImage(roi_front=(274,294,93,70), roi_back=(253,163,544,432), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_present_world_ticket.png")
+	# 御札
+	I_RETURN_SOUL = RuleImage(roi_front=(477,394,93,68), roi_back=(252,165,543,430), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/stats/stats_return_soul.png")
+	# 切换到资源页面
+	I_SWITCH_TO_RESOURCE = RuleImage(roi_front=(115,433,107,43), roi_back=(51,179,191,397), threshold=0.9, method="Template matching", file="./tasks/DailyTrifles/stats/stats_switch_to_resource.png")
+
+
+	# Ocr Rule Assets
+	# 金币数量
+	O_GOLD_COUNT = RuleOcr(roi=(512,14,95,32), area=(468,0,175,61), mode="Single", method="Default", keyword="", name="gold_count")
+	# 体力数量
+	O_SUSHI_COUNT = RuleOcr(roi=(743,14,79,31), area=(670,0,175,61), mode="Single", method="Default", keyword="", name="sushi_count")
+	# 勾玉数量
+	O_JADE_COUNT = RuleOcr(roi=(929,15,89,32), area=(873,0,175,61), mode="Single", method="Default", keyword="", name="jade_count")
+	# 通用数量识别
+	O_COMMON_COUNT = RuleOcr(roi=(931,148,78,31), area=(931,148,78,31), mode="Single", method="Default", keyword="", name="common_count")
+
+
+	# Image Rule Assets
 	# 礼包屋 
 	I_ROOM_GIFT = RuleImage(roi_front=(1138,658,52,40), roi_back=(1119,621,103,94), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/store/store_room_gift.png")
 	# description 
@@ -143,6 +170,8 @@ class DailyTriflesAssets:
 	I_SPECIAL_SUSHI = RuleImage(roi_front=(180,130,800,460), roi_back=(180,130,800,460), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/store/store_sushi.png")
 	# 购买时货币类型为勾玉 
 	I_STORE_COST_TYPE_JADE = RuleImage(roi_front=(570,362,81,247), roi_back=(570,362,81,247), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/store/store_cost_type_jade.png")
+	# 领取成功 
+	I_GIFT_SIGN_GOT = RuleImage(roi_front=(284,296,47,57), roi_back=(202,176,877,354), threshold=0.8, method="Template matching", file="./tasks/DailyTrifles/store/store_gift_sign_got.png")
 
 
 	# Ocr Rule Assets
