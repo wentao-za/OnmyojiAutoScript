@@ -1037,6 +1037,7 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
                 continue
             break
         self.click(tmp)
+        logger.info("Click preset ensure")
         wait_ensure_timer = Timer(3).start()
         preset_clicked = False
         while True:
