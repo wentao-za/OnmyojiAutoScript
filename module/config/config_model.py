@@ -60,6 +60,7 @@ from tasks.GuildActivityMonitor.config import GuildActivityMonitor
 # 这一部分是活动的配置-----------------------------------------------------------------------------------------------------
 from tasks.ActivityShikigami.config import ActivityShikigami
 from tasks.MartialTournament.config import MartialTournament
+from tasks.ActivityExploration.config import ActivityExploration
 from tasks.MetaDemon.config import MetaDemon
 from tasks.FrogBoss.config import FrogBoss
 from tasks.FrogChallenge.config import FrogChallenge
@@ -67,6 +68,7 @@ from tasks.FloatParade.config import FloatParade
 from tasks.Quiz.config import Quiz
 from tasks.KittyShop.config import KittyShop
 from tasks.DyeTrials.config import DyeTrials
+from tasks.IbukiArena.config import IbukiArena
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -78,6 +80,9 @@ from tasks.Hyakkiyakou.config import Hyakkiyakou
 from tasks.HeroTest.config import HeroTest
 from tasks.FindJade.config import FindJade
 from tasks.MemoryScrolls.config import MemoryScrolls
+from tasks.AssistBattle.config import AssistBattle
+from tasks.LevelRush.config import LevelRush
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 # 每周任务---------------------------------------------------------------------------------------------------------------
@@ -126,11 +131,14 @@ class ConfigModel(ConfigBase):
     fallen_sun: FallenSun = Field(default_factory=FallenSun)
     eternity_sea: EternitySea = Field(default_factory=EternitySea)
     six_realms: SixRealms = Field(default_factory=SixRealms)
-    other_world_twilight : OtherWorldTwilight = Field(default_factory=OtherWorldTwilight)
+    other_world_twilight: OtherWorldTwilight = Field(default_factory=OtherWorldTwilight)
 
     # 这些是活动的
     activity_shikigami: ActivityShikigami = Field(default_factory=ActivityShikigami)
     martial_tournament: MartialTournament = Field(default_factory=MartialTournament)
+    activity_exploration: ActivityExploration = Field(
+        default_factory=ActivityExploration
+    )
     meta_demon: MetaDemon = Field(default_factory=MetaDemon)
     frog_boss: FrogBoss = Field(default_factory=FrogBoss)
     frog_challenge: FrogChallenge = Field(default_factory=FrogChallenge)
@@ -150,6 +158,8 @@ class ConfigModel(ConfigBase):
     hero_test: HeroTest = Field(default_factory=HeroTest)
     find_jade: FindJade = Field(default_factory=FindJade)
     memory_scrolls: MemoryScrolls = Field(default_factory=MemoryScrolls)
+    assist_battle: AssistBattle = Field(default_factory=AssistBattle)
+    level_rush: LevelRush = Field(default_factory=LevelRush)
 
     # 这些是每周任务
     true_orochi: TrueOrochi = Field(default_factory=TrueOrochi)
@@ -171,7 +181,7 @@ class ConfigModel(ConfigBase):
         default_factory=GuildActivityMonitor
     )
 
-    def __init__(self, config_name: str =None, **data) -> None:
+    def __init__(self, config_name: str = None, **data) -> None:
         """
 
         :param config_name:
