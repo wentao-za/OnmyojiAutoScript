@@ -24,6 +24,10 @@ from tasks.FrogBoss.frog_oas import OasHistory, fetch_predictions, fingerprint
 
 
 class ScriptTask(RightActivity, FrogBossAssets, GeneralBattleAssets):
+    def __init__(self, config, device):
+        super().__init__(config, device)
+        self.I_FROG_CHECK = None
+
     @cached_property
     def oas_history(self):
         instance = re.sub(r'[^\w.-]', '_', self.config.config_name)
