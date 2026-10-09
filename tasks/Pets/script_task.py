@@ -26,6 +26,9 @@ class ScriptTask(OrochiScriptTask, PetsAssets):
         if self.conf.enable_orochi_ten_once:
             self.run_orochi()
             self.goto_page(page_main)
+        if self.conf.pet_food_card:
+            self.food_card()
+            self.goto_page(page_main)
         self.set_next_run(task='Pets', success=True, finish=True)
         raise TaskEnd('Pets')
 
@@ -52,6 +55,21 @@ class ScriptTask(OrochiScriptTask, PetsAssets):
         if self.conf.enable_switch_layer_soul:
             self.switch_orochi_souls()
         self.run_alone()
+
+    def food_card(self):
+        """宠物食材卡投喂"""
+        logger.hr('food card', 3)
+        self.ui_click(self.I_PET_COURTYARD, self.I_PET_BACKYARD,interval=2)
+        self.click(self.C_PET_COLLECT_COINS,interval=1)
+        self.ui_click(self.I_PET_UP_FOOD,self.I_PET_FOOD)
+        number = self.O_PET_FEED_AP.ocr(self.device.image)
+        if number == 0:
+            # 已经投喂过了
+            logger.warning('Already feed')
+            self.appear_then_click(self.I_UI_BACK_CIRCLE)
+            return
+        self.ui_click(self.I_PET_FEED, self.I_PET_SKIP)
+        self.ui_click_until_disappear(self.I_PET_SKIP)
 
 if __name__ == '__main__':
     from module.config.config import Config

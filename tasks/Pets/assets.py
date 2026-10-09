@@ -21,7 +21,36 @@ class PetsAssets:
 	I_PET_FEED = RuleImage(roi_front=(899,511,79,68), roi_back=(884,485,127,123), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_feed.png")
 	# 跳过 
 	I_PET_SKIP = RuleImage(roi_front=(1089,119,72,41), roi_back=(999,42,242,147), threshold=0.65, method="Template matching", file="./tasks/Pets/pet/pet_pet_skip.png")
+	#宠物庭院
+	I_PET_COURTYARD = RuleImage(roi_front=(25,615,60,60), roi_back=(15, 600, 80, 80), threshold=0.8,
+	                       method="Template matching", file="./tasks/Pets/pet/pet_pet_courtyard.png")
+	# 宠物后院
+	I_PET_BACKYARD = RuleImage(roi_front=(25, 615, 60, 60), roi_back=(15, 600, 80, 80), threshold=0.8,
+	                            method="Template matching", file="./tasks/Pets/pet/pet_pet_backyard.png")
+	#上方食材放置
+	I_PET_UP_FOOD = RuleImage(roi_front=(804,370,60,50), roi_back=(789, 342, 102, 107), threshold=0.7,
+	                       method="Template matching", file="./tasks/Pets/pet/pet_pet_up_food.png")
+	#下方食材放置
+	I_PET_DOWN_FOOD = RuleImage(roi_front=(334,550,60,50), roi_back=(319, 542, 102, 107), threshold=0.7,
+	                       method="Template matching", file="./tasks/Pets/pet/pet_pet_down_food.png")
+	# 收取宠物币
+	I_PET_COLLECT_COINS = RuleImage(roi_front=(254,570,20,25), roi_back=(210, 542, 242, 147), threshold=0.65,
+	                            method="Template matching", file="./tasks/Pets/pet/pet_pet_Collect_coins.png")
+	# 收取宠物币确认
+	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(354,285,60,60), roi_back=(320, 262, 102, 107), threshold=0.8,
+	                                method="Template matching", file="./tasks/Pets/pet/pet_pet_Collect_coins_check.png")
+	# 宠物食材
+	I_PET_FOOD = RuleImage(roi_front=(554, 30, 130, 50), roi_back=(520, 20, 202, 107), threshold=0.8,
+	                                      method="Template matching",
+	                                      file="./tasks/Pets/pet/pet_pet_food.png")
+	# 放置宠物食材
+	I_PET_FOOD_CHECK = RuleImage(roi_front=(354, 285, 60, 60), roi_back=(320, 262, 102, 107), threshold=0.8,
+	                                      method="Template matching",
+	                                      file="./tasks/Pets/pet/pet_pet_food_check.png")
 
+	# Click Rule Assets
+	# 收取宠物币
+	C_PET_COLLECT_COINS = RuleClick(roi_front=(26, 250, 33, 100), roi_back=(26, 250, 33, 100), name="pet_collect_coins")
 
 	# Ocr Rule Assets
 	# 喂食的体力 
