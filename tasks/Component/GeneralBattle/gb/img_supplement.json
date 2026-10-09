@@ -6,15 +6,17 @@
     "roiBack": "56,40,45,45",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
     "itemName": "confirm",
     "imageName": "gb_confirm.png",
-    "roiFront": "732,383,83,43",
+    "roiFront": "664,405,180,68",
     "roiBack": "330,228,615,286",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "确认按钮"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "517,374,226,112",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "关闭御魂不一致提示弹窗"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "524,325,70,71",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "禁用御魂不一致提示7天"
   }
 ]
