@@ -7,6 +7,7 @@ from math import ceil, hypot
 from time import monotonic
 
 from module.base.decorator import cached_property
+from module.base.utils.utils import random_normal_distribution_int
 from module.logger import logger
 
 

@@ -19,11 +19,30 @@ class ConfigMenu:
         # 脚本设置
         self.menu['Script'] = ['Script', 'GlobalGame', 'Restart']
         # 刷御魂
-        self.menu["Soul Zones"] = ['Orochi', 'Sougenbi', 'FallenSun', 'EternitySea', 'SixRealms', 'OtherWorldTwilight']
+        self.menu["Soul Zones"] = [
+            'Orochi',
+            'Sougenbi',
+            'FallenSun',
+            'EternitySea',
+            'SixRealms',
+            'OtherWorldTwilight',
+        ]
         # 日常的任务
-        self.menu["Daily Task"] = ['DailyTrifles', 'AreaBoss', 'GoldYoukai', 'ExperienceYoukai', 'Nian',
-                                   'TalismanPass', 'DemonEncounter', 'Pets', 'SoulsTidy', 'Delegation', 'WantedQuests',
-                                   'Tako', 'AutoCheckinBigGod']
+        self.menu["Daily Task"] = [
+            'DailyTrifles',
+            'AreaBoss',
+            'GoldYoukai',
+            'ExperienceYoukai',
+            'Nian',
+            'TalismanPass',
+            'DemonEncounter',
+            'Pets',
+            'SoulsTidy',
+            'Delegation',
+            'WantedQuests',
+            'Tako',
+            'AutoCheckinBigGod',
+        ]
         # 很肝的任务
         self.menu["Liver Emperor Exclusive"] = [
             "BondlingFairyland",
@@ -33,13 +52,34 @@ class ConfigMenu:
             "Hyakkiyakou",
             "HeroTest",
             "FindJade",
-            "MemoryScrolls"
+            "MemoryScrolls",
+            "AssistBattle",
+            "LevelRush",
         ]
         # 阴阳寮
-        self.menu["Guild"] = ['KekkaiUtilize', 'KekkaiActivation', 'RealmRaid', 'RyouToppa', 'Dokan', 'CollectiveMissions',
-                              'Hunt' , 'AbyssShadows', 'GuildBanquet', 'DemonRetreat', 'GuildActivityMonitor']
+        self.menu["Guild"] = [
+            'KekkaiUtilize',
+            'KekkaiActivation',
+            'RealmRaid',
+            'RyouToppa',
+            'Dokan',
+            'CollectiveMissions',
+            'Hunt',
+            'AbyssShadows',
+            'GuildBanquet',
+            'DemonRetreat',
+            'GuildActivityMonitor',
+        ]
         # 每周任务
-        self.menu["Weekly Task"] = ['TrueOrochi', 'RichMan', 'Secret', 'WeeklyTrifles', 'MysteryShop', 'Duel', 'Chess']
+        self.menu["Weekly Task"] = [
+            'TrueOrochi',
+            'RichMan',
+            'Secret',
+            'WeeklyTrifles',
+            'MysteryShop',
+            'Duel',
+            'Chess',
+        ]
         # 活动的任务
         self.menu["Activity Task"] = [
             'ActivityShikigami',
@@ -57,7 +97,14 @@ class ConfigMenu:
             'LBS',
         ]
         # 开发工具
-        self.menu["Tools"] = ['Image Rule', 'Ocr Rule', 'Click Rule', 'Long Click Rule', 'Swipe Rule', 'List Rule']
+        self.menu["Tools"] = [
+            'Image Rule',
+            'Ocr Rule',
+            'Click Rule',
+            'Long Click Rule',
+            'Swipe Rule',
+            'List Rule',
+        ]
 
     @cached_property
     def gui_menu(self) -> str:

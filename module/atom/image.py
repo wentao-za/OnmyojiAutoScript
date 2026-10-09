@@ -12,6 +12,7 @@ from module.base.decorator import cached_property
 from module.image.rpc import get_image_client
 from module.logger import logger
 from module.base.utils import is_approx_rectangle
+from module.base.utils.utils import random_normal_distribution_int
 
 
 class RuleImage:
