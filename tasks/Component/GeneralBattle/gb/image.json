@@ -2,8 +2,8 @@
   {
     "itemName": "reward",
     "imageName": "gb_reward.png",
-    "roiFront": "547,518,172,96",
-    "roiBack": "507,458,202,136",
+    "roiFront": "546,498,152,95",
+    "roiBack": "518,475,202,136",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",

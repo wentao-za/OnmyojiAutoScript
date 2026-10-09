@@ -88,7 +88,15 @@ class ChessAssets:
 	I_BACK_RED = RuleImage(roi_front=(977,67,41,46), roi_back=(972,62,51,56), threshold=0.8, method="Template matching", file="./tasks/Chess/c/c_back_red.png")
 	#
 	I_QUESTION_CHECK = RuleImage(roi_front=(209,16,33,34), roi_back=(199,5,57,53), threshold=0.8, method="Template matching", file="./tasks/Chess/c/c_question_check.png")
-
+	#
+	I_RESTART_AGAIN = RuleImage(profile="High", roi_front=(1065, 644, 178, 48), roi_back=(1049, 636, 202, 59),
+	                            threshold=0.8, method="Template matching", file="./tasks/Chess/c/c_restart_again.png")
+	#
+	I_REWARD_CHESS = RuleImage(profile="High", roi_front=(485, 227, 310, 44), roi_back=(480, 222, 320, 54),
+	                           threshold=0.8, method="Template matching", file="./tasks/Chess/c/c_reward_chess.png")
+	#
+	I_SHARE = RuleImage(profile="High", roi_front=(1159, 579, 65, 66), roi_back=(1147, 568, 85, 86), threshold=0.8,
+	                    method="Template matching", file="./tasks/Chess/c/c_share.png")
 
 	# Ocr Rule Assets
 	# 商店式神名称5
