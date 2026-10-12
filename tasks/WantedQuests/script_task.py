@@ -4,6 +4,7 @@
 from datetime import timedelta, time, datetime
 from time import sleep
 
+
 from tasks.GameUi.default_pages import page_battle_prepare, page_battle
 from tasks.GameUi.matcher import any_of
 from typing import List, Callable, Optional
@@ -246,6 +247,7 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
         if not ordered_wq_infos:
             logger.info('Current wanted quest skipped all, cancel it')
             self.ui_click(self.I_TRACE_TRUE, self.I_TRACE_FALSE)
+            self.ui_click_until_disappear(self.I_UI_BACK_RED)
             return False
         wq_call_dict: dict[WQType, Callable] = {
             WQType.CHALLENGE: self.challenge,
@@ -311,7 +313,7 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
         :param num_want: 想要攻击的数量
         :return: WQInfo
         """
-        wq_type_txt = type_rule.ocr(self.device.image)
+        wq_type_txt = type_rule.ocr(self.device.image).strip()
         # 适配老逻辑, 将式神碎片改为挑战
         wq_type_txt = '挑战' if wq_type_txt == '式神' else wq_type_txt
         if wq_type_txt == '' or not WQType.contains(wq_type_txt):
@@ -322,7 +324,7 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
         if wq_type not in type_ordered_list:
             logger.warning(f'{wq_type.value} is not in the order list')
             return None
-        wq_info_txt = info_rule.ocr(self.device.image)
+        wq_info_txt = info_rule.ocr(self.device.image).strip()
         wq_info_txt = wq_info_txt.replace('：', ':').replace('（', '(').replace('）', ')')
         import re
         match = re.search(r"(.+?)\s*\(?[数教]量[:：]\s*(\d+)", wq_info_txt)

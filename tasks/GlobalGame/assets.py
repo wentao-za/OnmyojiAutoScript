@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -11,18 +12,18 @@ class GlobalGameAssets:
 
 
 	# Image Rule Assets
-	# 接受 
-	I_G_ACCEPT = RuleImage(roi_front=(830,407,56,46), roi_back=(798,369,117,110), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_accept.png")
-	# 拒绝 
-	I_G_REJECT = RuleImage(roi_front=(832,508,53,51), roi_back=(808,480,108,101), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_reject.png")
-	# 勾玉 
-	I_G_JADE = RuleImage(roi_front=(661,466,43,46), roi_back=(661,466,43,46), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_jade.png")
-	# 猫粮 
-	I_G_CAT_FOOD = RuleImage(roi_front=(565,463,59,65), roi_back=(565,463,59,65), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
-	# 狗粮 
-	I_G_DOG_FOOD = RuleImage(roi_front=(565,464,60,63), roi_back=(565,464,60,63), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
+	# 接受协作 
+	I_G_ACCEPT = RuleImage(roi_front=(842,472,56,46), roi_back=(821,434,117,110), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_accept.png")
+	# 拒绝协作 
+	I_G_REJECT = RuleImage(roi_front=(844,562,53,51), roi_back=(818,535,108,101), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_reject.png")
+	# 勾玉协作 
+	I_G_JADE = RuleImage(roi_front=(661,466,43,46), roi_back=(514,407,279,205), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_jade.png")
+	# 猫粮协作 
+	I_G_CAT_FOOD = RuleImage(roi_front=(565,463,59,65), roi_back=(514,407,279,205), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
+	# 狗粮协作 
+	I_G_DOG_FOOD = RuleImage(roi_front=(565,464,60,63), roi_back=(514,407,279,205), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
 	# 忽略 
-	I_G_IGNORE = RuleImage(roi_front=(773,116,21,21), roi_back=(759,102,48,48), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
+	I_G_IGNORE = RuleImage(roi_front=(851,68,47,43), roi_back=(843,54,62,73), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
 	# 网络异常 
 	I_NETWORK_ABNORMAL = RuleImage(roi_front=(583,330,221,67), roi_back=(583,330,221,67), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_network_abnormal.png")
 	# 已端口游戏服务器，需要重新连接，这种情况一般是断开很久了 
@@ -34,17 +35,17 @@ class GlobalGameAssets:
 
 
 	# Click Rule Assets
-	# description 
+	# description
 	C_UI_REWARD = RuleClick(roi_front=(919,160,208,368), roi_back=(72,107,244,503), name="ui_reward")
 
 
 	# Image Rule Assets
 	# 长一点的确认 
-	I_UI_CONFIRM = RuleImage(roi_front=(666, 407, 178, 64), roi_back=(150, 150, 950, 450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_confirm.png")
+	I_UI_CONFIRM = RuleImage(roi_front=(666,407,178,64), roi_back=(150,150,950,450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_confirm.png")
 	# 长一点的取消 
-	I_UI_CANCEL = RuleImage(roi_front=(438, 409, 179, 62), roi_back=(150, 150, 950, 450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_cancel.png")
+	I_UI_CANCEL = RuleImage(roi_front=(438,409,179,62), roi_back=(150,150,950,450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_cancel.png")
 	# '获得奖励' 四个大字 
-	I_UI_REWARD = RuleImage(roi_front=(481,185,317,42), roi_back=(464,142,350,145), threshold=0.73, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_reward.png")
+	I_UI_REWARD = RuleImage(roi_front=(517,228,246,49), roi_back=(459,167,350,145), threshold=0.73, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_reward.png")
 	# 右上角红色关闭按钮 
 	I_UI_BACK_RED = RuleImage(roi_front=(1041,111,34,38), roi_back=(680,15,579,374), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_back_red.png")
 	# description 
@@ -54,9 +55,9 @@ class GlobalGameAssets:
 	# description 
 	I_UI_AWARD = RuleImage(roi_front=(577,499,100,100), roi_back=(530,408,199,220), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_award.png")
 	# 短一点的确认 
-	I_UI_CONFIRM_SAMLL = RuleImage(roi_front=(671, 388, 138, 65), roi_back=(150, 150, 950, 450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_confirm_samll.png")
+	I_UI_CONFIRM_SAMLL = RuleImage(roi_front=(671,388,138,65), roi_back=(150,150,950,450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_confirm_samll.png")
 	# 短一点的取消 
-	I_UI_CANCEL_SAMLL = RuleImage(roi_front=(467, 388, 139, 69), roi_back=(150, 150, 950, 450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_cancel_samll.png")
+	I_UI_CANCEL_SAMLL = RuleImage(roi_front=(467,388,139,69), roi_back=(150,150,950,450), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_cancel_samll.png")
 	# description 
 	I_UI_UNCHECK = RuleImage(roi_front=(567,343,33,36), roi_back=(497,303,216,100), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/ui/ui_ui_uncheck.png")
 	# 勾选 

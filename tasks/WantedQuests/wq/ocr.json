@@ -1,8 +1,8 @@
 [
   {
     "itemName": "wq_number",
-    "roiFront": "523,12,97,41",
-    "roiBack": "523,12,97,41",
+    "roiFront": "530,12,97,41",
+    "roiBack": "1183,12,97,41",
     "mode": "Digit",
     "method": "Default",
     "keyword": "",
@@ -10,80 +10,80 @@
   },
   {
     "itemName": "wq_type_1",
-    "roiFront": "544,248,55,36",
-    "roiBack": "544,248,55,36",
+    "roiFront": "635,285,80,35",
+    "roiBack": "635,285,80,35",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第一个类型"
   },
   {
     "itemName": "wq_type_2",
-    "roiFront": "544,321,55,30",
-    "roiBack": "544,321,55,30",
+    "roiFront": "635,360,80,35",
+    "roiBack": "635,360,80,35",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第二个类型"
   },
   {
     "itemName": "wq_type_3",
-    "roiFront": "544,392,54,30",
-    "roiBack": "544,392,54,30",
+    "roiFront": "635,435,80,35",
+    "roiBack": "635,435,80,35",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第三个类型"
   },
   {
     "itemName": "wq_type_4",
-    "roiFront": "545,462,52,32",
-    "roiBack": "545,462,52,32",
+    "roiFront": "635,510,80,35",
+    "roiBack": "635,510,80,35",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第四个类型"
   },
   {
     "itemName": "wq_info_1",
-    "roiFront": "609,246,309,45",
-    "roiBack": "609,246,309,45",
+    "roiFront": "710,280,310,45",
+    "roiBack": "710,280,310,45",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第一个信息"
   },
   {
     "itemName": "wq_info_2",
-    "roiFront": "612,318,298,41",
-    "roiBack": "612,318,298,41",
+    "roiFront": "710,355,310,45",
+    "roiBack": "710,355,310,45",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第2个信息"
   },
   {
     "itemName": "wq_info_3",
-    "roiFront": "612,386,305,44",
-    "roiBack": "612,386,305,44",
+    "roiFront": "710,430,310,45",
+    "roiBack": "710,430,310,45",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第3个信息"
   },
   {
     "itemName": "wq_info_4",
-    "roiFront": "613,456,315,44",
-    "roiBack": "613,456,315,44",
+    "roiFront": "710,505,310,45",
+    "roiBack": "710,505,310,45",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": "Ocr-description"
+    "description": "悬赏追踪页面第4个信息"
   },
   {
     "itemName": "wq_monster_type",
-    "roiFront": "165,215,45,175",
-    "roiBack": "165,215,45,175",
+    "roiFront": "265,170,45,175",
+    "roiBack": "265,170,45,175",
     "mode": "Full",
     "method": "Default",
     "keyword": "",

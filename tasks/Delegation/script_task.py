@@ -1,17 +1,20 @@
 # This Python file uses the following encoding: utf-8
 # @author runhey
 # github https://github.com/runhey
+import random
 from time import sleep
 from datetime import time, datetime, timedelta
 
+from module.atom.click import RuleClick
 from module.logger import logger
-from module.exception import TaskEnd
+from module.exception import GameStuckError, TaskEnd
 from module.base.timer import Timer
 
 from tasks.GameUi.game_ui import GameUi
 from tasks.GameUi.page import page_main, page_delegation
 from tasks.Delegation.config import DelegationConfig
 from tasks.Delegation.assets import DelegationAssets
+from toolkit.Lib.logging import Logger
 
 
 class ScriptTask(GameUi, DelegationAssets):
@@ -53,9 +56,16 @@ class ScriptTask(GameUi, DelegationAssets):
         logger.hr('Delegation one', 2)
         self.O_D_NAME.keyword = name
         self.screenshot()
-        if not self.ocr_appear(self.O_D_NAME):
+        # if not self.ocr_appear(self.O_D_NAME):
+        #     logger.warning(f'Delegation: {name} not found')
+        #     return False
+        # 改：OCR 识别到任务名，或图像 I_TEST 出现，都算找到
+        matched_by_ocr = self.ocr_appear(self.O_D_NAME)
+        matched_by_image = self.appear(self.I_D_SPECIAL_1)
+        if not (matched_by_ocr or matched_by_image):
             logger.warning(f'Delegation: {name} not found')
             return False
+
         while 1:
             self.screenshot()
             if self.appear(self.I_D_START):
@@ -71,20 +81,24 @@ class ScriptTask(GameUi, DelegationAssets):
                 continue
             if self.appear_then_click(self.I_D_CONFIRM, interval=0.8):
                 continue
+            if self.appear_then_click(self.I_D_SPECIAL_1, interval=1):# 新增：图像 I_D_SPECIAL_1特殊委派 出现就点击
+                continue
             if self.ocr_appear_click(self.O_D_NAME, interval=1):
                 continue
-        # 进入委派  fefe e  fe
+        # 进入委派页面
         logger.info(f'Enter Delegation: {name}')
         ui_click(self.C_D_1, self.I_D_SELECT_1)
         ui_click(self.C_D_2, self.I_D_SELECT_2)
         ui_click(self.C_D_3, self.I_D_SELECT_3)
-        ui_click(self.C_D_4, self.I_D_SELECT_4)
+        # ui_click(self.C_D_4, self.I_D_SELECT_4)
         # 委派开始
         logger.info(f'Delegation: {name} start')
         while 1:
             self.screenshot()
             if not self.appear(self.I_D_START):
                 break
+            if self.click(self.C_D_4, interval=0.8):
+                    continue
             if self.click(self.C_D_5, interval=0.8):
                 continue
             if self.appear_then_click(self.I_D_START, interval=1.8):
@@ -117,26 +131,52 @@ class ScriptTask(GameUi, DelegationAssets):
                 continue
 
 
-            if not self.appear(self.I_REWARDS_MIN):
-                continue
             if check_timer.reached():
                 break
-            if self.ocr_appear_click(self.O_D_DONE, interval=1):
+            if not self.appear(self.I_REWARDS_MIN):
+                continue
+            if self.ocr_appear(self.O_D_DONE):
+                x, y, w, h = self.O_D_DONE.area
+                # 转成整数，避免浮点坐标
+                x, y, w, h = int(x), int(y), int(w), int(h)# 下方同尺寸区域
+                _tep_d_done_1 = RuleClick(
+                    roi_front=(x, y + h, w, h),
+                    roi_back=(x, y + h, w, h),
+                    name=' _tep_d_done_1',
+                )
+                self.ocr_appear_click(self.O_D_DONE,_tep_d_done_1,interval=1)
+                self.wait_delegation_done_reward()
                 check_timer.reset()
+                continue
+
+    def wait_delegation_done_reward(self):
+        """领取已完成委派后推进对话，直到奖励确认按钮出现。"""
+        wait_timer = Timer(5)
+        wait_timer.start()
+        while True:
+            self.screenshot()
+            if self.appear(self.I_REWARDS_DONE):
+                return
+            if wait_timer.reached():
+                raise GameStuckError(
+                    'Delegation reward dialog timed out before rewards done appeared'
+                )
+
+            chat_text = self.O_D_DONE_CHAT.ocr(self.device.image).strip()
+            if chat_text and self.appear(self.I_REWARDS_CHAT):
+                self.click(self.O_D_DONE_CHAT, interval=0.8)
                 continue
 
 
 if __name__ == '__main__':
     from module.config.config import Config
     from module.device.device import Device
-    from memory_profiler import profile
+    #from memory_profiler import profile
     c = Config('oas1')
     d = Device(c)
     t = ScriptTask(c, d)
 
     # t.delegate_one('弥助的画')
     t.run()
-
-
 
 

@@ -14,6 +14,20 @@ from tasks.Component.config_scheduler import Scheduler
 from typing import List
 
 
+# 放在类外，避免被 Enum 当成成员
+_WQ_TYPE_ALIASES = {
+    '式神': '挑战',  # 老逻辑
+    '挑': '挑战',  # OCR 容错
+    '战': '挑战',  # OCR 容错
+    '探': '探索',
+    '索': '探索',
+    '秘': '秘闻',
+    '闻': '秘闻',
+    '妖': '妖气',
+    '气': '妖气',
+}
+
+
 class WQType(str, Enum):
     """悬赏类型"""
     CHALLENGE = '挑战'
@@ -21,16 +35,26 @@ class WQType(str, Enum):
     SECRET = '秘闻'
     YOKAI = '妖气'
 
-    def __repr__(self):
-        return self.value
+    @classmethod
+    def _missing_(cls, value):
+        """当 value 不是正式成员时，尝试用别名归一化"""
+        alias = _WQ_TYPE_ALIASES.get(value)
+        if alias is not None:
+            return cls(alias)
+        return None
 
-    @staticmethod
-    def contains(type_str: str):
+    @classmethod
+    def contains(cls, value) -> bool:
         try:
-            WQType(type_str)
+            cls(value)
             return True
         except ValueError:
             return False
+
+
+    def __repr__(self):
+        return self.value
+
 
 
 @dataclass(frozen=True)
