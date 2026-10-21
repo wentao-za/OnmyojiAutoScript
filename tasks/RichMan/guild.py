@@ -13,12 +13,12 @@ from tasks.GameUi.default_pages import page_shirin
 from tasks.GameUi.page import page_main, page_guild
 from tasks.GameUi.game_ui import GameUi
 from tasks.Component.Buy.buy import Buy
-from tasks.RichMan.assets import RichManAssets
-from tasks.RichMan.config import GuildStore
-from tasks.RichMan.page import page_guild_store
+from tasks.WeeklyPurchase.assets import WeeklyPurchaseAssets
+from tasks.WeeklyPurchase.config import GuildStore
+from tasks.GameUi.task_pages import page_guild_store
 
 
-class Guild(Buy, GameUi, RichManAssets):
+class Guild(Buy, GameUi, WeeklyPurchaseAssets):
 
     def _default_detect_categories(self) -> set[str]:
         categories = super()._default_detect_categories()
@@ -29,12 +29,12 @@ class Guild(Buy, GameUi, RichManAssets):
         if not con.enable:
             return
         logger.hr('Start guild', 1)
-        self._rich_man_guild_navigation = True
-        self._rich_man_shrine_random_clicked = False
+        self._weekly_purchase_guild_navigation = True
+        self._weekly_purchase_shrine_random_clicked = False
         try:
             self.goto_page(page_guild_store)
         finally:
-            self._rich_man_guild_navigation = False
+            self._weekly_purchase_guild_navigation = False
         logger.info('Enter guild store success')
         time.sleep(0.5)
         swipe_cnt, max_swipe = 0, random.randint(3, 5)

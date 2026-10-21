@@ -242,7 +242,6 @@ class ScriptTask(GameUi, GeneralBattle, GeneralRoom, GeneralInvite, SwitchSoul, 
         :return:
         """
         conf_buff = self.config.tako.tako_config
-        self.goto_page(page_main)
         if conf_buff.enable:
             self.goto_page(page_main)
             self.open_buff()
@@ -255,6 +254,8 @@ class ScriptTask(GameUi, GeneralBattle, GeneralRoom, GeneralInvite, SwitchSoul, 
             if conf_buff.buff_exp_100_click:
                 self.exp_100(False)
             self.close_buff()
+        else:
+            self.finish_task_navigation()
 
         self.set_next_run(task='Tako', success=True, finish=False)
         raise TaskEnd('Tako')

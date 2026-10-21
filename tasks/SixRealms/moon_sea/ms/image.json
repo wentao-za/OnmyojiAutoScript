@@ -6,6 +6,7 @@
     "roiBack": "544,179,199,438",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "椒图选中"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "43,608,73,67",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "椒图"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "1043,527,215,167",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "开启"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "1080,548,182,150",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "主选式神确定"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "543,340,38,40",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "542,340,39,41",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "1117,28,58,36",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": ""
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "1121,578,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "继续执行"
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "206,550,227,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "选第一个柔风"
   },
   {
@@ -87,6 +96,7 @@
     "roiBack": "1103,576,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "唤息"
   },
   {
@@ -96,6 +106,7 @@
     "roiBack": "1107,573,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "可以购买的幻息"
   },
   {
@@ -105,6 +116,7 @@
     "roiBack": "1079,535,196,177",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "第二阵容确定"
   },
   {
@@ -114,6 +126,7 @@
     "roiBack": "507.5,308,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "暂时离开六道之门"
   },
   {
@@ -123,6 +136,7 @@
     "roiBack": "436,223,414,249",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "退出准备界面弹窗"
   },
   {
@@ -132,6 +146,7 @@
     "roiBack": "423,227,437,263",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "召唤商店弹窗"
   },
   {
@@ -141,6 +156,7 @@
     "roiBack": "1029,190,105,152",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "技能解锁标志"
   },
   {
@@ -150,6 +166,7 @@
     "roiBack": "1088,0,192,286",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "月之海地图标志"
   },
   {
@@ -159,6 +176,7 @@
     "roiBack": "99,16,97,47",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "月之海主界面标志"
   }
 ]

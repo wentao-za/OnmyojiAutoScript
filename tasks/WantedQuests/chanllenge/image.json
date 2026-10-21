@@ -1,42 +1,22 @@
 [
   {
-    "itemName": "wqc_lock",
-    "imageName": "chanllenge_wqc_lock.png",
-    "roiFront": "1086,510,21,26",
-    "roiBack": "1073,500,44,48",
-    "method": "Template matching",
-    "threshold": 0.8,
-    "profile": "Default",
-    "description": "description"
-  },
-  {
     "itemName": "wqc_unlock",
     "imageName": "chanllenge_wqc_unlock.png",
+    "profile": "High",
     "roiFront": "1086,510,21,26",
     "roiBack": "1073,500,44,48",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
     "description": "description"
   },
   {
     "itemName": "wqc_fire",
     "imageName": "chanllenge_wqc_fire.png",
+    "profile": "High",
     "roiFront": "1088,582,85,49",
     "roiBack": "1058,550,147,139",
     "method": "Template matching",
     "threshold": 0.7,
-    "profile": "Default",
     "description": "挑战"
-  },
-  {
-    "itemName": "wqc_battle_end_talks",
-    "imageName": "chanllenge_wqc_battle_end_talks.png",
-    "roiFront": "523,558,40,32",
-    "roiBack": "470,530,142,81",
-    "method": "Template matching",
-    "threshold": 0.7,
-    "profile": "Default",
-    "description": "部分秘闻战斗结束后的剧情对话"
   }
 ]

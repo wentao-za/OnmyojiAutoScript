@@ -1,32 +1,32 @@
 [
   {
     "itemName": "ui_confirm",
-    "imageName": "ui_ui_confirm.png",
-    "roiFront": "666,407,178,64",
-    "roiBack": "150,150,950,450",
+    "imageName": "ui_confirm.png",
+    "roiFront": "667,417,169,47",
+    "roiBack": "547,368,322,122",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "长一点的确认"
+    "profile": "High",
+    "description": "通用确认"
   },
   {
     "itemName": "ui_cancel",
     "imageName": "ui_ui_cancel.png",
-    "roiFront": "438,409,179,62",
-    "roiBack": "150,150,950,450",
+    "roiFront": "432,403,177,62",
+    "roiBack": "432,403,177,62",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "长一点的取消"
   },
   {
     "itemName": "ui_reward",
     "imageName": "ui_ui_reward.png",
-    "roiFront": "517,228,246,49",
-    "roiBack": "459,167,350,145",
+    "roiFront": "521,212,237,66",
+    "roiBack": "361,47,556,286",
     "method": "Template matching",
     "threshold": 0.73,
-    "profile": "Default",
+    "profile": "High",
     "description": "'获得奖励' 四个大字"
   },
   {
@@ -36,7 +36,7 @@
     "roiBack": "680,15,579,374",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "右上角红色关闭按钮"
   },
   {
@@ -46,7 +46,7 @@
     "roiBack": "0,0,100,100",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -56,7 +56,7 @@
     "roiBack": "2,1,133,119",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -66,27 +66,27 @@
     "roiBack": "530,408,199,220",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
     "itemName": "ui_confirm_samll",
     "imageName": "ui_ui_confirm_samll.png",
-    "roiFront": "671,388,138,65",
-    "roiBack": "150,150,950,450",
+    "roiFront": "681,392,130,62",
+    "roiBack": "558,380,265,99",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "短一点的确认"
   },
   {
     "itemName": "ui_cancel_samll",
     "imageName": "ui_ui_cancel_samll.png",
-    "roiFront": "467,388,139,69",
-    "roiBack": "150,150,950,450",
+    "roiFront": "472,389,128,62",
+    "roiBack": "266,353,347,208",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "短一点的取消"
   },
   {
@@ -96,7 +96,7 @@
     "roiBack": "497,303,216,100",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -106,7 +106,7 @@
     "roiBack": "512,329,164,78",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "勾选"
   },
   {
@@ -116,7 +116,17 @@
     "roiBack": "0,0,95,101",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "弯曲返回按钮"
+  },
+  {
+    "itemName": "ui_back_general_1",
+    "imageName": "ui_ui_back_general_1.png",
+    "roiFront": "17,17,47,42",
+    "roiBack": "0,0,76,76",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "通用返回按钮1：左上角圆框返回箭头"
   }
 ]

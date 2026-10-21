@@ -17,7 +17,7 @@ from tasks.Exploration.config import ChooseRarity, UpType, ExplorationLevel, Aut
 from tasks.Component.GeneralBattle.general_battle import GeneralBattle, ExitMatcher, BattleContext, BattleAction
 from tasks.GameUi.game_ui import GameUi
 from tasks.Utils.config_enum import ShikigamiClass
-import tasks.Exploration.page as pages
+import tasks.GameUi.task_pages as pages
 
 from module.logger import logger
 from module.exception import TaskEnd, GameStuckError

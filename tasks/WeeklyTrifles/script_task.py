@@ -18,7 +18,7 @@ from tasks.GameUi.page import (
     random_click,
 )
 from tasks.WeeklyTrifles.assets import WeeklyTriflesAssets
-from tasks.WeeklyTrifles.page import page_shikigami_share, page_touch_fish
+from tasks.GameUi.task_pages import page_shikigami_share, page_touch_fish
 
 
 class ScriptTask(GameUi, WeeklyTriflesAssets):
@@ -77,9 +77,14 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         logger.hr('Touch fish start')
         self.goto_page(page_guild)
         # 防止入口被折叠
+        fold_timer = Timer(15).start()
         while 1:
+            if fold_timer.reached():
+                logger.warning('Touch fish guild entry timeout')
+                self.finish_task_navigation()
+                return
             # 等个折叠窗口展开动画
-            self.device.sleep(1)
+            sleep(1)
             self.screenshot()
             if self.appear_then_click(self.I_WT_OPEN_FOLD_WINDOW):
                 continue
@@ -90,13 +95,20 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         self.screenshot()
         if self.appear(self.I_WT_SAVE_ALL):
             cu_tickts, _, _ = self.O_WT_LUCKY_TICKETS.ocr(self.device.image)
-            logger.info(f"当前的福运御守数量：{cu_tickts}")
+            logger.info(f'当前的福运御守数量：{cu_tickts}')
             cost_tickts = self.O_WT_SAVE_COST.ocr(self.device.image)
-            logger.info(f"全部存储需要花费的福运御守数量：{cost_tickts}")
+            logger.info(f'全部存储需要花费的福运御守数量：{cost_tickts}')
+            if cost_tickts <= 0:
+                logger.warning('Touch fish save cost OCR unavailable')
+                self.finish_task_navigation()
+                return
             not_save_flag = True
             get_timer = Timer(7)
             get_timer.start()
             while 1:
+                if get_timer.reached():
+                    logger.warning('Touch fish timeout, exit!')
+                    break
                 sleep(0.5)
                 self.screenshot()
                 if self.appear(self.I_WT_LAST_SAVE):
@@ -120,11 +132,8 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
                 if cu_tickts < cost_tickts and not_save_flag:
                     logger.warning('Touch fish tickts not enough, exit!')
                     break
-                if get_timer.reached():
-                    logger.warning('Touch fish timeout, exit!')
-                    break
         logger.hr('Touch fish finished')
-        self.goto_page(page_main)
+        self.finish_task_navigation()
 
     def _share_collect(self):
         """
@@ -157,7 +166,7 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
             if get_timer.reached():
                 logger.warning('Share timeout. The reward may have been obtained')
                 break
-        self.goto_page(page_main)
+        self.finish_task_navigation()
 
     def _share_area_boss(self):
         """
@@ -191,7 +200,7 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         if not obtained:
             # 点击分享
             self.click_share(self.I_WT_AB_WECHAT)
-        self.goto_page(page_main)
+        self.finish_task_navigation()
 
     def _share_secret(self):
         """
@@ -218,7 +227,7 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
                 if self.appear(self.I_WT_SE_SHARE):
                     continue
                 logger.warning('This week has not been obtained')
-                self.goto_page(page_main)
+                self.finish_task_navigation()
                 return
         logger.info('Enter secret')
         # 判断是否已经领取
@@ -231,7 +240,7 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         if not obtained:
             self.click_share(self.I_WT_SE_WECHAT)
         # 返回
-        self.goto_page(page_main)
+        self.finish_task_navigation()
 
     def _broken_amulet(self, dest_num: int):
         """

@@ -10,15 +10,15 @@ from tasks.RyouToppa.assets import RyouToppaAssets
 from tasks.Component.GeneralBattle.general_battle import GeneralBattle
 from tasks.Component.config_base import ConfigBase, Time
 from tasks.GameUi.game_ui import GameUi
+from tasks.GameUi.default_pages import random_click
 from tasks.GameUi.page import page_realm_raid, page_main, page_kekkai_toppa, page_shikigami_records
 from tasks.RealmRaid.assets import RealmRaidAssets
-from tasks.GlobalGame.assets import GlobalGameAssets
 
 from module.logger import logger
-from module.exception import TaskEnd
+from module.exception import TaskEnd, RequestHumanTakeover
 from module.atom.image_grid import ImageGrid
-from module.base.utils import point2str
 from module.base.timer import Timer
+from module.base.utils import point2str
 from module.exception import GamePageUnknownError
 
 
@@ -65,6 +65,11 @@ area_map = (
     }
 )
 
+TOPPA_CLICK_FAILURE_LIMIT = 2
+TOPPA_POPUP_FAILURE_LIMIT = 2
+TOPPA_POPUP_WAIT_TIMEOUT = 3.0
+TOPPA_BATTLE_WAIT_TIMEOUT = 5.0
+
 
 def random_delay(min_value: float = 1.0, max_value: float = 2.0, decimal: int = 1):
     """
@@ -82,6 +87,7 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
         执行
         :return:
         """
+        self.consecutive_entry_failures = 0
         ryou_config = self.config.ryou_toppa
         time_limit: Time = ryou_config.raid_config.limit_time
         time_delta = timedelta(hours=time_limit.hour, minutes=time_limit.minute, seconds=time_limit.second)
@@ -156,7 +162,6 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
         # --------------------------------------------------------------------------------------------------------------
         area_index = 0
         success = True
-        refresh_fail_count = 0  # 白屏刷新重进失败计数
         while 1:
             # 设置长任务标志,用来寻找寮突可进攻的目标
             self.device.stuck_record_add('PREPARE_BEFORE_BATTLE')
@@ -172,32 +177,16 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                 break
             # 进攻
             res = self.attack_area(area_index)
-            # 页面白屏（寮突破列表加载卡死）：点击 5 次失败仍未进入战斗
-            if res == 'click_fail':
-                refresh_fail_count += 1
-                if refresh_fail_count > 2:
-                    logger.warning('Ryou toppa page is still not loaded after 2 refreshes, give up this round')
-                    success = False
-                    break
-                logger.info(f'Ryou toppa list seems not loaded, refresh the page ({refresh_fail_count}/2)')
-                self.enter_ryou_toppa_list()
-                continue
             # 如果战斗失败或区域不可用，则弹出当前区域索引，开始进攻下一个
             if not res:
-                area_index += 1
-                if area_index >= len(area_map):
-                    logger.warning('All areas are not available, it will flush the area cache')
-                    area_index = 0
-                    self.flush_area_cache()
+                area_index = self.next_area_after_failure(area_index)
                 continue
-            # 正常完成一次进攻，重置刷新计数
-            refresh_fail_count = 0
 
         if success:
             self.set_next_run(task='RyouToppa', finish=True, server=True, success=True)
         else:
             self.set_next_run(task='RyouToppa', finish=True, server=True, success=False)
-        self.goto_page(page_main)
+        self.finish_task_navigation()
         raise TaskEnd
 
     def plan_tomorrow_ryoutoppa(self):
@@ -288,38 +277,56 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
             p1 = (safe_pos_x, safe_pos_y)
             p2 = (safe_pos_x, safe_pos_y - 101)
             logger.info('Swipe %s -> %s, %s ' % (point2str(*p1), point2str(*p2), duration))
-            self.device.swipe_adb(p1, p2, duration=duration)
+            self.device.swipe(
+                p1,
+                p2,
+                duration=duration,
+                control_name='RYOU_TOPPA_REFRESH',
+            )
             time.sleep(2)
 
-    def enter_ryou_toppa_list(self) -> bool:
-        """
-        白屏加载卡死时，重新进入寮突破列表页。
-        流程：点红叉回探索页（白屏页面识别不可靠，先退回稳定页面）
-              -> 导航到结界突破 -> 点结界突破入口 -> 点寮突破 -> 等列表加载出来
-        :return: 是否成功回到寮突破列表页
-        """
-        # 点红叉回探索页（page_kekkai_toppa 的默认回退连接即为 I_UI_BACK_RED -> page_exploration）
-        self.appear_then_click(GlobalGameAssets.I_UI_BACK_RED, interval=1)
-        self.goto_page(page_kekkai_toppa)
-        timer = Timer(20).start()
-        while not timer.reached():
+    def next_area_after_failure(self, index: int) -> int:
+        self.screenshot()
+        if not self.match_page_once(page_kekkai_toppa):
+            logger.warning('失败切区时已离开寮突界面，重新寻路并清除此前的失败区域记录')
+            self.goto_page(page_kekkai_toppa, skip_first_screenshot=False)
+            self.consecutive_entry_failures = 0
+            self.device.click_record_clear()
+            return 0
+        index += 1
+        if index >= len(area_map):
+            logger.warning('All areas are not available, it will flush the area cache')
+            self.flush_area_cache()
+            return 0
+        return index
+
+    def record_area_entry_failure(self, index: int):
+        # 离开寮突导致的失败交给切区恢复处理，不能触发连续失败停止。
+        if not self.match_page_once(page_kekkai_toppa):
+            return
+        self.consecutive_entry_failures += 1
+        if self.consecutive_entry_failures >= 3:
+            raise RequestHumanTakeover(
+                f'寮突连续三个区域无法进入挑战，停止任务：当前区域 {index + 1}，'
+                f'每个区域已达到 {TOPPA_CLICK_FAILURE_LIMIT} 次进入失败上限'
+            )
+
+    def dismiss_challenge_before_switch(self) -> bool:
+        """左右随机点击一次，确认挑战浮窗关闭；迟到的战斗交回战斗处理。"""
+        self.click(random_click(ltrb=(True, False, True, False)))
+        timer = Timer(TOPPA_POPUP_WAIT_TIMEOUT).start()
+        while True:
             self.screenshot()
-            if self.appear_then_click(RealmRaidAssets.I_REALM_RAID, interval=1):
-                continue
-            if self.appear(self.I_REAL_RAID_REFRESH, threshold=0.8):
-                self.appear_then_click(self.I_RYOU_TOPPA, interval=1)
-                continue
-            # 寮奖励入口出现，说明寮突破列表已加载出来
-            if self.appear(self.I_RYOU_REWARD, threshold=0.8) or self.appear(self.I_RYOU_REWARD_90, threshold=0.8):
-                logger.info('Re-enter ryou toppa list success')
+            if self.is_in_battle(False):
                 return True
-        logger.warning('Re-enter ryou toppa list timeout')
-        return False
+            if not self.appear(RealmRaidAssets.I_FIRE, threshold=0.8):
+                return False
+            if timer.reached():
+                raise RequestHumanTakeover('寮突切换区域前挑战浮窗未关闭，停止任务以避免误点')
 
     def attack_area(self, index: int):
         """
-        :return: 战斗成功(True) or 战斗失败(False) or 区域不可用（False）
-                 or 页面白屏点击失败（'click_fail'） or 没有进攻机会（设定下次运行并退出）
+        :return: 战斗成功(True) or 战斗失败(False) or 区域不可用（False） or 没有进攻机会（设定下次运行并退出）
         """
         # 每次进攻前检查区域可用性
         if not self.check_area(index):
@@ -330,23 +337,73 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
             time.sleep(delay)
         rcl = area_map[index].get("rule_click")
         # 塔塔开！
-        click_failure_count = 0
+        popup_failure_count = 0
+        battle_failure_count = 0
+        challenge_click_count = 0
+        popup_wait_timer = None
+        battle_wait_timer = None
         self.device.click_record_clear()
         while True:
             self.screenshot()
             if self.is_in_battle(False):
+                self.consecutive_entry_failures = 0
                 logger.info("Start attach area [%s]" % str(index + 1))
                 return self.run_general_battle(config=self.config.ryou_toppa.general_battle_config)
-            if click_failure_count >= 5:
-                logger.warning("Click failure, check your click position")
-                return 'click_fail'
-            if self.appear_then_click(RealmRaidAssets.I_FIRE, interval=2, threshold=0.8):
-                click_failure_count += 1
+
+            if battle_failure_count >= TOPPA_CLICK_FAILURE_LIMIT:
+                logger.warning(
+                    f'浮窗内点击挑战{challenge_click_count}次后仍未进入战斗，关闭浮窗并切换区域'
+                )
+                if self.dismiss_challenge_before_switch():
+                    self.consecutive_entry_failures = 0
+                    return self.run_general_battle(config=self.config.ryou_toppa.general_battle_config)
+                self.record_area_entry_failure(index)
+                return False
+
+            # 点击挑战按钮后只等待战斗出现。等待期间不重复点击，只有等待
+            # 超时才算一次真实的挑战进入失败。
+            if battle_wait_timer is not None:
+                if not battle_wait_timer.reached():
+                    continue
+                battle_wait_timer = None
+                battle_failure_count += 1
+                logger.warning(
+                    '点击挑战按钮后未进入战斗：'
+                    f'{battle_failure_count}/'
+                    f'{TOPPA_CLICK_FAILURE_LIMIT}'
+                )
                 continue
+
+            # 挑战浮窗已出现时点击挑战按钮，并开启独立的战斗等待窗口。
+            if self.appear(RealmRaidAssets.I_FIRE, threshold=0.8):
+                popup_wait_timer = None
+                if self.appear_then_click(
+                    RealmRaidAssets.I_FIRE,
+                    interval=2,
+                    threshold=0.8,
+                ):
+                    challenge_click_count += 1
+                    battle_wait_timer = Timer(TOPPA_BATTLE_WAIT_TIMEOUT).start()
+                continue
+
+            # 打开浮窗失败不计入挑战按钮次数；独立保护避免无限点击卡片。
+            if popup_wait_timer is not None:
+                if not popup_wait_timer.reached():
+                    continue
+                popup_wait_timer = None
+                popup_failure_count += 1
+                logger.warning(
+                    '点击目标后挑战浮窗未出现：'
+                    f'{popup_failure_count}/{TOPPA_POPUP_FAILURE_LIMIT}（不计入挑战次数）'
+                )
+                if popup_failure_count >= TOPPA_POPUP_FAILURE_LIMIT:
+                    logger.warning(f'区域 {index + 1} 两次未打开挑战浮窗，切换下一区域')
+                    return False
+                continue
+
             if self.click(rcl, interval=5):
-                # https://github.com/runhey/OnmyojiAutoScript/issues/1748
                 time.sleep(random.uniform(0, 0.3))
-                click_failure_count += 1
+                popup_wait_timer = Timer(TOPPA_POPUP_WAIT_TIMEOUT).start()
                 continue
 
 

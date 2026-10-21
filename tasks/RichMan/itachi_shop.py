@@ -6,12 +6,12 @@ from tasks.Chess.assets import ChessAssets
 from tasks.Component.Buy.buy import Buy
 from tasks.GameUi.game_ui import GameUi
 from tasks.GameUi.page import page_entertainment
-from tasks.RichMan.assets import RichManAssets
-from tasks.RichMan.config import ItachiCoinShop as ItachiCoinShopConfig
-from tasks.RichMan.page import page_itachi_shop
+from tasks.WeeklyPurchase.assets import WeeklyPurchaseAssets
+from tasks.WeeklyPurchase.config import ItachiCoinShop as ItachiCoinShopConfig
+from tasks.GameUi.task_pages import page_itachi_shop
 
 
-class ItachiCoinShop(Buy, GameUi, RichManAssets):
+class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
     """购买鼬乐园商店中自动前移的三个鼬乐礼盒。"""
 
     ENTERTAINMENT_OVERLAY_TIMEOUT = 8.0

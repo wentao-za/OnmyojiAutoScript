@@ -6,6 +6,7 @@
     "roiBack": "388,188,71,146",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "六道之门更替标志"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "345,112,546,517",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "更替到月之海"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "345,112,546,517",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "更替到香行域"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "345,112,546,517",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "更替到错季森"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "345,112,546,517",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "更替到净佛刹"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "345,112,546,517",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "更替到真言塔"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "345,112,546,517",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "更替到孔雀国"
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "747,558,533,162",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "月之海玩法详情"
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "747,558,533,162",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "香行域玩法详情"
   },
   {
@@ -87,6 +96,7 @@
     "roiBack": "747,558,533,162",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "错季森玩法详情"
   },
   {
@@ -96,6 +106,7 @@
     "roiBack": "747,558,533,162",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "净佛刹玩法详情"
   },
   {
@@ -105,6 +116,7 @@
     "roiBack": "747,558,533,162",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "真言塔玩法详情"
   },
   {
@@ -114,24 +126,27 @@
     "roiBack": "747,558,533,162",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "孔雀国玩法详情"
   },
   {
     "itemName": "sr_double_reward_cancel",
     "imageName": "sr_sr_double_reward_cancel.png",
-    "roiFront": "492,422,124,48",
-    "roiBack": "422,388,229,115",
+    "roiFront": "491,423,122,44",
+    "roiBack": "423,382,229,115",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "双倍奖励取消标志"
   },
   {
     "itemName": "sr_double_reward_use",
     "imageName": "sr_sr_double_reward_use.png",
-    "roiFront": "669,417,126,53",
-    "roiBack": "651,407,164,71",
+    "roiFront": "676,421,114,44",
+    "roiBack": "654,406,164,71",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "双倍奖励使用标志"
   },
   {
@@ -141,15 +156,27 @@
     "roiBack": "405,230,467,255",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "是否前往购买万象赐福标志"
   },
   {
     "itemName": "sr_not_tip",
     "imageName": "sr_sr_not_tip.png",
-    "roiFront": "543,342,37,37",
+    "roiFront": "564,343,37,37",
     "roiBack": "405,230,467,255",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "不再提醒"
+  },
+  {
+    "itemName": "sr_select_ensure_short",
+    "imageName": "sr_sr_select_ensure_short.png",
+    "roiFront": "696,414,114,44",
+    "roiBack": "670,402,164,71",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": ""
   }
 ]

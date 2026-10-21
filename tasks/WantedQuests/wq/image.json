@@ -2,11 +2,11 @@
   {
     "itemName": "wq_seal",
     "imageName": "wq_wq_seal.png",
-    "roiFront": "24,335,20,29",
-    "roiBack": "0,90,724,491",
+    "roiFront": "174,184,20,29",
+    "roiBack": "27,93,693,488",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "封印"
   },
   {
@@ -16,28 +16,28 @@
     "roiBack": "25,147,652,461",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "勾号"
   },
   {
     "itemName": "trace_enable",
     "imageName": "wq_trace_enable.png",
-    "roiFront": "1130,610,100,70",
-    "roiBack": "1130,610,100,70",
+    "roiFront": "1097,588,101,70",
+    "roiBack": "1097,588,101,70",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "悬赏封印页面的一键追踪"
+    "profile": "High",
+    "description": "一键追踪"
   },
   {
     "itemName": "trace_disable",
     "imageName": "wq_trace_disable.png",
-    "roiFront": "1130,610,100,70",
-    "roiBack": "1130,610,100,70",
+    "roiFront": "1091,586,108,70",
+    "roiBack": "1091,586,108,70",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "悬赏封印页面的取消追踪"
+    "profile": "High",
+    "description": "取消追踪"
   },
   {
     "itemName": "wq_box",
@@ -46,68 +46,68 @@
     "roiBack": "0,72,118,552",
     "method": "Template matching",
     "threshold": 0.7,
-    "profile": "Default",
+    "profile": "High",
     "description": "奖励宝箱"
   },
   {
     "itemName": "trace_true",
     "imageName": "wq_trace_true.png",
-    "roiFront": "1135,570,110,80",
-    "roiBack": "1135,570,110,80",
+    "roiFront": "173,187,28,29",
+    "roiBack": "173,187,28,29",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "小号追踪"
   },
   {
     "itemName": "trace_false",
     "imageName": "wq_trace_false.png",
-    "roiFront": "1135,570,110,80",
-    "roiBack": "1135,570,110,80",
+    "roiFront": "170,186,31,32",
+    "roiBack": "170,186,31,32",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "小号不追踪"
   },
   {
     "itemName": "goto_1",
     "imageName": "wq_goto_1.png",
-    "roiFront": "1070,270,85,50",
-    "roiBack": "1050,270,105,60",
+    "roiFront": "978,234,87,45",
+    "roiBack": "978,234,87,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "悬赏追踪页面第一个前往"
+    "profile": "High",
+    "description": "description"
   },
   {
     "itemName": "goto_2",
     "imageName": "wq_goto_2.png",
-    "roiFront": "1070,345,85,50",
-    "roiBack": "1050,345,105,60",
+    "roiFront": "979,305,88,43",
+    "roiBack": "979,305,88,58",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "悬赏追踪页面第二个前往"
+    "profile": "High",
+    "description": "description"
   },
   {
     "itemName": "goto_3",
     "imageName": "wq_goto_3.png",
-    "roiFront": "1070,420,85,50",
-    "roiBack": "1050,420,105,60",
+    "roiFront": "979,395,88,32",
+    "roiBack": "979,373,88,62",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "悬赏追踪页面第三个前往"
+    "profile": "High",
+    "description": "description"
   },
   {
     "itemName": "goto_4",
     "imageName": "wq_goto_4.png",
-    "roiFront": "1070,495,85,50",
-    "roiBack": "1050,495,105,60",
+    "roiFront": "979,447,87,42",
+    "roiBack": "979,447,87,57",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "悬赏追踪页面第四个前往"
+    "profile": "High",
+    "description": "description"
   },
   {
     "itemName": "wq_check_task",
@@ -116,47 +116,47 @@
     "roiBack": "73,122,69,459",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "判断是否还有任务"
   },
   {
     "itemName": "wq_trace_one_enable",
     "imageName": "wq_trace_one_enable.png",
-    "roiFront": "1135,570,110,80",
-    "roiBack": "1135,570,110,80",
+    "roiFront": "160,175,120,60",
+    "roiBack": "160,175,120,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "庭院悬赏任务界面 单个任务点开后 已追踪状态"
+    "profile": "High",
+    "description": "庭院悬赏任务界面 单个任务点开后 左上角是否追踪"
   },
   {
     "itemName": "wq_trace_one_disable",
     "imageName": "wq_trace_one_disable.png",
-    "roiFront": "1135,570,110,80",
-    "roiBack": "1135,570,110,80",
+    "roiFront": "160,175,120,60",
+    "roiBack": "160,175,120,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
-    "description": "庭院悬赏任务界面 单个任务点开后 未追踪状态"
+    "profile": "High",
+    "description": "庭院悬赏任务界面 单个任务点开后 左上角是否追踪"
   },
   {
     "itemName": "wq_trace_one_check_opened",
     "imageName": "wq_trace_one_check_opened.png",
-    "roiFront": "633,160,124,38",
-    "roiBack": "633,160,124,38",
+    "roiFront": "510,175,210,60",
+    "roiBack": "510,175,210,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "庭院悬赏任务界面 单个任务点开后的界面 是否打开的 标志"
   },
   {
     "itemName": "wq_trace_one_realworld",
     "imageName": "wq_trace_one_realworld.png",
-    "roiFront": "1156,581,81,82",
-    "roiBack": "1109,537,160,164",
+    "roiFront": "850,470,180,180",
+    "roiBack": "850,470,180,180",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "庭院悬赏任务界面 单个任务点开后的界面 是否为现世任务标志"
   },
   {
@@ -166,7 +166,27 @@
     "roiBack": "120,125,25,425",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "探索界面,左侧任务列表右上角右下角标志"
+  },
+  {
+    "itemName": "trace_enable_new",
+    "imageName": "wq_trace_enable_new.png",
+    "roiFront": "1141,597,84,88",
+    "roiBack": "1136,592,94,98",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": ""
+  },
+  {
+    "itemName": "trace_disable_new",
+    "imageName": "wq_trace_disable_new.png",
+    "roiFront": "1141,597,84,88",
+    "roiBack": "1136,592,94,98",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": ""
   }
 ]

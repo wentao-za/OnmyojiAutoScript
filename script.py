@@ -10,7 +10,7 @@ import time
 import os
 import inflection
 import json
-import copy
+import random
 
 from datetime import date
 import threading
@@ -24,17 +24,22 @@ from threading import Thread
 from multiprocessing.queues import Queue
 from module.config.utils import convert_to_underscore
 from module.config.config import Config
-from module.config.anti_ban import AntiBanGuard
-from module.device.device import Device
 from module.device.env import IS_WINDOWS
 from module.base.utils import load_module
 from module.base.decorator import del_cached_property
+from module.atom.scatter import RuleScatter
 from module.logger import logger
 from module.exception import *
 from module.server.i18n import I18n
 from module.image.rpc import ensure_image_server_ready
-from module.ocr.rpc import ensure_ocr_server_ready
+from module.ocr.rpc import (
+    ensure_ocr_server_ready,
+    set_ocr_logging_enabled,
+    set_ocr_model_size,
+    get_ocr_client,
+)
 from module.script import ScriptRuntimeController, ScriptRuntimeDecision
+from module.cooperation import Cooperation, BATTLE_TASKS, prepare_task_cooperation
 from tasks.Restart.server_update import delay_pending_tasks_for_server_update, is_server_update_window
 from module.server.log_service import build_error_log_dir_name
 
@@ -55,12 +60,19 @@ class Script:
         # Failure count of tasks
         # Key: str, task name, value: int, failure count
         self.failure_record = {}
+        self._error_restart_count = 0
+        self._error_restart_pending = False
         self.last_task_runtime_outcome: dict[str, Any] | None = None
-        self.task_hoarding_until: datetime | None = None
-        self.task_hoarding_released = False
+        # 连续任务休息只统计调度器未进入等待状态的墙钟时间。
+        self._continuous_task_started_at: float | None = None
+        self._continuous_task_limit_seconds: int | None = None
+        self._continuous_task_interval_range: tuple[int, int] | None = None
         # 运行loop的线程
         self.loop_thread: Thread = None
-        self.anti_ban_guard: AntiBanGuard = AntiBanGuard()
+        set_ocr_model_size('medium')
+        self.resource_precache_enable = bool(
+            self.config.script.device.resource_precache_enable
+        )
 
     @cached_property
     def config(self) -> "Config":
@@ -308,42 +320,121 @@ class Script:
 
             time.sleep(5)
 
+            cooperation = self.__dict__.get('_cooperation')
+            if cooperation is not None and cooperation.requested():
+                return False
             if self.config.should_reload():
                 return False
 
-    def _hoard_next_task(self, task, now: datetime):
-        """在空闲时延迟首个到期任务，窗口内到达的任务一并等待。"""
-        duration = self.config.script.optimization.task_hoarding_duration
-        if duration <= 0 or not self.config.pending_task:
-            self.task_hoarding_until = None
-            self.task_hoarding_released = False
-            return task
+    @staticmethod
+    def _in_sleep_window(t, start, end) -> bool:
+        if start == end:
+            return False
+        if start < end:
+            return start <= t < end
+        return t >= start or t < end
 
-        if (self.config.model.running_task or self.task_hoarding_released
-                or (self.is_first_task and task.command == 'Restart')
-                or (task.next_run > now and self.task_hoarding_until is None)):
-            return task
+    @staticmethod
+    def _next_time_point(now: datetime, end) -> datetime:
+        candidate = now.replace(hour=end.hour, minute=end.minute, second=end.second, microsecond=0)
+        if candidate <= now:
+            candidate += timedelta(days=1)
+        return candidate
 
-        if self.task_hoarding_until is None:
-            self.task_hoarding_until = now + timedelta(minutes=duration)
-            logger.info(
-                f"Task hoarding started for {duration:g} minutes, "
-                f"release at {self.task_hoarding_until.strftime('%Y-%m-%d %H:%M:%S')}"
+    @staticmethod
+    def _parse_continuous_task_interval(value: str) -> tuple[int, int]:
+        """解析连续任务休息间隔，格式为“最小分钟,最大分钟”。"""
+        matched = re.fullmatch(r'\s*(\d+)\s*[,，]\s*(\d+)\s*', str(value))
+        if matched is None:
+            raise ValueError(f'Invalid continuous task rest interval: {value!r}')
+        lower, upper = (int(item) for item in matched.groups())
+        if lower <= 0 or upper <= 0 or lower > upper:
+            raise ValueError(f'Invalid continuous task rest interval: {value!r}')
+        return lower, upper
+
+    @staticmethod
+    def _sample_continuous_task_rest_seconds() -> tuple[int, str]:
+        """休息时长：90% 落在2-8分钟的对称三角分布，其余10% 在8-20分钟内逐渐降低概率。"""
+        if random.random() < 0.9:
+            minutes = random.triangular(2, 8, 5)
+            branch = 'short'
+        else:
+            minutes = random.triangular(8, 20, 8)
+            branch = 'long_tail'
+        return max(120, min(1200, round(minutes * 60))), branch
+
+    def _reset_continuous_task_rest(self, *, log_idle: bool = False) -> None:
+        if log_idle and self._continuous_task_started_at is not None:
+            logger.info('Scheduler entered task waiting state; reset continuous task timer')
+        self._continuous_task_started_at = None
+        self._continuous_task_limit_seconds = None
+        self._continuous_task_interval_range = None
+
+    def _handle_continuous_task_rest(self) -> bool:
+        """在新任务开始前处理连续运行休息，已休息时返回 True 要求重新调度。"""
+        device_config = self.config.script.device
+        if not device_config.continuous_task_rest_enable:
+            self._reset_continuous_task_rest()
+            return False
+
+        try:
+            interval_range = self._parse_continuous_task_interval(
+                device_config.continuous_task_rest_interval
             )
+        except ValueError as exc:
+            logger.warning(f'{exc}; fallback to 60,120 minutes')
+            interval_range = (60, 120)
 
-        if now < self.task_hoarding_until:
-            task = copy.deepcopy(task)
-            task.next_run = max(self.task_hoarding_until, task.next_run)
+        now = time.monotonic()
+        if (
+            self._continuous_task_started_at is None
+            or self._continuous_task_interval_range != interval_range
+        ):
+            limit_minutes = random.randint(*interval_range)
+            self._continuous_task_started_at = now
+            self._continuous_task_limit_seconds = limit_minutes * 60
+            self._continuous_task_interval_range = interval_range
             logger.info(
-                f"Task hoarding active, defer pending tasks until "
-                f"{self.task_hoarding_until.strftime('%Y-%m-%d %H:%M:%S')}"
+                'Continuous task timer started: '
+                f'limit={limit_minutes}m, range={interval_range[0]}-{interval_range[1]}m'
             )
-            return task
+            return False
 
-        self.task_hoarding_until = None
-        self.task_hoarding_released = True
-        logger.info("Task hoarding window ended, resume scheduled task execution")
-        return task
+        elapsed = now - self._continuous_task_started_at
+        if elapsed < self._continuous_task_limit_seconds:
+            return False
+
+        rest_seconds, branch = self._sample_continuous_task_rest_seconds()
+        logger.info(
+            'Continuous task limit reached: '
+            f'elapsed={elapsed / 60:.1f}m, '
+            f'rest={rest_seconds / 60:.1f}m, distribution={branch}'
+        )
+        time.sleep(rest_seconds)
+        self._reset_continuous_task_rest()
+        logger.info('Continuous task rest finished; reschedule pending tasks')
+        return True
+
+    def _antiban_wake_time(self, now: datetime):
+        ab = self.config.script.anti_ban
+        if not ab.enable:
+            return None
+        wake = None
+        if self._in_sleep_window(now.time(), ab.sleep_start, ab.sleep_end):
+            wake = self._next_time_point(now, ab.sleep_end)
+        limit = ab.daily_active_limit.total_seconds()
+        if limit > 0:
+            if getattr(self, '_active_date', None) != now.date():
+                self._active_date = now.date()
+                self._active_seconds_today = 0
+            rest_until = getattr(self, '_rest_until', None)
+            if rest_until and now < rest_until:
+                wake = max(wake, rest_until) if wake else rest_until
+            elif getattr(self, '_active_seconds_today', 0) >= limit:
+                self._rest_until = now + ab.long_rest_duration
+                self._active_seconds_today = 0
+                wake = max(wake, self._rest_until) if wake else self._rest_until
+        return wake
 
     def get_next_task(self) -> str:
         """
@@ -351,29 +442,26 @@ class Script:
         :return:
         """
         while True:
+            cooperation = self.__dict__.get('_cooperation')
+            wake_task = cooperation.wake_next(self.config) if cooperation is not None else None
             task = self.config.get_next()
-            now = datetime.now()
-            original_next_run = task.next_run
-            antiban_wake = self.anti_ban_guard.wake_time(now, self.config.script.anti_ban)
-            if antiban_wake is not None:
-                task.next_run = max(task.next_run, antiban_wake)
-            task = self._hoard_next_task(task, now)
+            if wake_task and task.command != 'Restart':
+                task = next(t for t in self.config.pending_task if t.command == wake_task)
             self.config.task = task
             if self.state_queue:
                 self.state_queue.put({"schedule": self.config.get_schedule_data()})
+            now = datetime.now()
+            antiban_wake = self._antiban_wake_time(now)
+            if antiban_wake is not None:
+                task.next_run = max(task.next_run, antiban_wake)
             # 任务时间到了返回任务名称
             if task.next_run <= now:
+                if self._handle_continuous_task_rest():
+                    continue
                 return task.command
+            self._reset_continuous_task_rest(log_idle=True)
             # 根据策略执行等待逻辑
-            wait_until = task.next_run
-            if self.task_hoarding_until and self.config.waiting_task:
-                wait_until = min(wait_until, self.config.waiting_task[0].next_run)
-            # 仅当“防风控看守器把时间顶回、且最终等待目标仍是其唤醒时刻”时，
-            # 该段空闲等待才归防风控专属策略管理（与“任务队列清空”策略解耦）。
-            anti_ban_binding = (antiban_wake is not None
-                                and antiban_wake > original_next_run
-                                and wait_until >= antiban_wake)
-            decision = self.runtime.handle_wait_during_idle(wait_until, anti_ban_binding=anti_ban_binding)
+            decision = self.runtime.handle_wait_during_idle(task.next_run)
             if decision == ScriptRuntimeDecision.RESCHEDULE:
                 logger.info('Idle wait requested scheduler refresh, reload config and reschedule')
                 del_cached_property(self, "config")
@@ -445,16 +533,33 @@ class Script:
         if command == 'start' or command == 'goto_main':
             logger.error(f'Invalid command `{command}`')
 
+        if command == 'Restart':
+            self._ensure_restart_enabled()
         self._reset_task_runtime_outcome()
+        from module.atom.click import RuleClick
+        RuleClick.reset_task_points()
+        set_ocr_logging_enabled(self.config.global_game.ocr.save_ocr_log)
+        run_config = self.config
+        previous_navigation_policy = getattr(run_config, 'defer_task_courtyard_return', False)
+        run_config.defer_task_courtyard_return = bool(run_config.model.running_task) and command != 'GotoMain'
         try:
+            cooperation = self.__dict__.get('_cooperation')
+            self.config.cooperation_runtime = cooperation
+            if command in BATTLE_TASKS:
+                prepare_task_cooperation(self.config, command)
             self.device.screenshot()
             module_name = 'script_task'
             module_path = str(Path.cwd() / 'tasks' / command / (module_name + '.py'))
             logger.info(f'module_path: {module_path}, module_name: {module_name}')
             task_module = load_module(module_name, module_path)
-            task_module.ScriptTask(config=self.config, device=self.device).run()
+            task_runner = task_module.ScriptTask(config=self.config, device=self.device)
+            if command in BATTLE_TASKS:
+                task_runner._battle_cooperation_prepared = True
+            task_runner.run()
         except Exception as e:
             return self._handle_task_exception(e, command)
+        finally:
+            run_config.defer_task_courtyard_return = previous_navigation_policy
         return False
 
     def loop(self):
@@ -466,8 +571,20 @@ class Script:
             logger.set_file_logger(self.config_name, do_cleanup=True)
         start_day = date.today()
         logger.info(f'Start scheduler loop: {self.config_name}')
+        self._cooperation = Cooperation(self.config_name)
+        self._cooperation.start()
+        if self.resource_precache_enable:
+            logger.info('Resource precache enabled: warming up OCR model')
+            try:
+                get_ocr_client().warmup()
+            except Exception as exc:
+                logger.exception(exc)
+                raise ScriptError('OCR model resource precache failed') from exc
+            logger.info('Resource precache completed; scheduler tasks can start')
         self.config.model.running_task = ''
-        self.anti_ban_guard.reset()
+        self._active_seconds_today = 0
+        self._active_date = date.today()
+        self._rest_until = None
 
         # Update GUI 防呆, 读取设置并立刻显示后台模拟器到前台
         if not self.config.script.device.run_background_only and IS_WINDOWS:
@@ -488,9 +605,9 @@ class Script:
             task = ""
             try:
                 # Get task
-                task = self.get_next_task()
+                task = 'Restart' if self._error_restart_pending else self.get_next_task()
                 # Skip first restart
-                if self.is_first_task and task == 'Restart':
+                if self.is_first_task and task == 'Restart' and not self._error_restart_pending:
                     logger.info('Skip task `Restart` at scheduler start')
                     self.config.task_delay(task='Restart', success=True, server=True)
                     del_cached_property(self, 'config')
@@ -517,12 +634,32 @@ class Script:
             self.device.click_record_clear()
             logger.hr(task, level=0)
             self.config.model.running_task = task
+            self._cooperation.publish(task)
             _task_start = datetime.now()
-            success = self.run(inflection.camelize(task))
+            RuleScatter.begin_task(task)
+            try:
+                success = self.run(inflection.camelize(task))
+            finally:
+                RuleScatter.end_task(task)
+                self._cooperation.publish('')
+                self._cooperation.finish(task)
+                peers = getattr(self.config, '_cooperation_peers', None) or {}
+                peers.pop(task, None)
             self.config.model.running_task = ''
             logger.info(f'Scheduler: End task `{task}`')
             self.is_first_task = False
-            self.anti_ban_guard.record_active((datetime.now() - _task_start).total_seconds())
+            if task == 'Restart' and success:
+                self._error_restart_pending = False
+            if self._active_date != date.today():
+                self._active_date = date.today()
+                self._active_seconds_today = 0
+            self._active_seconds_today += (datetime.now() - _task_start).total_seconds()
+
+            outcome = self.last_task_runtime_outcome or {}
+            if outcome.get('status') in ('cooperation_waiting', 'cooperation_failed'):
+                # A missing/busy partner is a scheduling outcome, not a game recovery failure.
+                del_cached_property(self, 'config')
+                continue
 
             # Check failures
             # failed = deep_get(self.failure_record, keys=task, default=0)
@@ -530,17 +667,17 @@ class Script:
             failed = 0 if success else failed + 1
             # deep_set(self.failure_record, keys=task, value=failed)
             self.failure_record[task] = failed
-            if failed >= 3:
-                logger.critical(f"Task `{task}` failed 3 or more times.")
+            if failed > self.config.model.restart.restart_config.error_restart_limit:
+                logger.critical(f"Task `{task}` failed again after recovery.")
                 logger.critical("Possible reason #1: You haven't used it correctly. "
                                 "Please read the help text of the options.")
                 logger.critical("Possible reason #2: There is a problem with this task. "
                                 "Please contact developers or try to fix it yourself.")
                 logger.critical('Request human takeover')
-                # 添加失败三次的推送通知
+                # 恢复后再次失败时停止脚本。
                 self.config.notifier.push(
                     title=f'{I18n.trans_zh_cn(task)}{task}',
-                    content=f"<{self.config_name}> 任务连续失败三次，请上线查看"
+                    content=f"<{self.config_name}> 任务恢复后再次失败，脚本已停止，请上线查看"
                 )
                 # 关闭模拟器
                 if self.config.script.error.error_repeated:
@@ -558,6 +695,36 @@ class Script:
             else:
                 break
 
+        self._cooperation.close()
+
+    def _ensure_restart_enabled(self) -> None:
+        """所有重启入口均尊重任务启用开关，禁止绕过用户配置。"""
+        if self.config.model.restart.scheduler.enable:
+            return
+        self._error_restart_pending = False
+        logger.critical('Restart task is disabled; stop script instead of restarting game')
+        self.config.notifier.push(
+            title='Restart',
+            content=f'<{self.config_name}> 重启任务未启用，无法自动恢复，脚本已停止，请手动处理',
+        )
+        raise SystemExit(1)
+
+    def _request_error_restart(self, command: str) -> None:
+        """按重启任务配置限制本次脚本运行的异常重启次数，强制优先调度。"""
+        self._ensure_restart_enabled()
+        limit = self.config.model.restart.restart_config.error_restart_limit
+        if self._error_restart_count >= limit:
+            logger.critical(f'Error restart limit reached ({self._error_restart_count}/{limit}): {command}; stop script')
+            self.config.notifier.push(
+                title=f'{I18n.trans_zh_cn(command)}{command}',
+                content=f'<{self.config_name}> 异常重启次数已达上限 {limit} 次，脚本已停止，请上线查看',
+            )
+            raise SystemExit(1)
+        self._error_restart_count += 1
+        logger.warning(f'Error recovery restart {self._error_restart_count}/{limit}: {command}')
+        self._error_restart_pending = True
+        self.config.task_call('Restart', force_call=False)
+
     def _handle_task_exception(self, e: Exception, command: str) -> bool:
         """
         统一处理任务执行 / 准备阶段抛出的异常。
@@ -568,14 +735,43 @@ class Script:
         对致命异常 (ScriptError / RequestHumanTakeover / 未识别 Exception)
         在内部直接 exit(1)。
         """
+        if isinstance(e, NetworkRecoveryRequired):
+            # Unwind the interrupted task so no stale page state survives recovery.
+            self.device.stuck_record_clear()
+            self.device.click_record_clear()
+            if e.reconnect:
+                from tasks.Component.Login.service import LoginService
+                from tasks.Restart.assets import RestartAssets
+                login = LoginService(config=self.config, device=self.device)
+                deadline = time.monotonic() + 30
+                try:
+                    while True:
+                        self.device.screenshot()
+                        if login.appear(RestartAssets.I_LOGIN_8):
+                            break
+                        if time.monotonic() >= deadline:
+                            raise GameStuckError('Network reconnect did not reach login page within 30 seconds')
+                        login.appear_then_click(login.I_CLIENT_CLEAR, interval=1)
+                        self.device.sleep(0.25)
+                    login.app_handle_login()
+                except Exception as recovery_error:
+                    logger.warning(f'Network reconnect failed: {recovery_error}')
+                    self._request_error_restart(command)
+            else:
+                self._request_error_restart(command)
+            if command != 'Restart':
+                self.config.task_call(command)
+            return True
+
         if isinstance(e, TaskEnd):
             self._capture_task_runtime_outcome(command)
-            return True
+            outcome = self.last_task_runtime_outcome or {}
+            return outcome.get('status') != 'cooperation_failed'
 
         if isinstance(e, GameNotRunningError):
             logger.warning(e)
             self.exception_handler(e=e, command=command)
-            self.config.task_call('Restart')
+            self._request_error_restart(command)
             return True
 
         if isinstance(e, (GameStuckError, GameTooManyClickError)):
@@ -586,7 +782,7 @@ class Script:
             logger.warning('If you are playing by hand, please stop Alas')
             self.config.notifier.push(title=f'{I18n.trans_zh_cn(command)}{command}',
                                       content=f"<{self.config_name}> GameStuckError or GameTooManyClickError")
-            self.config.task_call('Restart')
+            self._request_error_restart(command)
             self.device.sleep(10)
             return False
 
@@ -596,7 +792,7 @@ class Script:
             self.exception_handler(e=e, command=command)
             logger.warning('An error has occurred in Azur Lane game client, Alas is unable to handle')
             logger.warning(f'Restarting {self.device.package} to fix it')
-            self.config.task_call('Restart')
+            self._request_error_restart(command)
             self.device.sleep(10)
             return False
 
@@ -615,7 +811,7 @@ class Script:
                 title=f'{I18n.trans_zh_cn(command)}{command}',
                 content=f"<{self.config_name}> GamePageUnknownError",
             )
-            self.config.task_call('Restart')
+            self._request_error_restart(command)
             self.device.sleep(10)
             return False
 

@@ -16,7 +16,7 @@ from module.device.device import Device
 from tasks.AbyssShadows.assets import AbyssShadowsAssets
 from tasks.AbyssShadows.config import AbyssShadows, EnemyType, AreaType, Code, AbyssShadowsDifficulty, \
     CodeList, IndexMap
-from tasks.AbyssShadows.page import page_abyss, page_abyss_map, page_shikigami_records
+from tasks.GameUi.task_pages import page_abyss, page_abyss_map, page_shikigami_records
 from tasks.Component.GeneralBattle.general_battle import GeneralBattle
 from tasks.Component.SwitchSoul.switch_soul import SwitchSoul
 from tasks.GameUi.game_ui import GameUi
@@ -95,7 +95,7 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, AbyssShadowsAssets):
             # 通过能否进入，检测狭间是否开启
             if not self.select_boss(area_enter):
                 logger.warning("Failed to enter abyss shadows")
-                self.goto_page(page_main)
+                self.finish_task_navigation()
                 self.set_next_run(task='AbyssShadows', server=False, target=self.get_next_dt(datetime.now()))
                 raise TaskEnd
 
@@ -131,7 +131,7 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, AbyssShadowsAssets):
             logger.info(f"当前在狭间活动页面，区域: {current_area.name}")
         
         # 保持好习惯，一个任务结束了就返回到庭院，方便下一任务的开始
-        self.goto_page(page_main)
+        self.finish_task_navigation()
 
         # 设置下次运行时间
         self.set_next_run(task='AbyssShadows', server=False, target=self.get_next_dt(datetime.now(), success=True))
