@@ -14,7 +14,6 @@
       "emulatorinfo_path": "",
       "emulator_window_minimize": false,
       "run_background_only": false,
-      "low_spec_mode": false,
       "continuous_task_rest_enable": false,
       "continuous_task_rest_interval": "60,120",
       "resource_precache_enable": false
@@ -64,12 +63,14 @@
   "global_game": {
     "emergency": {
       "friend_invitation": "accept",
-      "when_network_abnormal": "wait_10s",
+      "when_network_abnormal": "wait_5s",
       "when_network_error": "restart",
       "home_client_clear": true
     },
     "costume_config": {
-      "costume_main_type": "costume_main",
+      "costume_main_type": [
+        "costume_main"
+      ],
       "costume_realm_type": "costume_realm_default",
       "costume_theme_type": "costume_theme_default",
       "costume_shikigami_type": "costume_shikigami_default",
@@ -430,8 +431,7 @@
       "draw_mystery_pattern": false,
       "luck_msg": false,
       "store_sign": false,
-      "buy_sushi_count": -1,
-      "storage_stats": false
+      "buy_sushi_count": -1
     },
     "guild_donate": {
       "enable": false,
@@ -599,13 +599,6 @@
       "battle_priority": "挑战 > 秘闻 > 探索",
       "cooperation_only": false,
       "unwanted_boss_names": "酒吞童子,阎魔"
-    },
-    "switch_soul_config": {
-      "enable": false,
-      "switch_group_team": "-1,-1",
-      "enable_switch_by_name": false,
-      "group_name": "",
-      "team_name": ""
     }
   },
   "tako": {
@@ -957,20 +950,10 @@
       "ap100_limit": 0,
       "fakegod_limit": 0,
       "limit_time": "01:30:00",
-      "pass_limit": 50,
-      "ap_limit": 300,
-      "boss_limit": 20,
-      "ap100_limit": 20,
-      "run_sequence": "pass,ap,ap100,boss",
       "active_souls_clean": false,
       "random_sleep": false,
       "climb_drink_break": false,
       "climb_drink_interval": "60,120"
-    },
-    "rich_man": {
-      "buy_ap": false,
-      "buy_reward": false,
-      "buy_ticket": false
     },
     "switch_soul_config": {
       "enable_switch_exp_encounter": false,
@@ -981,10 +964,6 @@
       "rich_man_group_team": "-1,-1",
       "enable_switch_rich_man_by_name": false,
       "rich_man_group_team_name": "",
-      "enable_switch_pass": false,
-      "pass_group_team": "-1,-1",
-      "enable_switch_pass_by_name": false,
-      "pass_group_team_name": "",
       "enable_switch_ap": false,
       "ap_group_team": "-1,-1",
       "enable_switch_ap_by_name": false,
@@ -1714,7 +1693,7 @@
       "enable_switch_layer_soul": false
     }
   },
-  "rich_man": {
+  "weekly_purchase": {
     "scheduler": {
       "enable": false,
       "next_run": "2023-01-01 00:00:00",
@@ -1912,9 +1891,7 @@
       "ban_check": "",
       "full_lineup_check": false,
       "full_lineup_names": "",
-      "celeb_star": 8,
-      "ban_name": "",
-      "initial_score": 3800
+      "celeb_star": 8
     },
     "switch_soul": {
       "enable": false,
@@ -1943,7 +1920,7 @@
       "limit_time": "00:30:00",
       "matchmaking_timeout_seconds": 60,
       "coin_full_exit": false,
-      "continue_grigri_refresh_below_nine": true
+      "custom_lineup": ""
     }
   },
   "collective_missions": {

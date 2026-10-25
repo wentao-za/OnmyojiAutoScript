@@ -43,6 +43,39 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
     timer_wait = None
     timer_emoji = None  # 等待期间如果没有操作的话，可能会导致长时间无响应报错
 
+    def _room_cooperation(self):
+        task = getattr(self, '_battle_cooperation_task', '')
+        runtime = getattr(self.config, 'cooperation_runtime', None)
+        peer = runtime.peers.get(task, '') if runtime and task else ''
+        return runtime, task, peer
+
+    def screenshot(self):
+        runtime, task, peer = self._room_cooperation()
+        token = runtime.pending_room_check(task, peer) if peer else None
+        result = super().screenshot()
+        if token:
+            ready = self.is_in_room(False)
+            runtime.answer_room_check(task, peer, token, ready)
+            logger.info(f'Cooperation: room check requested by {peer}, in room: {ready}')
+        return result
+
+    def _cooperation_rooms_ready(self):
+        runtime, task, peer = self._room_cooperation()
+        if not peer:
+            return True
+        token = getattr(self, '_cooperation_room_token', None)
+        if token:
+            ready = runtime.room_check_result(task, peer, token)
+            if ready is None:
+                return False
+            self._cooperation_room_token = None
+            if ready:
+                logger.info(f'Cooperation: {peer} confirmed in team room, start challenge')
+                return True
+        self._cooperation_room_token = runtime.request_room_check(task, peer)
+        logger.info(f'Cooperation: ask {peer} to confirm team room before challenge')
+        return False
+
     def prepare_battle_cooperation(self, task: str) -> None:
         from module.cooperation import prepare_battle_cooperation
         prepare_battle_cooperation(self, task)
@@ -92,8 +125,8 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
 
             # 点击挑战
             if self.room_check_can_fire(config):
-                self.click_fire()
-                return True
+                if self.click_fire() is not False:
+                    return True
             if self.timer_invite and self.timer_invite.reached():
                 if is_first:
                     logger.info('Invitation is triggered every 20s')
@@ -101,8 +134,28 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
                 else:
                     logger.info('Wait for 30s and invite again')
                     self.timer_invite = None
-                self.invite_friends(config)
+                invite_success = self.invite_friends(config)
+                if not is_first and self.room_type == RoomType.BONDLING_FAIRYLAND and not invite_success:
+                    self._ensure_midway_bondling_invite(config)
         return False
+
+    def _ensure_midway_bondling_invite(self, config: InviteConfig) -> None:
+        """
+        契灵之境中途补邀失败时，等待队伍状态稳定后再确认一次。
+
+        打开邀请面板失败可能是队友恰好在此期间进入房间。等待 5 秒并
+        刷新截图后，如果邀请位已经消失，则按队友已进入处理；如果邀请
+        位仍然存在，则再执行一次邀请，避免一次识别或点击失败后直接开战。
+        """
+        logger.info('Midway invite failed, wait 5s and check the room again')
+        sleep(5)
+        self.screenshot()
+        if not self.appear(self.I_ADD_1):
+            logger.info('Invite button disappeared, teammate is already in the room')
+            return
+
+        logger.warning('Invite button still exists, retry invite friend')
+        self.invite_friends(config)
 
     def room_check_can_fire(self, config: InviteConfig) -> bool:
         fire = False  # 是否开启挑战
@@ -217,21 +270,26 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
             if self.appear_then_click(GeneralInviteAssets.I_GI_SURE, interval=0.5):
                 continue
             if not self.appear(GeneralInviteAssets.I_GI_SURE) and self.appear_then_click(self.I_BACK_YELLOW, interval=0.8):
-                self.wait_until_appear(GeneralInviteAssets.I_GI_SURE, wait_time=0.8)
+                self.wait_until_appear(GeneralInviteAssets.I_GI_SURE, wait_time=1.8)
                 continue
             if not self.appear(GeneralInviteAssets.I_GI_SURE) and self.appear_then_click(self.I_BACK_YELLOW_SEA, interval=0.8):
-                self.wait_until_appear(GeneralInviteAssets.I_GI_SURE, wait_time=0.8)
+                self.wait_until_appear(GeneralInviteAssets.I_GI_SURE, wait_time=1.8)
                 continue
         return False
 
     def click_fire(self):
+        started = False
         while 1:
             self.screenshot()
             if not self.is_in_room(False):
                 break
-            if self.appear_then_click(self.I_FIRE, interval=1, threshold=0.7):
+            if not started and not self._cooperation_rooms_ready():
+                return False
+            if self.appear_then_click(self.I_FIRE, interval=1):
+                started = True
                 continue
-            if self.appear_then_click(self.I_FIRE_SEA, interval=1, threshold=0.7):
+            if self.appear_then_click(self.I_FIRE_SEA, interval=1):
+                started = True
                 continue
 
     @cached_property
@@ -453,6 +511,9 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
                 logger.warning('Cannot invite friend, maybe already existing')
                 return False
             if self.appear(self.I_LOAD_FRIEND) or self.appear(self.I_INVITE_ENSURE):
+                # 面板可能仍在加载好友列表，等转圈消失再继续
+                sleep(0.5)
+                self.wait_until_disappear(self.I_I_LOAD, timeout=5)
                 return True
             if not click_timer.started() or click_timer.reached():
                 clicked = self.appear_then_click(self.I_ADD_1) or \
@@ -478,16 +539,25 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
         识别当前可用的好友分类页签。
         :return: 分类列表，顺序与页签顺序一致
         """
-        raw_list = [
-            self.O_F_LIST_1.ocr(self.device.image).replace(' ', '').replace('、', ''),
-            self.O_F_LIST_2.ocr(self.device.image).replace(' ', '').replace('、', ''),
-            self.O_F_LIST_3.ocr(self.device.image).replace(' ', '').replace('、', ''),
-            self.O_F_LIST_4.ocr(self.device.image).replace(' ', '').replace('、', '')
-        ]
+        raw_list = []
         friend_class = []
-        for item in raw_list:
-            if item is not None and item != '' and item in self.friend_class:
-                friend_class.append(self._normalize_friend_class_name(item))
+        # 面板刚打开/动画中 OCR 可能读空或残缺，最多重试一次
+        for attempt in range(2):
+            raw_list = [
+                self.O_F_LIST_1.ocr(self.device.image).replace(' ', '').replace('、', ''),
+                self.O_F_LIST_2.ocr(self.device.image).replace(' ', '').replace('、', ''),
+                self.O_F_LIST_3.ocr(self.device.image).replace(' ', '').replace('、', ''),
+                self.O_F_LIST_4.ocr(self.device.image).replace(' ', '').replace('、', '')
+            ]
+            friend_class = []
+            for item in raw_list:
+                if item is not None and item != '' and item in self.friend_class:
+                    friend_class.append(self._normalize_friend_class_name(item))
+            if friend_class:
+                break
+            if attempt == 0:
+                logger.info('Friend class OCR empty, retry once')
+                self.screenshot()
         logger.info(f'Friend class: {friend_class}')
         return friend_class
 
@@ -533,6 +603,7 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
         recent_index = friend_class.index('最近')
         self._switch_friend_class(recent_index)
         sleep(0.5)
+        self.wait_until_disappear(self.I_I_LOAD, timeout=5)
         logger.info('Now find friend in ”最近“')
         self._select_current_page_friends(friend_list, selected_set)
         return True
@@ -550,6 +621,7 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
                 break
             self._switch_friend_class(index)
             sleep(0.5)
+            self.wait_until_disappear(self.I_I_LOAD, timeout=5)
             logger.info(f'Now find friend in {friend_class[index]}')
             self._select_current_page_friends(friend_list, selected_set)
 
@@ -692,10 +764,13 @@ class GeneralInvite(BaseTask, GeneralInviteAssets):
             self.screenshot()
 
             # 如果自己在探索界面或者是庭院，那就是房间已经被销毁了
+            # 两帧确认避免加载过渡页误匹配
             if self.appear(GameUiAssets.I_CHECK_MAIN) or self.appear(GameUiAssets.I_CHECK_EXPLORATION):
-                logger.warning('Room destroyed')
-                success = False
-                break
+                self.screenshot()
+                if self.appear(GameUiAssets.I_CHECK_MAIN) or self.appear(GameUiAssets.I_CHECK_EXPLORATION):
+                    logger.warning('Room destroyed')
+                    success = False
+                    break
 
             if self.timer_wait.reached():
                 logger.warning('Wait battle time out')
