@@ -18,6 +18,8 @@ class WantedQuestsAssets:
 	I_WQC_UNLOCK = RuleImage(roi_front=(1086,510,21,26), roi_back=(1073,500,44,48), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/chanllenge/chanllenge_wqc_unlock.png")
 	# 挑战 
 	I_WQC_FIRE = RuleImage(roi_front=(1088,582,85,49), roi_back=(1058,550,147,139), threshold=0.7, method="Template matching", file="./tasks/WantedQuests/chanllenge/chanllenge_wqc_fire.png")
+	# 部分秘闻战斗结束后的剧情对话 
+	I_WQC_BATTLE_END_TALKS = RuleImage(roi_front=(523,558,40,32), roi_back=(470,530,142,81), threshold=0.7, method="Template matching", file="./tasks/WantedQuests/chanllenge/chanllenge_wqc_battle_end_talks.png")
 
 
 	# Image Rule Assets
@@ -101,7 +103,7 @@ class WantedQuestsAssets:
 
 	# Image Rule Assets
 	# 封印 
-	I_WQ_SEAL = RuleImage(roi_front=(174,184,20,29), roi_back=(27,93,693,488), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_wq_seal.png")
+	I_WQ_SEAL = RuleImage(roi_front=(24,335,20,29), roi_back=(0,90,724,491), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_wq_seal.png")
 	# 勾号 
 	I_WQ_DONE = RuleImage(roi_front=(248,183,37,39), roi_back=(25,147,652,461), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_wq_done.png")
 	# 悬赏封印页面的一键追踪 
@@ -131,7 +133,7 @@ class WantedQuestsAssets:
 	# 庭院悬赏任务界面 单个任务点开后的界面 是否打开的 标志 
 	I_WQ_TRACE_ONE_CHECK_OPENED = RuleImage(roi_front=(633,160,124,38), roi_back=(633,160,124,38), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_trace_one_check_opened.png")
 	# 庭院悬赏任务界面 单个任务点开后的界面 是否为现世任务标志 
-	I_WQ_TRACE_ONE_REALWORLD = RuleImage(roi_front=(850,470,180,180), roi_back=(850,470,180,180), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_trace_one_realworld.png")
+	I_WQ_TRACE_ONE_REALWORLD = RuleImage(roi_front=(1156,581,81,82), roi_back=(1109,537,160,164), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_trace_one_realworld.png")
 	# 探索界面,左侧任务列表右上角右下角标志 
 	I_WQ_LIST_TOP_BOTTOM_CHECK = RuleImage(roi_front=(120,125,25,425), roi_back=(120,125,25,425), threshold=0.8, method="Template matching", file="./tasks/WantedQuests/wq/wq_list_top_bottom_check.png")
 

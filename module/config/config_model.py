@@ -2,7 +2,6 @@
 # @author runhey
 # github https://github.com/runhey
 from tasks.GuguArtStudio.config import GuguArtStudio
-from tasks.LBS.config import LBS
 from tasks.GuildActivityMonitor.config import GuildActivityMonitor
 from tasks.OtherWorldTwilight.config import OtherWorldTwilight
 from typing import Dict, Any
@@ -24,7 +23,6 @@ from tasks.Dokan.config import Dokan
 from tasks.Script.config import Script
 from tasks.Restart.config import Restart
 from tasks.GlobalGame.config import GlobalGame
-
 # 每日任务-----------------------------------------------------------------------------------------------------
 from tasks.AreaBoss.config import AreaBoss
 from tasks.ExperienceYoukai.config import ExperienceYoukai
@@ -41,7 +39,6 @@ from tasks.Delegation.config import Delegation
 from tasks.WantedQuests.config import WantedQuests
 from tasks.Tako.config import Tako
 from tasks.AutoCheckinBigGod.config import AutoCheckinBigGod
-
 # ----------------------------------------------------------------------------------------------------------------------
 from tasks.Orochi.config import Orochi
 from tasks.OrochiMoans.config import OrochiMoans
@@ -71,7 +68,6 @@ from tasks.Quiz.config import Quiz
 from tasks.KittyShop.config import KittyShop
 from tasks.DyeTrials.config import DyeTrials
 from tasks.IbukiArena.config import IbukiArena
-
 # ----------------------------------------------------------------------------------------------------------------------
 
 # 肝帝专属---------------------------------------------------------------------------------------------------------------
@@ -90,7 +86,6 @@ from tasks.LevelRush.config import LevelRush
 # 每周任务---------------------------------------------------------------------------------------------------------------
 from tasks.TrueOrochi.config import TrueOrochi
 from tasks.RichMan.config import RichMan
-from tasks.WeeklyPurchase.config import WeeklyPurchase
 from tasks.Secret.config import Secret
 from tasks.WeeklyTrifles.config import WeeklyTrifles
 from tasks.MysteryShop.config import MysteryShop
@@ -153,7 +148,6 @@ class ConfigModel(ConfigBase):
     dye_trials: DyeTrials = Field(default_factory=DyeTrials)
     gugu_art_studio: GuguArtStudio = Field(default_factory=GuguArtStudio)
     ibuki_arena: IbukiArena = Field(default_factory=IbukiArena)
-    lbs: LBS = Field(default_factory=LBS)
 
     # 这些是肝帝专属
     bondling_fairyland: BondlingFairyland = Field(default_factory=BondlingFairyland)
@@ -169,7 +163,6 @@ class ConfigModel(ConfigBase):
     # 这些是每周任务
     true_orochi: TrueOrochi = Field(default_factory=TrueOrochi)
     rich_man: RichMan = Field(default_factory=RichMan)
-    weekly_purchase: WeeklyPurchase = Field(default_factory=WeeklyPurchase)
     secret: Secret = Field(default_factory=Secret)
     weekly_trifles: WeeklyTrifles = Field(default_factory=WeeklyTrifles)
     mystery_shop: MysteryShop = Field(default_factory=MysteryShop)
@@ -183,9 +176,7 @@ class ConfigModel(ConfigBase):
     abyss_shadows: AbyssShadows = Field(default_factory=AbyssShadows)
     guild_banquet: GuildBanquet = Field(default_factory=GuildBanquet)
     demon_retreat: DemonRetreat = Field(default_factory=DemonRetreat)
-    guild_activity_monitor: GuildActivityMonitor = Field(
-        default_factory=GuildActivityMonitor
-    )
+    guild_activity_monitor: GuildActivityMonitor = Field(default_factory=GuildActivityMonitor)
 
     def __init__(self, config_name: str = None, **data) -> None:
         """
@@ -207,37 +198,52 @@ class ConfigModel(ConfigBase):
 
     @staticmethod
     def _migrate_renamed_tasks(data: dict) -> dict:
-        """兼容 RichMan/FlightChess 更名前保存的用户配置。"""
+        """兼容历史更名前保存的用户配置。
+
+        注意：当前版本 rich_man 已恢复为"每周商店购买"任务，
+        不再做 rich_man <-> weekly_purchase 的改名迁移。
+        仅保留已从主模型移除的旧任务（大富翁 flight_chess、
+        伪神降临 fakegod）向 activity_shikigami 的合并迁移。
+        """
         data = dict(data)
+
+        # 旧任务名统一归到 activity_shikigami
         if data.get('running_task') in ('RichMan', 'Fakegod', 'FlightChess'):
             data['running_task'] = 'ActivityShikigami'
-        old_rich_man = data.get('rich_man')
-        is_old_weekly_purchase = isinstance(old_rich_man, dict) and any(
-            key in old_rich_man for key in ('special_room', 'thousand_things', 'guild_store')
-        )
-
-        if is_old_weekly_purchase and 'weekly_purchase' not in data:
-            data['weekly_purchase'] = old_rich_man
-
-        old_flight_chess = data.pop('flight_chess', None)
-        if old_flight_chess is not None:
-            data['rich_man'] = old_flight_chess
-        elif is_old_weekly_purchase:
-            data.pop('rich_man', None)
+        # old_rich_man = data.get('rich_man')
+        # is_old_weekly_purchase = isinstance(old_rich_man, dict) and any(
+        #     key in old_rich_man for key in ('special_room', 'thousand_things', 'guild_store')
+        # )
+        #
+        # if is_old_weekly_purchase and 'weekly_purchase' not in data:
+        #     data['weekly_purchase'] = old_rich_man
+        #
+        # old_flight_chess = data.pop('flight_chess', None)
+        # if old_flight_chess is not None:
+        #     data['rich_man'] = old_flight_chess
+        # elif is_old_weekly_purchase:
+        #     data.pop('rich_man', None)
 
         # 独立的大富翁和伪神降临重新并入式神活动，并由 ActivityShikigami
         # 自身的配置迁移器完成字段级转换。
-        legacy_rich_man = data.pop('rich_man', None)
+        # 只有真正已下线的旧字段才迁移
+        legacy_flight_chess = data.pop('flight_chess', None)
+        # legacy_rich_man = data.pop('rich_man', None)
         legacy_fakegod = data.pop('fakegod', None)
+
+        # weekly_purchase 字段在当前 ConfigModel 中不存在，
+        # 若历史配置里残留，直接丢弃，避免污染校验。
+        data.pop('weekly_purchase', None)
+
         activity = dict(data.get('activity_shikigami') or {})
-        if isinstance(legacy_rich_man, dict):
-            activity['_legacy_rich_man'] = legacy_rich_man
+        if isinstance(legacy_flight_chess, dict):
+            activity['_legacy_rich_man'] = legacy_flight_chess
         if isinstance(legacy_fakegod, dict):
             activity['_legacy_fakegod'] = legacy_fakegod
 
         scheduler = activity.get('scheduler', {})
         if not scheduler.get('enable'):
-            for legacy in (legacy_rich_man, legacy_fakegod):
+            for legacy in (legacy_flight_chess, legacy_fakegod):
                 legacy_scheduler = legacy.get('scheduler', {}) if isinstance(legacy, dict) else {}
                 if legacy_scheduler.get('enable'):
                     activity['scheduler'] = legacy_scheduler
@@ -390,9 +396,7 @@ class ConfigModel(ConfigBase):
             properties = {}
             for key, value in sch["properties"].items():
                 if 'items' in value:
-                    properties[key] = re.search(
-                        r"/([^/]+)$", value['items']['$ref']
-                    ).group(1)
+                    properties[key] = re.search(r"/([^/]+)$", value['items']['$ref']).group(1)
                 else:
                     properties[key] = re.search(r"/([^/]+)$", value['$ref']).group(1)
 
@@ -410,9 +414,7 @@ class ConfigModel(ConfigBase):
 
                 item = {}
                 item["name"] = key
-                item["title"] = (
-                    value["title"] if "title" in value else inflection.underscore(key)
-                )
+                item["title"] = value["title"] if "title" in value else inflection.underscore(key)
                 if "description" in value:
                     item["description"] = value["description"]
                 item["default"] = value["default"]
@@ -533,9 +535,7 @@ class ConfigModel(ConfigBase):
             logger.error(e)
             return False
 
-    def copy_task_group(
-        self, task_name: str, group_name: str, source_task: BaseModel
-    ) -> bool:
+    def copy_task_group(self, task_name: str, group_name: str, source_task: BaseModel) -> bool:
         model_task_name = convert_to_underscore(task_name)
         model_group_name = convert_to_underscore(group_name)
         task_object = getattr(self, model_task_name, None)

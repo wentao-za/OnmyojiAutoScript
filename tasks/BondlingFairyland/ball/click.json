@@ -1,0 +1,9 @@
+[
+  {
+    "itemName": "safe_click_area",
+    "roiFront": "16,239,50,50",
+    "roiBack": "16,239,50,50",
+    "profile": "Default",
+    "description": "安全点击区域"
+  }
+]

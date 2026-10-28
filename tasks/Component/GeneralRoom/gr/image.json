@@ -6,6 +6,7 @@
     "roiBack": "396,569,813,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "471,463,471,161",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "748,489,36,40",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "勾选不公开的图"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "747,489,37,40",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "这个是还没勾选的图"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "401,409,34,40",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "400,408,36,38",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "506,393,38,37",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": ""
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "506,393,38,37",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": ""
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "552,489,42,55",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -87,15 +96,17 @@
     "roiBack": "19,13,53,53",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
     "itemName": "gr_auto_match",
     "imageName": "gr_gr_auto_match.png",
-    "roiFront": "697,598,181,63",
-    "roiBack": "697,598,181,63",
+    "roiFront": "598,598,181,63",
+    "roiBack": "396,581,807,91",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "自动匹配"
   },
   {
@@ -105,6 +116,7 @@
     "roiBack": "417,595,176,65",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "刷新"
   },
   {
@@ -114,6 +126,7 @@
     "roiBack": "400,282,35,37",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -123,6 +136,7 @@
     "roiBack": "399,285,37,35",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -132,6 +146,7 @@
     "roiBack": "307,490,37,40",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -141,6 +156,7 @@
     "roiBack": "307,491,38,37",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -150,6 +166,7 @@
     "roiBack": "506,265,38,37",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": ""
   },
   {
@@ -159,6 +176,7 @@
     "roiBack": "506,265,38,37",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": ""
   }
 ]

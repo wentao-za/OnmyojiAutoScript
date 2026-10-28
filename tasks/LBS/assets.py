@@ -29,6 +29,8 @@ class LBSAssets:
 	I_CHECK_LBS_MAP = RuleImage(roi_front=(28,614,55,51), roi_back=(28,614,55,51), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_check_lbs_map.png")
 	# 右下角活动图标 
 	I_MAP_GOTO_ACTIVITY = RuleImage(roi_front=(1128,565,55,51), roi_back=(1128,565,55,51), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_map_goto_activity.png")
+	# 购买现世祝福
+	I_BUY_BLESSING = RuleImage(roi_front=(597,499,40,45), roi_back=(597,499,40,45), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_buy_blessing.png")
 
 
 	# Ocr Rule Assets

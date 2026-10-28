@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -11,7 +12,7 @@ class WeeklyTriflesAssets:
 
 
 	# Click Rule Assets
-	# 进入已经挑战的第一个 
+	# 进入已经挑战的第一个
 	C_WT_AB_CLICK = RuleClick(roi_front=(168,362,68,72), roi_back=(168,362,68,72), name="wt_ab_click")
 
 
@@ -49,7 +50,7 @@ class WeeklyTriflesAssets:
 
 
 	# Click Rule Assets
-	# 微信分享的点击 
+	# 微信分享的点击
 	C_WT_WECHAT = RuleClick(roi_front=(470,111,337,44), roi_back=(470,111,337,44), name="wt_wechat")
 
 
@@ -109,5 +110,10 @@ class WeeklyTriflesAssets:
 	O_WT_LUCKY_TICKETS = RuleOcr(roi=(1145,16,95,32), area=(1145,16,95,32), mode="DigitCounter", method="Default", keyword="", name="wt_lucky_tickets")
 	# 全部储存需要的御守数量 
 	O_WT_SAVE_COST = RuleOcr(roi=(1162,676,35,24), area=(1156,670,52,40), mode="Digit", method="Default", keyword="", name="wt_save_cost")
+
+
+	# Swipe Rule Assets
+	# 左边东西太多时，摸鱼会被顶到下边去，滑动使其上来 
+	S_WT_TF_SWIPE1 = RuleSwipe(roi_front=(112,248,47,36), roi_back=(112,95,51,41), mode="default", name="wt_tf_swipe1")
 
 

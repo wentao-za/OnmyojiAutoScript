@@ -30,11 +30,13 @@ from tasks.Component.Login.service import LoginService
 from tasks.DailyTrifles.assets import DailyTriflesAssets
 from tasks.GlobalGame.assets import GlobalGameAssets
 from tasks.GameUi.assets import GameUiAssets
-from tasks.GameUi.matcher import any_of, all_of
+from tasks.GameUi.matcher import all_of, any_of, not_
 from tasks.GameUi.page_definition import Page
 from tasks.KekkaiUtilize.assets import KekkaiUtilizeAssets
 from tasks.Restart.assets import RestartAssets
 from tasks.RyouToppa.assets import RyouToppaAssets
+from tasks.AssistBattle.assets import AssistBattleAssets
+from module.logger import logger
 
 
 HIGH_DENSITY_RANDOM_CLICK_TASKS = frozenset({
@@ -48,7 +50,7 @@ LOW_DENSITY_RANDOM_CLICK_TASKS = frozenset({
     'AbyssShadows', 'AreaBoss', 'Chess', 'DailyTrifles', 'Delegation',
     'DemonEncounter', 'Dokan', 'Duel', 'GoldYoukai', 'GuildBanquet',
     'Hunt', 'KekkaiUtilize', 'Orochi', 'RealmRaid', 'Restart',
-    'WantedQuests', 'WeeklyPurchase',
+    'WantedQuests',
 })
 
 
@@ -85,6 +87,9 @@ def random_click(
     Returns:
         单个 `RuleClick`，或一个由多个 `RuleClick` 组成的列表。
     """
+    random_sleep = max(0, random.gauss(0.3, 0.1))
+    time.sleep(random_sleep)
+    logger.info(f"random click sleep time: {random_sleep:.2f}s")
 
     click_area_list = [GeneralBattleAssets.C_RANDOM_LEFT, GeneralBattleAssets.C_RANDOM_TOP,
                        GeneralBattleAssets.C_RANDOM_RIGHT, GeneralBattleAssets.C_RANDOM_BOTTOM]
@@ -182,7 +187,10 @@ page_login = Page(SwitchAccountAssets.I_CHECK_LOGIN_FORM, category="global")
 page_login.add_enter_success_hooks(handle_login_page)
 
 # 庭院主页(此处通过提高阈值来处理部分探索章节会识别成原始庭院的问题, 后续有其他更好方法需改善)
-page_main = Page(GameUiAssets.I_CHECK_MAIN, category="global")
+page_main = Page(
+    all_of(not_(GameUiAssets.I_CHECK_MAIN_SET), GameUiAssets.I_CHECK_MAIN),
+    category="global",
+)
 page_main.add_enter_success_hooks(
     GameUiAssets.I_AD_CLOSE_RED, GlobalGameAssets.I_UI_BACK_RED, RestartAssets.I_CANCEL_BATTLE,
 )
@@ -243,6 +251,18 @@ page_friends.add_enter_failure_hooks(conditional_action(condition=GameUiAssets.I
 page_friends.connect(page_main, GlobalGameAssets.I_UI_BACK_RED, key="page_friends->page_main")
 page_friends.add_leave_failure_hooks(GlobalGameAssets.I_UI_BACK_RED)
 page_main.connect(page_friends, GameUiAssets.I_MAIN_GOTO_FRIENDS, key="page_main->page_friends")
+
+# 协战界面
+page_assist_battle = Page(GameUiAssets.I_CHECK_ASSIT_BATTLE, category="global")
+page_assist_battle.connect(
+    page_main, GlobalGameAssets.I_UI_BACK_RED, key="page_assist_battle->page_main"
+)
+page_assist_battle.add_leave_failure_hooks(GlobalGameAssets.I_UI_BACK_RED)
+page_friends.connect(
+    page_assist_battle,
+    AssistBattleAssets.I_FRIENDS_GOTO_ASSIST_BATTLE,
+    key="page_friends->page_assist_battle",
+)
 
 page_daily = Page(GameUiAssets.I_CHECK_DAILY, category="global")
 page_daily.add_enter_failure_hooks(

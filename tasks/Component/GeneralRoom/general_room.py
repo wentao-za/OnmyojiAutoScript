@@ -145,18 +145,42 @@ class GeneralRoom(BaseTask, GeneralRoomAssets):
                     continue
         return False
 
-    def check_zones(self, name: str) -> bool:
+    def check_zones(self, *names: str) -> bool:
         """
-        确认副本的名称，并选中
-        :param name:
-        :return:
+        确认副本的名称，并选中。
+        支持传入多个候选关键字，任意一个在列表中匹配即进入。
+        例如：check_zones('愤怒的石距', '喷怒的石距')
+        :param names: 一个或多个候选关键字
+        :return: 是否成功进入
         """
-        pos = self.list_find(self.L_TEAM_LIST, name)
+        #没有传入任何关键字时直接返回
+        if not names:
+            return False
+
+        #循环尝试每个候选关键字，任意一个匹配即可
+        pos = None
+        matched_name = None
+        for name in names:
+            pos = self.list_find(self.L_TEAM_LIST, name)
+            if pos:
+                matched_name = name
+                break
+
         if not pos:
             return False
-        if name == '愤怒的石距' or name == '喷怒的石距':
-            name = '价悠的石距'
-        self.O_GR_ZONES_NAME.keyword = name
+
+        #用元组统一管理“愤怒的石距”系列的所有 OCR 变体
+        #替换原来的 if name == '愤怒的石距' or name == '喷怒的石距':
+        FURIOUS_ZONE_NAMES = ('愤怒的石距', '喷怒的石距', '愤恕的石距', '喷恕的石距')
+        #拆分出 ocr_keyword，避免与列表关键字 matched_name 混用
+        if matched_name in FURIOUS_ZONE_NAMES:
+            ocr_keyword = '价悠的石距'
+        else:
+            ocr_keyword = matched_name
+
+        #使用 ocr_keyword 而非 name
+        self.O_GR_ZONES_NAME.keyword = ocr_keyword
+
         click_timer = Timer(1.1)
         click_timer.start()
         while 1:
@@ -164,14 +188,17 @@ class GeneralRoom(BaseTask, GeneralRoomAssets):
 
             if self.ocr_appear(self.O_GR_ZONES_NAME):
                 break
+
             # https://github.com/runhey/OnmyojiAutoScript/issues/488
             # 只能说朴实无华
             text_ocr = self.O_GR_ZONES_NAME.ocr(self.device.image)
-            if name == '石距' and name in text_ocr:
+            if matched_name == '石距' and '石距' in text_ocr:
                 break
-            if name == '金币妖怪' and "金币" in text_ocr:
+            if matched_name == '金币妖怪' and "金币" in text_ocr:
                 break
-            if name == '经验妖怪' and '经验' in text_ocr:
+            if matched_name == '经验妖怪' and '经验' in text_ocr:
+                break
+            if matched_name in FURIOUS_ZONE_NAMES and '石距' in text_ocr:
                 break
             if click_timer.reached():
                 click_timer.reset()

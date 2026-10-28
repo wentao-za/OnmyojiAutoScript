@@ -13,12 +13,12 @@ from module.base.timer import Timer
 from tasks.GameUi.page import page_main, page_mall
 from tasks.GameUi.game_ui import GameUi
 from tasks.RichMan.mall.friendship_points import FriendshipPoints
-from tasks.WeeklyPurchase.mall.friendship_points import FriendshipPoints
+from tasks.RichMan.mall.friendship_points import FriendshipPoints
 from tasks.MysteryShop.config import MysteryShop, ShopConfig
 from tasks.MysteryShop.assets import MysteryShopAssets
 from tasks.Component.GeneralInvite.general_invite import GeneralInvite
 from tasks.Component.GeneralInvite.config_invite import InviteConfig
-
+""""神秘商店"""
 class ScriptTask(FriendshipPoints, MysteryShopAssets, GeneralInvite):
 
     def run(self):

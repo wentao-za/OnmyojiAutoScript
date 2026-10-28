@@ -12,6 +12,7 @@ from tasks.Component.config_base import ConfigBase, Time
 from tasks.GameUi.game_ui import GameUi
 from tasks.GameUi.page import page_realm_raid, page_main, page_kekkai_toppa, page_shikigami_records
 from tasks.RealmRaid.assets import RealmRaidAssets
+from tasks.GlobalGame.assets import GlobalGameAssets
 
 from module.logger import logger
 from module.exception import TaskEnd
@@ -155,6 +156,7 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
         # --------------------------------------------------------------------------------------------------------------
         area_index = 0
         success = True
+        refresh_fail_count = 0  # 白屏刷新重进失败计数
         while 1:
             # 设置长任务标志,用来寻找寮突可进攻的目标
             self.device.stuck_record_add('PREPARE_BEFORE_BATTLE')
@@ -170,6 +172,16 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                 break
             # 进攻
             res = self.attack_area(area_index)
+            # 页面白屏（寮突破列表加载卡死）：点击 5 次失败仍未进入战斗
+            if res == 'click_fail':
+                refresh_fail_count += 1
+                if refresh_fail_count > 2:
+                    logger.warning('Ryou toppa page is still not loaded after 2 refreshes, give up this round')
+                    success = False
+                    break
+                logger.info(f'Ryou toppa list seems not loaded, refresh the page ({refresh_fail_count}/2)')
+                self.enter_ryou_toppa_list()
+                continue
             # 如果战斗失败或区域不可用，则弹出当前区域索引，开始进攻下一个
             if not res:
                 area_index += 1
@@ -178,6 +190,8 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                     area_index = 0
                     self.flush_area_cache()
                 continue
+            # 正常完成一次进攻，重置刷新计数
+            refresh_fail_count = 0
 
         if success:
             self.set_next_run(task='RyouToppa', finish=True, server=True, success=True)
@@ -277,9 +291,35 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
             self.device.swipe_adb(p1, p2, duration=duration)
             time.sleep(2)
 
+    def enter_ryou_toppa_list(self) -> bool:
+        """
+        白屏加载卡死时，重新进入寮突破列表页。
+        流程：点红叉回探索页（白屏页面识别不可靠，先退回稳定页面）
+              -> 导航到结界突破 -> 点结界突破入口 -> 点寮突破 -> 等列表加载出来
+        :return: 是否成功回到寮突破列表页
+        """
+        # 点红叉回探索页（page_kekkai_toppa 的默认回退连接即为 I_UI_BACK_RED -> page_exploration）
+        self.appear_then_click(GlobalGameAssets.I_UI_BACK_RED, interval=1)
+        self.goto_page(page_kekkai_toppa)
+        timer = Timer(20).start()
+        while not timer.reached():
+            self.screenshot()
+            if self.appear_then_click(RealmRaidAssets.I_REALM_RAID, interval=1):
+                continue
+            if self.appear(self.I_REAL_RAID_REFRESH, threshold=0.8):
+                self.appear_then_click(self.I_RYOU_TOPPA, interval=1)
+                continue
+            # 寮奖励入口出现，说明寮突破列表已加载出来
+            if self.appear(self.I_RYOU_REWARD, threshold=0.8) or self.appear(self.I_RYOU_REWARD_90, threshold=0.8):
+                logger.info('Re-enter ryou toppa list success')
+                return True
+        logger.warning('Re-enter ryou toppa list timeout')
+        return False
+
     def attack_area(self, index: int):
         """
-        :return: 战斗成功(True) or 战斗失败(False) or 区域不可用（False） or 没有进攻机会（设定下次运行并退出）
+        :return: 战斗成功(True) or 战斗失败(False) or 区域不可用（False）
+                 or 页面白屏点击失败（'click_fail'） or 没有进攻机会（设定下次运行并退出）
         """
         # 每次进攻前检查区域可用性
         if not self.check_area(index):
@@ -299,7 +339,7 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                 return self.run_general_battle(config=self.config.ryou_toppa.general_battle_config)
             if click_failure_count >= 5:
                 logger.warning("Click failure, check your click position")
-                return False
+                return 'click_fail'
             if self.appear_then_click(RealmRaidAssets.I_FIRE, interval=2, threshold=0.8):
                 click_failure_count += 1
                 continue

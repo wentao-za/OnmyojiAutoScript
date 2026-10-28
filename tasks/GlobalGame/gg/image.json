@@ -52,12 +52,12 @@
   {
     "itemName": "g_ignore",
     "imageName": "gg_g_ignore.png",
-    "roiFront": "851,68,47,43",
-    "roiBack": "843,54,62,73",
+    "roiFront": "777,72,47,43",
+    "roiBack": "749,43,106,101",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
-    "description": "忽略"
+    "description": "悬赏封印邀请忽略"
   },
   {
     "itemName": "network_abnormal",

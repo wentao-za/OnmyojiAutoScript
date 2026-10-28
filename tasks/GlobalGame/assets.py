@@ -22,8 +22,8 @@ class GlobalGameAssets:
 	I_G_CAT_FOOD = RuleImage(roi_front=(565,463,59,65), roi_back=(514,407,279,205), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
 	# 狗粮协作 
 	I_G_DOG_FOOD = RuleImage(roi_front=(565,464,60,63), roi_back=(514,407,279,205), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
-	# 忽略 
-	I_G_IGNORE = RuleImage(roi_front=(851,68,47,43), roi_back=(843,54,62,73), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
+	# 悬赏封印邀请忽略 
+	I_G_IGNORE = RuleImage(roi_front=(777,72,47,43), roi_back=(749,43,106,101), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
 	# 网络异常 
 	I_NETWORK_ABNORMAL = RuleImage(roi_front=(583,330,221,67), roi_back=(583,330,221,67), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_network_abnormal.png")
 	# 已端口游戏服务器，需要重新连接，这种情况一般是断开很久了 

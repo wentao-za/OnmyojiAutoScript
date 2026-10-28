@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -12,7 +13,7 @@ class GuildBanquetAssets:
 
 	# Image Rule Assets
 	# 寮宴会集结标志 
-	I_BANQUET_FLAG = RuleImage(roi_front=(1035,12,33,60), roi_back=(1035,12,33,60), threshold=0.8, method="Template matching", file="./tasks/GuildBanquet/res/res_banquet_flag.png")
+	I_BANQUET_FLAG = RuleImage(roi_front=(1035,12,33,60), roi_back=(904,0,184,90), threshold=0.8, method="Template matching", file="./tasks/GuildBanquet/res/res_banquet_flag.png")
 	# 经验已满标志 
 	I_BANQUET_EXP_FULL = RuleImage(roi_front=(28,408,18,16), roi_back=(7,138,106,366), threshold=0.8, method="Template matching", file="./tasks/GuildBanquet/res/res_banquet_exp_full.png")
 	# 宴会式神轮换标志 

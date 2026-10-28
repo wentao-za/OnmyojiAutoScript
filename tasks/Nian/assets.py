@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -11,7 +12,7 @@ class NianAssets:
 
 
 	# Click Rule Assets
-	# description 
+	# description
 	C_CLIC_SAFE = RuleClick(roi_front=(242,25,100,65), roi_back=(242,25,100,65), name="clic_safe")
 
 
@@ -22,6 +23,8 @@ class NianAssets:
 	I_N_CHECK = RuleImage(roi_front=(793,279,242,246), roi_back=(793,279,242,246), threshold=0.8, method="Template matching", file="./tasks/Nian/nian/nian_n_check.png")
 	# 等待进入，也是关闭按钮 
 	I_N_WAITING = RuleImage(roi_front=(735,28,54,51), roi_back=(614,10,303,83), threshold=0.7, method="Template matching", file="./tasks/Nian/nian/nian_n_waiting.png")
+	# 灰色的等待进入，也是关闭按钮 
+	I_N_WAITING_1 = RuleImage(roi_front=(826,29,54,51), roi_back=(614,10,303,83), threshold=0.8, method="Template matching", file="./tasks/Nian/nian/nian_n_waiting_1.png")
 
 
 	# Ocr Rule Assets

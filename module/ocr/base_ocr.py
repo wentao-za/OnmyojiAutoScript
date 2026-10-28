@@ -5,7 +5,7 @@ import time
 import cv2
 import numpy as np
 
-from ppocronnx.predict_system import BoxedResult
+from module.ocr.common import BoxedResult
 from enum import Enum
 
 
@@ -32,6 +32,18 @@ def enlarge_canvas(image):
     if sum(border) > 0:
         image = cv2.copyMakeBorder(image, *border, borderType=cv2.BORDER_CONSTANT, value=(0, 0, 0))
     return image
+
+
+def is_empty_image(image) -> bool:
+    """空图判定：非 ndarray 或 size == 0。
+
+    背景（2026-10-22 oas1 两次崩溃）：游戏冷启动 3 秒内的截图是竖屏/加载
+    过渡帧（Device Orientation 0），宽度小于横屏 roi 的 x 起点，numpy 越
+    界切片会静默返回 (h, 0, 3) 空数组；空图送入 OCR 服务后 paddlex 在
+    cv2.warpPerspective 断言 _src.total() > 0 失败，RemoteError 冒泡直接
+    杀死脚本进程。此处统一拦截：空图不进 OCR 服务，按"没识别到"处理。
+    """
+    return not isinstance(image, np.ndarray) or image.size == 0
 
 
 class OcrMode(Enum):
@@ -168,29 +180,46 @@ class BaseCor:
         """
         # pre process
         start_time = time.time()
+        if is_empty_image(image):
+            logger.warning(f'[{self.name}] ocr_item got an empty image, skip ocr')
+            return ""
         image = self.pre_process(image)
+        # image = enlarge_canvas(image)
         # ocr
         result, score = self.model.ocr_single_line(image)
         if score < self.score:
             result = ""
         # after proces
         result = self.after_process(result)
-        # logger.info("ocr result score: %s%s" % (result,score))
-        logger.attr(name='%s %ss' % (self.name, float2str(time.time() - start_time)),
-                    text=f'[{result}]')
+        logger.debug("ocr result score: %s %s" % (result, score))
+        logger.debug(
+            '[%s %ss] [%s]' % (
+                self.name,
+                float2str(time.time() - start_time),
+                result,
+            )
+        )
         return result
 
-    def ocr_single_line(self, image):
+    def ocr_single_line(self, image, log: bool = True):
         """
         只支持横方向的单行ocr，不支持竖方向的单行ocr
         注意：这里使用了预处理和后处理
         :param image:
+        :param log: 是否输出识别结果日志, 循环里高频调用时传 False
         :return:
         """
         # pre process
         start_time = time.time()
         image = self.crop(image, self.roi)
+        if is_empty_image(image):
+            logger.warning(
+                f'[{self.name}] roi {self.roi} cropped to an empty image '
+                '(screenshot may be a bad/cold-start frame), skip ocr'
+            )
+            return ""
         image = self.pre_process(image)
+        # image = enlarge_canvas(image)
         # ocr
         result, score = self.model.ocr_single_line(image)
         contains_digit = any(char.isdigit() for char in result)
@@ -205,9 +234,14 @@ class BaseCor:
             result = ""
         # after proces
         result = self.after_process(result)
-        # logger.info("ocr result score: %s" % score)
-        logger.attr(name='%s %ss' % (self.name, float2str(time.time() - start_time)),
-                    text=f'[{result}]')
+        logger.debug("ocr result score: %s %s" % (result, score))
+        logger.debug(
+            '[%s %ss] [%s]' % (
+                self.name,
+                float2str(time.time() - start_time),
+                result,
+            )
+        )
         return result
 
     def detect_and_ocr(self, image, logDisplay: bool = True, **kwargs) -> list[BoxedResult]:
@@ -219,6 +253,12 @@ class BaseCor:
         # pre process
         start_time = time.time()
         image = self.crop(image, self.roi)
+        if is_empty_image(image):
+            logger.warning(
+                f'[{self.name}] roi {self.roi} cropped to an empty image '
+                '(screenshot may be a bad/cold-start frame), skip detect_and_ocr'
+            )
+            return []
         image = self.pre_process(image)
         image = enlarge_canvas(image)
 
@@ -227,14 +267,19 @@ class BaseCor:
         results = []
         # after proces
         for result in boxed_results:
-            # logger.info("ocr result score: %s" % result.score)
+            logger.debug("ocr result score: %s %s" % (result.ocr_text, result.score))
             if result.score < self.score:
                 continue
             result.ocr_text = self.after_process(result.ocr_text)
             results.append(result)
         if logDisplay:
-            logger.attr(name='%s %ss' % (self.name, float2str(time.time() - start_time)),
-                        text=str([result.ocr_text for result in results]))
+            logger.debug(
+                '[%s %ss] %s' % (
+                    self.name,
+                    float2str(time.time() - start_time),
+                    str([result.ocr_text for result in results]),
+                )
+            )
         return results
 
     def match(self, result: str, included: bool=False) -> bool:
@@ -249,7 +294,7 @@ class BaseCor:
         else:
             return self.keyword == result
 
-    def filter(self, boxed_results: list[BoxedResult], keyword: str=None) -> list or None:
+    def filter(self, boxed_results: list[BoxedResult], keyword: str=None) -> list:
         """
         使用ocr获取结果后和keyword进行匹配. 返回匹配的index list
         :param keyword: 如果不指定默认适用对象的keyword
@@ -299,6 +344,12 @@ class BaseCor:
         # pre process
         start_time = time.time()
         image = self.crop(image, self.roi)
+        if is_empty_image(image):
+            logger.warning(
+                f'[{self.name}] roi {self.roi} cropped to an empty image '
+                '(screenshot may be a bad/cold-start frame), skip detect_text'
+            )
+            return ''
         image = self.pre_process(image)
         image = enlarge_canvas(image)
         # ocr
@@ -306,13 +357,18 @@ class BaseCor:
         results = ''
         # after proces
         for result in boxed_results:
-            # logger.info("ocr result score: %s" % result.score)
+            logger.debug("ocr result score: %s %s" % (result.ocr_text, result.score))
             if result.score < self.score:
                 continue
             results += result.ocr_text
         # logger.info("ocr result score: %s" % score)
-        logger.attr(name='%s %ss' % (self.name, float2str(time.time() - start_time)),
-                    text=f'[{results}]')
+        logger.debug(
+            '[%s %ss] [%s]' % (
+                self.name,
+                float2str(time.time() - start_time),
+                results,
+            )
+        )
         return results
 
 

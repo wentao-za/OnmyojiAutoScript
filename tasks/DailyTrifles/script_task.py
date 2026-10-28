@@ -10,7 +10,7 @@ import difflib
 import numpy as np
 from datetime import time, datetime, timedelta
 from module.atom.image import RuleImage
-from ppocronnx.predict_system import BoxedResult
+from module.ocr.common import BoxedResult, OcrLogger
 
 from tasks.Component.config_base import Time
 from tasks.DailyTrifles.page import (
@@ -42,7 +42,7 @@ from tasks.DailyTrifles.config import SummonType
 import re
 from typing import Any, Optional, List, Callable
 
-
+""""每日琐事"""
 class ScriptTask(GameUi, Summon, DailyTriflesAssets):
 
     def run(self):
@@ -187,13 +187,19 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
             logger.info('Today is done, skip')
             return
         self.goto_page(page_guild_wish)
-        timeout_timer = Timer(2).start()
+        # 逐个点击"感谢"直到屏幕上没有任何"感谢"按钮。
+        # 原实现 ui_click(THANKS, THANKED) 有死循环缺陷：THANKED 的搜索区是三行
+        # 成员按钮的共享大区域，只要任意一人已感谢就恒命中 -> ui_click 秒退不点
+        # 其余人；而 THANKS 恒命中未感谢的人 -> 外层循环永续（且 reset 使超时失效）。
+        # 实测"感谢/已感谢"两模板互不误判（互相匹配得分 <0.7），故以
+        # appear(THANKS)=False 作为"全部感谢完毕"的可靠信号。
+        # 2026-10-19 oas2 事故：感谢空转 22s 后模拟器截图卡死, GameStuckError。
+        timeout_timer = Timer(10).start()
         while not timeout_timer.reached():
             self.screenshot()
-            if self.appear(self.I_DT_GW_THANKS):
-                self.ui_click(self.I_DT_GW_THANKS, self.I_DT_GW_THANKED, interval=0.8)
-                timeout_timer.reset()
-                continue
+            if not self.appear(self.I_DT_GW_THANKS):
+                break
+            self.appear_then_click(self.I_DT_GW_THANKS, interval=0.8)
         self.appear_then_click(self.I_UI_BACK_RED)
         donate_datas: list = [
             (
@@ -254,9 +260,22 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 timeout_timer.reset()
                 continue
             if self.appear(self.I_DT_GW_DONATE_RED, interval=2.5):  # 赠予界面的一键领取
-                self.ui_click(self.I_DT_GW_GIVE, self.I_DT_GW_ONE_COLLECT)
-                self.appear_then_click(self.I_DT_GW_ONE_COLLECT, interval=0.6)
+                # 原实现 ui_click(GIVE, ONE_COLLECT) 是阻塞循环：若"是否一键感谢并
+                # 领取全部奖励"确认弹窗此时刚弹出，外层循环的 UI_CONFIRM 处理被屏蔽，
+                # GIVE 点击无效反复点 -> 10 次触发 GameTooManyClickError（2026-10-21 oas2）。
+                # 改为带弹窗处理 + 次数上限的循环：弹窗优先，GIVE 最多点 5 次。
                 timeout_timer.reset()
+                give_fail_count = 0
+                while give_fail_count < 5 and not timeout_timer.reached():
+                    self.screenshot()
+                    if self.appear(self.I_DT_GW_ONE_COLLECT):
+                        break
+                    if self.appear_then_click(self.I_UI_CONFIRM, interval=0.8):
+                        continue
+                    if self.appear_then_click(self.I_DT_GW_GIVE, interval=1):
+                        give_fail_count += 1
+                        continue
+                self.appear_then_click(self.I_DT_GW_ONE_COLLECT, interval=0.6)
                 continue
         self.ui_click_until_disappear(self.I_UI_BACK_RED)
 

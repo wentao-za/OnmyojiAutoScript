@@ -41,7 +41,6 @@ from tasks.GameUi.page import (
     page_mall_recommend,
 )
 from tasks.RichMan.assets import RichManAssets
-from tasks.WeeklyPurchase.assets import WeeklyPurchaseAssets
 
 
 class BondlingNumberMax(Exception):
@@ -56,7 +55,6 @@ class ScriptTask(
     SwitchSoul,
     BondlingFairylandAssets,
     RichManAssets,
-    WeeklyPurchaseAssets,
 ):
     """契灵"""
 
@@ -396,6 +394,13 @@ class ScriptTask(
         wait_timer.start()
         success = True
 
+        # 等待期间只截图不点击，device 层的 stuck_timer（60 秒无真实点击）
+        # 会早于 wait_timer（默认 180 秒）到期并抛 GameStuckError。
+        # 这里用安全区域做周期心跳，让 device.click 走 handle_control_check
+        # 清零计时器，使等待能真正走完 wait_timer 的完整时长。
+        heartbeat = Timer(20)
+        heartbeat.start()
+
         # 进入战斗流程
         self.device.stuck_record_add('BATTLE_STATUS_S')
 
@@ -403,8 +408,15 @@ class ScriptTask(
 
             self.screenshot()
 
+            if heartbeat.reached():
+                heartbeat.reset()
+                self.click(self.C_SAFE_CLICK_AREA)
+                # 心跳点击会累加 click_record；主动清空可避免与邀请类点击
+                # 共同触发「两个按钮各 ≥6 次」的 GameTooManyClickError。
+                self.device.click_record_clear()
+
             if wait_timer.reached():
-                logger.info(f"队员等待超时:{wait_timer.current()}, 退出")
+                logger.warning(f"队员等待超时:{wait_timer.current()}, 结束本次契灵任务")
                 break
 
             # if self.current_count >= self.limit_count:
@@ -871,8 +883,22 @@ class ScriptTask(
         self.timer_wait.start()
         logger.info(f'Wait battle {wait_second} seconds')
         success = True
+
+        # 与 run_member 同理：本循环只截图不点击，而外层的心跳点击已把
+        # stuck_record 里的 BATTLE_STATUS_S 白名单清掉，60 秒窗口不再放宽。
+        # 这里补一份独立心跳，保证等待期间计时器持续清零。
+        heartbeat = Timer(20)
+        heartbeat.start()
+
         while 1:
             self.screenshot()
+
+            if heartbeat.reached():
+                heartbeat.reset()
+                self.click(self.C_SAFE_CLICK_AREA)
+                # 清空点击记录，避免与邀请类点击共同触发
+                # 「两个按钮各 ≥6 次」的 GameTooManyClickError。
+                self.device.click_record_clear()
 
             if self.appear(self.I_EXIT):
                 success = True

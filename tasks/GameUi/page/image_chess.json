@@ -6,6 +6,7 @@
     "roiBack": "264,12,47,44",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局局内页面标志"
   },
   {
@@ -15,24 +16,27 @@
     "roiBack": "12,14,48,38",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局主动退出"
   },
   {
     "itemName": "chess_exit_confirm",
     "imageName": "page_chess_exit_confirm.png",
-    "roiFront": "716,409,88,45",
-    "roiBack": "716,409,88,45",
+    "roiFront": "670,411,169,57",
+    "roiBack": "400,221,476,277",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局确认退出"
   },
   {
     "itemName": "chess_exit_cancel",
     "imageName": "page_chess_exit_cancel.png",
-    "roiFront": "478,409,88,45",
-    "roiBack": "478,409,88,45",
+    "roiFront": "443,407,169,57",
+    "roiBack": "400,221,476,277",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局退出确认弹窗"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "340,570,270,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局正常结算返回大厅"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "580,593,123,43",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局主动退出后返回大厅"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "1138,560,107,113",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局分享页"
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "14,75,79,38",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局排名页"
   },
   {
@@ -78,6 +86,17 @@
     "roiBack": "66,646,133,42",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "百鬼棋局排名页返回大厅"
+  },
+  {
+    "itemName": "chess_ranklevel_page",
+    "imageName": "page_chess_ranklevel_page.png",
+    "roiFront": "8,598,107,113",
+    "roiBack": "8,598,107,113",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "结束后的段位结算页面"
   }
 ]

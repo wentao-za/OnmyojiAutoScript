@@ -113,13 +113,17 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, GeneralRoom, GeneralInvite, 
             if check_timer.reached():
                 logger.warning('Nian match timeout')
                 while 1:
+                    self.device.sleep(0.5)
                     self.screenshot()
-                    if not self.appear(self.I_N_WAITING):
-                        break
+                    # 先处理各种确认框
                     if self.appear_then_click(self.I_UI_CONFIRM, interval=1):
                         continue
                     if self.appear_then_click(self.I_UI_CONFIRM_SAMLL, interval=1):
                         continue
+
+                    # 匹配界面消失，且没有确认框，才退出
+                    if not self.appear(self.I_N_WAITING) and not self.appear(self.I_N_WAITING_1):
+                        break
                     if self.appear_then_click(self.I_N_WAITING, interval=1):
                         continue
                 logger.info('Nian match timeout, exit')

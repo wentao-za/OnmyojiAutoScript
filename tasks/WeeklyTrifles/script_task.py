@@ -79,7 +79,7 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         # 防止入口被折叠
         while 1:
             # 等个折叠窗口展开动画
-            sleep(1)
+            self.device.sleep(1)
             self.screenshot()
             if self.appear_then_click(self.I_WT_OPEN_FOLD_WINDOW):
                 continue

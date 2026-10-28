@@ -2,8 +2,8 @@
   {
     "itemName": "wq_seal",
     "imageName": "wq_wq_seal.png",
-    "roiFront": "174,184,20,29",
-    "roiBack": "27,93,693,488",
+    "roiFront": "24,335,20,29",
+    "roiBack": "0,90,724,491",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -152,8 +152,8 @@
   {
     "itemName": "wq_trace_one_realworld",
     "imageName": "wq_trace_one_realworld.png",
-    "roiFront": "850,470,180,180",
-    "roiBack": "850,470,180,180",
+    "roiFront": "1156,581,81,82",
+    "roiBack": "1109,537,160,164",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",

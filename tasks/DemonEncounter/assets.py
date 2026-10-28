@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -11,7 +12,7 @@ class DemonEncounterAssets:
 
 
 	# Click Rule Assets
-	# description 
+	# description
 	C_DM_BOSS_CLICK = RuleClick(roi_front=(593,274,100,100), roi_back=(593,274,100,100), name="dm_boss_click")
 
 
@@ -31,7 +32,7 @@ class DemonEncounterAssets:
 	# 集结挑战 
 	I_BOSS_FIRE = RuleImage(roi_front=(1062,549,100,100), roi_back=(1062,549,100,100), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_fire.png")
 	# description 
-	I_BOSS_CONFIRM = RuleImage(roi_front=(671,400,175,61), roi_back=(671,400,175,61), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_confirm.png")
+	I_BOSS_CONFIRM = RuleImage(roi_front=(553,409,175,61), roi_back=(411,226,459,271), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_confirm.png")
 	# 已选中 
 	I_BOSS_SELECTED = RuleImage(roi_front=(543,339,37,41), roi_back=(543,339,37,41), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_selected.png")
 	# 还没选中 
@@ -39,7 +40,7 @@ class DemonEncounterAssets:
 	# 集结 
 	I_BOSS_GATHER = RuleImage(roi_front=(801,589,100,100), roi_back=(801,589,100,100), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_gather.png")
 	# 战斗胜利 
-	I_BOSS_WIN = RuleImage(roi_front=(380,43,100,100), roi_back=(380,43,100,100), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_win.png")
+	I_BOSS_WIN = RuleImage(roi_front=(380,43,100,100), roi_back=(371,35,223,133), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_win.png")
 	# 白色退出 
 	I_BOSS_BACK_WHITE = RuleImage(roi_front=(16,12,39,40), roi_back=(16,12,39,40), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_back_white.png")
 	# 已击败 
@@ -60,13 +61,13 @@ class DemonEncounterAssets:
 
 
 	# Click Rule Assets
-	# 从下开始数第一个 
+	# 从下开始数第一个
 	C_DE_1 = RuleClick(roi_front=(1211,478,61,58), roi_back=(1211,478,61,58), name="de_1")
-	# 2 
+	# 2
 	C_DE_2 = RuleClick(roi_front=(1196,409,55,56), roi_back=(1196,409,55,56), name="de_2")
-	# 3 
+	# 3
 	C_DE_3 = RuleClick(roi_front=(1225,344,53,55), roi_back=(1225,344,53,55), name="de_3")
-	# 第四个 
+	# 第四个
 	C_DE_4 = RuleClick(roi_front=(1200,282,56,53), roi_back=(1200,282,56,53), name="de_4")
 
 
@@ -130,11 +131,11 @@ class DemonEncounterAssets:
 
 
 	# Click Rule Assets
-	# description 
+	# description
 	C_ANSWER_1 = RuleClick(roi_front=(430,264,440,67), roi_back=(430,264,440,67), name="answer_1")
-	# description 
+	# description
 	C_ANSWER_2 = RuleClick(roi_front=(428,351,438,70), roi_back=(428,351,438,70), name="answer_2")
-	# description 
+	# description
 	C_ANSWER_3 = RuleClick(roi_front=(434,435,437,65), roi_back=(434,435,437,65), name="answer_3")
 
 

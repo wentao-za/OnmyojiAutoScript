@@ -59,6 +59,8 @@ class ChessLegacyScriptTask(
         # 启动恢复会主动退出遗留对局；正常循环只保留保段位退两局。
         self._recover_interrupted_chess_game()
         self.goto_page(page_chess)
+        self.ui_click_until_smt_disappear(self.C_CANCEL_WAITING,self.I_CHESS_SHARE,interval=2)#结束后的排名结算页面任意点击
+        self.ui_click_until_smt_disappear(self.C_RANDOM_DOWN,self.I_CHESS_RANKLEVEL_PAGE, interval=2)#结束后的段位结算页面任意点击
 
         # Config 持有完整 ConfigModel，Chess 专属配置位于
         # self.config.chess.chess_config。旧配置未包含新字段时使用默认值，

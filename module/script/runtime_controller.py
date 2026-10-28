@@ -8,6 +8,7 @@ from typing import Any, Callable, Protocol
 from module.device.device import Device
 from module.device.platform2 import Platform
 from module.logger import logger
+from tasks.Script.config_antiban import AntiBanIdleStrategy
 
 
 class ScriptRuntimeOwner(Protocol):
@@ -546,17 +547,23 @@ class ScriptRuntimeController:
             return ScriptRuntimeDecision.RESCHEDULE
         return ScriptRuntimeDecision.READY
 
-    def handle_wait_during_idle(self, next_run: datetime) -> ScriptRuntimeDecision:
+    def handle_wait_during_idle(self, next_run: datetime, anti_ban_binding: bool = False) -> ScriptRuntimeDecision:
         """
         处理任务空闲期间的行为策略。
 
         Args:
             next_run: 下一个任务的计划运行时间。
+            anti_ban_binding: 本次等待是否由防风控看守器顶回（睡眠窗 / 活跃上限强制休息）。
+                为 True 且配置了专属策略时，使用该策略；否则跟随“任务队列清空”策略。
 
         Returns:
             ScriptRuntimeDecision: 当前等待分支的处理结果。
         """
         method = self.config.script.optimization.when_task_queue_empty
+        if anti_ban_binding:
+            strategy = self.config.script.anti_ban.antiban_sleep_idle_strategy
+            if strategy != AntiBanIdleStrategy.FOLLOW_QUEUE_EMPTY:
+                method = strategy
         strategy_map = {
             'close_game': self._wait_close_game,
             'goto_main': self._wait_goto_main,
@@ -565,6 +572,6 @@ class ScriptRuntimeController:
         }
         func = strategy_map.get(method)
         if func is None:
-            logger.warning(f'Invalid Optimization_WhenTaskQueueEmpty: {method}, fallback to stay_there')
+            logger.warning(f'Invalid idle wait strategy: {method}, fallback to stay_there')
             func = self._wait_stay_there
         return func(next_run)

@@ -29,37 +29,26 @@ class Guild(Buy, GameUi, RichManAssets):
         if not con.enable:
             return
         logger.hr('Start guild', 1)
-        self.goto_page(page_guild_store)
+        self._rich_man_guild_navigation = True
+        self._rich_man_shrine_random_clicked = False
+        try:
+            self.goto_page(page_guild_store)
+        finally:
+            self._rich_man_guild_navigation = False
         logger.info('Enter guild store success')
         time.sleep(0.5)
         swipe_cnt, max_swipe = 0, random.randint(3, 5)
         mystery_ret, scrap_ret, skin_ret, gift_ret = False, False, False, False
         while swipe_cnt <= max_swipe:
             self.screenshot()
-            if (
-                con.honor_gift
-                and self.appear(self.I_GUILD_HONOR_GIFT, interval=1.5)
-                and not gift_ret
-            ):  # 功勋礼包
+            if con.honor_gift and self.appear(self.I_GUILD_HONOR_GIFT, interval=1.5) and not gift_ret:  # 功勋礼包
                 gift_ret = self._guild_honor_gift()
-            if (
-                con.mystery_amulet
-                and self.appear(self.I_GUILD_BLUE, interval=1.5)
-                and not mystery_ret
-            ):  # 蓝票
+            if con.mystery_amulet and self.appear(self.I_GUILD_BLUE, interval=1.5) and not mystery_ret:  # 蓝票
                 mystery_ret = self._guild_mystery_amulet()
-            if (
-                con.black_daruma_scrap
-                and self.appear(self.I_GUILD_SCRAP, interval=1.5)
-                and not scrap_ret
-            ):  # 黑碎
+            if con.black_daruma_scrap and self.appear(self.I_GUILD_SCRAP, interval=1.5) and not scrap_ret:  # 黑碎
                 scrap_ret = self._guild_black_daruma_scrap()
-            if (
-                con.skin_ticket
-                and self.appear(self.I_GUILD_SKIN, interval=1.5)
-                and not skin_ret
-            ):  # 皮肤券
-                skin_ret = self._guild_skin_ticket(con.skin_ticket)
+            if con.skin_ticket and self.appear(self.I_GUILD_SKIN, interval=1.5) and not skin_ret:  # 皮肤券
+                skin_ret = self._guild_skin_ticket()
             self.swipe(self.S_GUILD_STORE, interval=1.5)
             time.sleep(2)
             logger.attr(max_swipe - swipe_cnt, 'remain swipe times')

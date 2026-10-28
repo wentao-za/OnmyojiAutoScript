@@ -15,7 +15,7 @@ from tasks.SoulsTidy.assets import SoulsTidyAssets
 from tasks.SoulsTidy.config import SimpleTidy
 from typing import Optional
 
-
+""""御魂整理"""
 class ScriptTask(GameUi, SoulsTidyAssets):
     def run(self):
         self.goto_page(page_shikigami_records)

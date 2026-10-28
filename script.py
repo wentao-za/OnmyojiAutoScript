@@ -353,6 +353,7 @@ class Script:
         while True:
             task = self.config.get_next()
             now = datetime.now()
+            original_next_run = task.next_run
             antiban_wake = self.anti_ban_guard.wake_time(now, self.config.script.anti_ban)
             if antiban_wake is not None:
                 task.next_run = max(task.next_run, antiban_wake)
@@ -367,7 +368,12 @@ class Script:
             wait_until = task.next_run
             if self.task_hoarding_until and self.config.waiting_task:
                 wait_until = min(wait_until, self.config.waiting_task[0].next_run)
-            decision = self.runtime.handle_wait_during_idle(wait_until)
+            # 仅当“防风控看守器把时间顶回、且最终等待目标仍是其唤醒时刻”时，
+            # 该段空闲等待才归防风控专属策略管理（与“任务队列清空”策略解耦）。
+            anti_ban_binding = (antiban_wake is not None
+                                and antiban_wake > original_next_run
+                                and wait_until >= antiban_wake)
+            decision = self.runtime.handle_wait_during_idle(wait_until, anti_ban_binding=anti_ban_binding)
             if decision == ScriptRuntimeDecision.RESCHEDULE:
                 logger.info('Idle wait requested scheduler refresh, reload config and reschedule')
                 del_cached_property(self, "config")

@@ -33,7 +33,10 @@ from tasks.GameUi.page_definition import Page
 ExitMatcher = Union[Matcher | RecognizerLike | Page]
 BattleInspectionAction = Callable[["BattleContext"], None]
 PREPARE_CLICK_DELAY = 3.0
-QUICK_EXIT_WAIT_TIMEOUT = 5.0
+# 主动快退时等待退出按钮渲染出来的窗口。
+# 准备页刚进入时左上角返回箭头尚未绘制完成，实测渲染约需 3~4 秒
+# （历史成功案例：准备页首帧到命中 GB_EXIT 约 3.4s），取 8s 留约 2 倍余量。
+QUICK_EXIT_WAIT_TIMEOUT = 8.0
 
 
 @dataclass
@@ -120,6 +123,10 @@ class BattleContext:
     reward_no_battle_ts: float | None = None
     # 当前调用是否已进入快速退出路径；该状态只在本次调用内有效。
     quick_exit: bool = False
+    # 本次快速退出是否由任务主动请求（config.quick_exit）。
+    # True: 退不掉可降级为正常战斗；False: 由战斗超时触发，退不掉说明战斗
+    # 确实卡死，仍需抛出 GameStuckError 交给死循环兜底。
+    quick_exit_voluntary: bool = False
     # quick_exit 的退出按钮等待窗口；用于容忍页面尚未加载完成时的短暂失败。
     quick_exit_timer: Timer | None = None
     # 最近一次结算页解析出的胜负结果；用于退出时返回最终布尔值。
@@ -317,6 +324,7 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
             prepare_click_timer=Timer(PREPARE_CLICK_DELAY),
             buff=buff,
             quick_exit=bool(config.quick_exit),
+            quick_exit_voluntary=bool(config.quick_exit),
         )
 
     def _get_battle_behavior_scopes(self, config: GeneralBattleConfig, battle_key: str) -> dict[str, BattleBehaviorScope]:
@@ -479,6 +487,7 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
         context.last_page = None
         context.reward_no_battle_ts = None
         context.quick_exit = bool(config.quick_exit)
+        context.quick_exit_voluntary = bool(config.quick_exit)
         context.quick_exit_timer = None
         context.continuous_count = continuous_count
         context.round_behavior_state = BattleBehaviorState()
@@ -588,6 +597,9 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
         if context.battle_timer.reached():
             logger.warning(f"Battle timeout reached: {context.battle_timer.limit}s")
             context.quick_exit = True
+            # 由战斗超时触发，属于被动快退：退不掉说明战斗确实卡死，
+            # 不能降级为继续战斗，仍需交给 GameStuckError 兜底。
+            context.quick_exit_voluntary = False
 
     def _in_settlement_stage(self, context: BattleContext, page: Page | None) -> bool:
         """判断当前是否处于结算收尾阶段
@@ -770,6 +782,20 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
                 context.quick_exit_timer = None
                 return None
             if context.quick_exit_timer.reached():
+                if context.quick_exit_voluntary:
+                    # 任务主动请求的快退（如结界突破退四保一）等不到退出按钮，
+                    # 多为准备页返回箭头尚未渲染完成。降级为正常打完这轮战斗，
+                    # 避免一次渲染延迟就把整个脚本拖进“抛异常→重启游戏→重跑”循环。
+                    logger.warning(
+                        'Quick exit requested but exit button not found within '
+                        f'{QUICK_EXIT_WAIT_TIMEOUT}s, give up quick exit and '
+                        'continue this battle'
+                    )
+                    context.quick_exit = False
+                    context.quick_exit_voluntary = False
+                    context.quick_exit_timer = None
+                    return None
+                # 战斗超时触发的快退：退不掉说明战斗确实卡死，保持原有兜底。
                 raise GameStuckError(
                     f"Quick exit requested but exit button not found within {QUICK_EXIT_WAIT_TIMEOUT}s",
                 )
@@ -832,7 +858,9 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
                 context.reward_no_battle_ts = None if page else context.reward_no_battle_ts
                 self._sync_prepare_click_timer(context, page)
                 self._ensure_battle_stuck_guard(context, page)
-                if context.quick_exit and not self._in_settlement_stage(context, page):
+                # `page is not None` 保证等待窗口只在确认处于战斗页面后才开始计时，
+                # 避免页面加载/过渡阶段（page 为空）白耗掉等退出按钮的时间。
+                if context.quick_exit and page is not None and not self._in_settlement_stage(context, page):
                     action = BattleAction.QUICK_EXIT
                 else:
                     handle = self.gb_page_handle_dict.get(page, None)

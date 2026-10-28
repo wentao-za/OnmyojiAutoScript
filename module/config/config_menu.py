@@ -83,6 +83,7 @@ class ConfigMenu:
         # 活动的任务
         self.menu["Activity Task"] = [
             'ActivityShikigami',
+            'MartialArts',
             'MartialTournament',
             'ActivityExploration',
             'MetaDemon',

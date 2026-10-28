@@ -9,12 +9,20 @@ from tasks.Component.config_scheduler import Scheduler
 from tasks.Component.config_base import ConfigBase
 from tasks.Component.SwitchSoul.switch_soul_config import SwitchSoulConfig
 
+
+class UserStatus(str, Enum):
+    LEADER = 'leader'
+    MEMBER = 'member'
+
 class TakoConfig(BaseModel):
     enable: bool = Field(default=False)
     buff_gold_50_click: bool = Field(default=False)
     buff_gold_100_click: bool = Field(default=False)
     buff_exp_50_click: bool = Field(default=False)
     buff_exp_100_click: bool = Field(default=False)
+    # 身份
+    user_status: UserStatus = Field(default=UserStatus.MEMBER, description='user_status_help')
+
 
 
 class Tako(ConfigBase):

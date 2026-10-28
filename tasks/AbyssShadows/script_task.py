@@ -587,6 +587,14 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, AbyssShadowsAssets):
         _timer_battle = Timer(180)
         self.wait_until_appear(self.I_PREPARE_HIGHLIGHT, wait_time=3)
         self.ui_click_until_disappear(self.I_PREPARE_HIGHLIGHT, interval=0.6)
+        self.device.sleep(1)
+        # 兜底：确认准备按钮真的消失
+        for attempt in range(2):
+            self.screenshot()
+            if not self.appear(self.I_PREPARE_HIGHLIGHT):
+                break
+            logger.warning(f"Prepare button still visible, retry {attempt + 1}/2")
+            self.ui_click_until_disappear(self.I_PREPARE_HIGHLIGHT, interval=0.6)
         _timer_battle.start()
 
         # 生成退出条件

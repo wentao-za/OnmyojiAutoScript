@@ -1,0 +1,9 @@
+[
+  {
+    "itemName": "wt_tf_swipe1",
+    "roiFront": "112,248,47,36",
+    "roiBack": "112,95,51,41",
+    "mode": "default",
+    "description": "左边东西太多时，摸鱼会被顶到下边去，滑动使其上来"
+  }
+]

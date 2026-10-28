@@ -6,6 +6,7 @@
     "roiBack": "1140,585,73,76",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "千物宝库"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "141,61,228,67",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "确认进入"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "453,171,589,109",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "475,170,562,110",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "467,167,581,123",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "740,386,80,146",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "提高"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "553,487,169,115",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "960,169,208,309",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "唤妖借处"
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "1036,523,240,197",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "配置式神"
   },
   {
@@ -87,6 +96,7 @@
     "roiBack": "1036,523,240,197",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "确认配置"
   },
   {
@@ -96,6 +106,7 @@
     "roiBack": "652,221,151,148",
     "method": "Template matching",
     "threshold": 0.7,
+    "profile": "Default",
     "description": "选择式神（第四个）"
   },
   {
@@ -105,15 +116,17 @@
     "roiBack": "703,580,148,134",
     "method": "Template matching",
     "threshold": 0.7,
+    "profile": "Default",
     "description": "替换式神"
   },
   {
     "itemName": "tt_borrow_confirm",
     "imageName": "tt_tt_borrow_confirm.png",
-    "roiFront": "960,508,50,53",
-    "roiBack": "886,444,222,194",
+    "roiFront": "957,507,89,81",
+    "roiBack": "943,493,122,107",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "借出确认"
   }
 ]

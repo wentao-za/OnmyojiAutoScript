@@ -6,6 +6,7 @@
     "roiBack": "589,294,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "地震鲇"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "587,279,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "蜃气楼"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "596,287,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "荒骷髅"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "588,285,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "胧车"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "603,294,100,66",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "土蜘蛛"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "592,323,67,61",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "歌姬"
   },
   {
@@ -60,15 +66,17 @@
     "roiBack": "1062,549,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "集结挑战"
   },
   {
     "itemName": "boss_confirm",
     "imageName": "boss_boss_confirm.png",
-    "roiFront": "671,400,175,61",
-    "roiBack": "671,400,175,61",
+    "roiFront": "553,409,175,61",
+    "roiBack": "411,226,459,271",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "description"
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "543,339,37,41",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "已选中"
   },
   {
@@ -87,6 +96,7 @@
     "roiBack": "544,337,37,43",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "还没选中"
   },
   {
@@ -96,15 +106,17 @@
     "roiBack": "801,589,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "集结"
   },
   {
     "itemName": "boss_win",
     "imageName": "boss_boss_win.png",
     "roiFront": "380,43,100,100",
-    "roiBack": "380,43,100,100",
+    "roiBack": "371,35,223,133",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "战斗胜利"
   },
   {
@@ -114,6 +126,7 @@
     "roiBack": "16,12,39,40",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "白色退出"
   },
   {
@@ -123,6 +136,7 @@
     "roiBack": "614,537,123,176",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "已击败"
   },
   {
@@ -132,6 +146,7 @@
     "roiBack": "1087,562,100,36",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "极逢魔集结挑战"
   },
   {
@@ -141,6 +156,7 @@
     "roiBack": "490,50,350,150",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "战斗失败-等待界面"
   },
   {
@@ -150,6 +166,7 @@
     "roiBack": "0,450,100,130",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "战斗结束标识，左下角有战绩按钮"
   }
 ]

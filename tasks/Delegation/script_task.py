@@ -150,8 +150,12 @@ class ScriptTask(GameUi, DelegationAssets):
                 continue
 
     def wait_delegation_done_reward(self):
-        """领取已完成委派后推进对话，直到奖励确认按钮出现。"""
-        wait_timer = Timer(5)
+        """领取已完成委派后推进对话，直到奖励确认按钮出现。
+
+        超时 20s：委派奖励对话有多句，每轮（截图+OCR+匹配+点击）约 2s，
+        5s 只够推进 3 次；2026-10-20 oas3 事故即 5s 内对话未推完而崩溃。
+        """
+        wait_timer = Timer(20)
         wait_timer.start()
         while True:
             self.screenshot()

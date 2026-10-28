@@ -4,6 +4,7 @@
 import time
 
 from module.logger import logger
+from module.base.timer import Timer
 
 from tasks.GameUi.page import page_main, page_travel
 from tasks.GameUi.game_ui import GameUi
@@ -183,11 +184,24 @@ class ThousandThings(GameUi, RichManAssets):
             self.screenshot()
             if not self.appear(self.I_TT_SHIKIGAMI_REPLACE):
                 break
-            if self.appear_then_click(self.I_UI_CONFIRM):
-                continue
             if self.appear_then_click(self.I_TT_SHIKIGAMI_REPLACE):
                 continue
-        self.ui_click(self.I_TT_CONFIRM, self.I_TT_BORROW_CONFIRM)
+            if self.appear_then_click(self.I_UI_CONFIRM):
+                continue
+        # ① 先关"是否更换"确认弹窗（弹窗页面 TT_TT_CONFIRM 也命中，必须先关弹窗）
+        for _ in range(5):
+            self.screenshot()
+            if not self.appear(self.I_UI_CONFIRM):
+                break
+            self.click(self.I_UI_CONFIRM, interval=1)
+
+        # ② 点右下"确认"直到借出留言页出现
+        timeout_timer = Timer(30).start()
+        while not timeout_timer.reached():
+            self.screenshot()
+            if self.appear(self.I_TT_BORROW_CONFIRM):
+                break
+            self.appear_then_click(self.I_TT_CONFIRM, interval=1)
 
         # 获取奖励
         self.ui_get_reward(self.I_TT_BORROW_CONFIRM)

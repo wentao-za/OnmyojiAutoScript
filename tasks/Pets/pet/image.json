@@ -6,6 +6,7 @@
     "roiBack": "952,412,144,60",
     "method": "Template matching",
     "threshold": 0.7,
+    "profile": "Default",
     "description": "宠物小屋"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "1171,625,55,56",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "爪印"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "849,624,69,49",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "快速喂养"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "884,485,127,123",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "Default",
     "description": "喂食"
   },
   {
@@ -42,6 +46,97 @@
     "roiBack": "999,42,242,147",
     "method": "Template matching",
     "threshold": 0.65,
+    "profile": "Default",
     "description": "跳过"
+  },
+  {
+    "itemName": "pet_courtyard",
+    "imageName": "pet_pet_courtyard.png",
+    "roiFront": "22,620,70,63",
+    "roiBack": "5,593,103,114",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "前往宠物庭院"
+  },
+  {
+    "itemName": "pet_backyard",
+    "imageName": "pet_pet_backyard.png",
+    "roiFront": "15,626,70,63",
+    "roiBack": "5,593,103,114",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "宠物后院"
+  },
+  {
+    "itemName": "pet_up_food",
+    "imageName": "pet_pet_up_food.png",
+    "roiFront": "819,389,37,20",
+    "roiBack": "808,382,60,40",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "上方食材放置"
+  },
+  {
+    "itemName": "pet_down_food",
+    "imageName": "pet_pet_down_food.png",
+    "roiFront": "334,550,59,33",
+    "roiBack": "315,539,100,60",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "下方食材放置"
+  },
+  {
+    "itemName": "pet_collect_coins_check",
+    "imageName": "pet_pet_collect_coins_check.png",
+    "roiFront": "707,333,38,37",
+    "roiBack": "689,317,76,73",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "收取宠物币确认"
+  },
+  {
+    "itemName": "pet_food",
+    "imageName": "pet_pet_food.png",
+    "roiFront": "557,32,129,41",
+    "roiBack": "546,22,153,65",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "宠物食材页面"
+  },
+  {
+    "itemName": "pet_food_check",
+    "imageName": "pet_pet_food_check.png",
+    "roiFront": "773,557,181,61",
+    "roiBack": "758,534,211,106",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "放置宠物食材确认"
+  },
+  {
+    "itemName": "pet_cat_food_check",
+    "imageName": "pet_pet_cat_food_check.png",
+    "roiFront": "730,292,41,32",
+    "roiBack": "698,249,327,111",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "猫宠物食材卡放置确认"
+  },
+  {
+    "itemName": "pet_dog_food_check",
+    "imageName": "pet_pet_dog_food_check.png",
+    "roiFront": "730,292,41,32",
+    "roiBack": "698,249,327,111",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "狗宠物食材卡放置确认"
   }
 ]

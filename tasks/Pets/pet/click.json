@@ -1,0 +1,30 @@
+[
+  {
+    "itemName": "pet_collect_coins_up",
+    "roiFront": "737,358,41,49",
+    "roiBack": "737,358,41,49",
+    "profile": "Default",
+    "description": "收取上方宠物币"
+  },
+  {
+    "itemName": "pet_collect_coins_down",
+    "roiFront": "246,578,33,26",
+    "roiBack": "246,578,33,26",
+    "profile": "Default",
+    "description": "收取下方宠物币"
+  },
+  {
+    "itemName": "pet_food_lay",
+    "roiFront": "191,159,298,115",
+    "roiBack": "191,159,298,115",
+    "profile": "Default",
+    "description": "宠物食材放置"
+  },
+  {
+    "itemName": "pet_safe_click_area",
+    "roiFront": "437,501,452,158",
+    "roiBack": "437,501,452,158",
+    "profile": "Default",
+    "description": "安全点击区域"
+  }
+]

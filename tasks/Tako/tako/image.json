@@ -1,0 +1,42 @@
+[
+  {
+    "itemName": "auto_matching",
+    "imageName": "tako_auto_matching.png",
+    "roiFront": "598,596,180,64",
+    "roiBack": "598,596,180,64",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "自动匹配按钮"
+  },
+  {
+    "itemName": "tako_check",
+    "imageName": "tako_tako_check.png",
+    "roiFront": "793,279,242,246",
+    "roiBack": "793,279,242,246",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "判断是否在石距组队页面"
+  },
+  {
+    "itemName": "tako_waiting",
+    "imageName": "tako_tako_waiting.png",
+    "roiFront": "829,36,49,39",
+    "roiBack": "614,10,303,83",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "等待进入，也是关闭按钮"
+  },
+  {
+    "itemName": "tako_waiting_1",
+    "imageName": "tako_tako_waiting_1.png",
+    "roiFront": "829,36,49,39",
+    "roiBack": "614,10,303,83",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "Default",
+    "description": "灰色的等待进入，也是关闭按钮"
+  }
+]

@@ -79,5 +79,14 @@
     "method": "Template matching",
     "threshold": 0.8,
     "description": "右下角活动图标"
+  },
+  {
+    "itemName": "buy_blessing",
+    "imageName": "lbs_buy_blessing.png",
+    "roiFront": "597,499,40,45",
+    "roiBack": "597,499,40,45",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "description": "购买现世祝福"
   }
 ]

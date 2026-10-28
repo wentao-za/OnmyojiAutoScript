@@ -122,10 +122,19 @@ class Buy(BaseTask, BuyAssets):
             number_record = []
             ocr_timer = Timer(0.8)
             ocr_timer.start()
+            add_click_count = 0
             while 1:
                 self.screenshot()
 
                 if self.appear_then_click(self.I_BUY_ADD, interval=0.8):
+                    # device 层同一按钮点击 ≥10 次会抛 GameTooManyClickError，
+                    # 而购买数量 >10 时（如随机御魂单价 20、余钱 230 → 买 11 个）
+                    # 必须点 10 次以上加号，必然触发崩溃。
+                    # 每 9 次仅移除 BUY_BUY_ADD 自己的点击记录：其它按钮的
+                    # 10 次保护与报错存档链路完全不受影响。
+                    add_click_count += 1
+                    if add_click_count % 9 == 0:
+                        self.device.click_record_remove(self.I_BUY_ADD)
                     continue
 
                 if not ocr_timer.reached():

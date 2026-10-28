@@ -12,6 +12,7 @@ import numpy as np
 from module.atom.click import RuleClick
 from module.atom.image import RuleImage
 from module.exception import GameStuckError
+from module.image.rpc import get_image_client
 from module.logger import logger
 from tasks.Chess.runtime.board_positions import SET_JADE_AREAS, SET_POSITIONS
 from tasks.Chess.runtime.press_and_drag import Press_and_Drag
@@ -1454,16 +1455,24 @@ class ChessHandOperationsMixin:
             )
         ]
         template_rules.append(self.hakuzosu_protect_rule)
-        candidates = []
+
+        # 手牌模板约 78 条：逐条串行 RPC 期间服务工作端的截图帧会因 TTL/替换而失效，
+        # 触发 KeyError: Unknown frame id。这里改为一次批量请求，并直接上传当前截图，
+        # 既消除帧缓存依赖，也把 78 次往返压缩成 1 次。
+        rules_data = []
         for rule in template_rules:
-            matches = rule.match_all_any(
-                self.device.image,
-                roi=list(self.HAND_AREA),
-                threshold=rule.threshold,
-                nms_threshold=0.3,
-                frame_id=self.device.image_frame_id,
-            )
-            for score, x, y, width, height in matches:
+            payload = rule.to_service_payload()
+            payload['roi_back'] = list(self.HAND_AREA)
+            rules_data.append(payload)
+        batch_results = get_image_client().match_all_any_many(
+            rules_data,
+            image=self.device.image,
+            nms_threshold=0.3,
+        )
+
+        candidates = []
+        for result in batch_results:
+            for score, x, y, width, height in result.get('matches', []):
                 candidates.append((score, x, y, width, height))
 
         # 多个素材可能在同一张卡上产生近邻命中；每个实际卡位只保留
@@ -1526,15 +1535,20 @@ class ChessHandOperationsMixin:
         else:
             return len(self._hand_card_detections())
 
-        matches = []
+        rules_data = []
         for rule in rules:
-            matches.extend(rule.match_all_any(
-                self.device.image,
-                roi=list(self.HAND_AREA),
-                threshold=rule.threshold,
+            payload = rule.to_service_payload()
+            payload['roi_back'] = list(self.HAND_AREA)
+            rules_data.append(payload)
+        matches = []
+        if rules_data:
+            for result in get_image_client().match_all_any_many(
+                rules_data,
+                image=self.device.image,
                 nms_threshold=0.3,
-                frame_id=self.device.image_frame_id,
-            ))
+            ):
+                for score, x, y, width, height in result.get('matches', []):
+                    matches.append((score, x, y, width, height))
 
         centers = []
         for score, x, y, width, height in sorted(

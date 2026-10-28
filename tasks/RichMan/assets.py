@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -47,6 +48,25 @@ class RichManAssets:
 	# Swipe Rule Assets
 	# description 
 	S_GUILD_STORE = RuleSwipe(roi_front=(806,460,46,35), roi_back=(754,360,90,34), mode="default", name="guild_store")
+
+
+	# Click Rule Assets
+	# 
+	C_ITACHI_GIFT = RuleClick(roi_front=(731,250,153,55), roi_back=(731,250,153,55), name="itachi_gift")
+
+
+	# Image Rule Assets
+	#  
+	I_ITACHI_SHOP_ENTRY = RuleImage(roi_front=(47,635,45,40), roi_back=(32,622,339,79), threshold=0.8, method="Template matching", profile="High", file="./tasks/RichMan/itachi_shop/itachi_shop_itachi_shop_entry.png")
+	#  
+	I_ITACHI_SHOP_CHECK = RuleImage(roi_front=(121,37,78,39), roi_back=(116,33,88,49), threshold=0.8, method="Template matching", profile="High", file="./tasks/RichMan/itachi_shop/itachi_shop_itachi_shop_check.png")
+
+
+	# Ocr Rule Assets
+	#  
+	O_ITACHI_COIN = RuleOcr(roi=(1081,21,134,38), area=(1081,21,134,38), mode="DigitCounter", method="Default", keyword="", name="itachi_coin")
+	#  
+	O_ITACHI_BUY_COST = RuleOcr(roi=(634,530,70,41), area=(634,530,70,41), mode="Digit", method="Default", keyword="", name="itachi_buy_cost")
 
 
 	# Image Rule Assets
@@ -210,21 +230,21 @@ class RichManAssets:
 
 
 	# Click Rule Assets
-	# 一号位 
+	# 一号位
 	C_SCA_DEMON_1 = RuleClick(roi_front=(255,158,100,100), roi_back=(255,158,100,100), name="sca_demon_1")
-	# 二号位 
+	# 二号位
 	C_SCA_DEMON_2 = RuleClick(roi_front=(181,318,100,100), roi_back=(181,318,100,100), name="sca_demon_2")
-	# 三号位 
+	# 三号位
 	C_SCA_DEMON_3 = RuleClick(roi_front=(257,476,100,100), roi_back=(257,476,100,100), name="sca_demon_3")
-	# 四号位 
+	# 四号位
 	C_SCA_DEMON_4 = RuleClick(roi_front=(553,478,100,100), roi_back=(553,478,100,100), name="sca_demon_4")
-	# 五号位 
+	# 五号位
 	C_SCA_DEMON_5 = RuleClick(roi_front=(639,316,100,100), roi_back=(639,316,100,100), name="sca_demon_5")
-	# 六号位 
+	# 六号位
 	C_SCA_DEMON_6 = RuleClick(roi_front=(560,155,100,100), roi_back=(560,155,100,100), name="sca_demon_6")
-	# 点击魂外部 
+	# 点击魂外部
 	C_SCA_SOULS_GET = RuleClick(roi_front=(1187,497,93,133), roi_back=(1187,497,93,133), name="sca_souls_get")
-	# 点击外部的区域返回到御魂礼盒主界面 
+	# 点击外部的区域返回到御魂礼盒主界面
 	C_SCA_SOULS_BACK = RuleClick(roi_front=(118,14,503,51), roi_back=(118,14,503,51), name="sca_souls_back")
 
 
@@ -304,17 +324,17 @@ class RichManAssets:
 	# Image Rule Assets
 	# 下期预览 
 	I_S_NEXT_PERIOD = RuleImage(roi_front=(1083,574,90,86), roi_back=(1083,574,90,86), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_next_period.png")
-	# 五星白蛋
+	# 五星白蛋 
 	I_S_WHITE_FIVE = RuleImage(roi_front=(769,143,77,85), roi_back=(769,143,77,85), threshold=0.85, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_white_five.png")
-	# 四星白蛋
+	# 四星白蛋 
 	I_S_WHITE_FOUR = RuleImage(roi_front=(951,144,73,82), roi_back=(951,144,73,82), threshold=0.85, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_white_four.png")
 	# 黑蛋 
 	I_S_BLACK = RuleImage(roi_front=(588,143,78,83), roi_back=(588,143,78,83), threshold=0.9, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_black.png")
-	# 购买黑蛋
+	# 购买黑蛋 
 	I_S_BUY_BLACK = RuleImage(roi_front=(551, 516, 178, 64), roi_back=(551, 516, 178, 64), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_black.png")
-	# 购买五星白蛋
+	# 购买五星白蛋 
 	I_S_BUY_WHITE_FIVE = RuleImage(roi_front=(551, 515, 180, 66), roi_back=(551, 515, 180, 66), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_white_five.png")
-	# 购买四星白蛋
+	# 购买四星白蛋 
 	I_S_BUY_WHITE_FOUR = RuleImage(roi_front=(551, 548, 179, 63), roi_back=(551, 548, 179, 63), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_white_four.png")
 	# description 
 	I_S_CONFIRM_WHITE_FIVE = RuleImage(roi_front=(554,522,174,61), roi_back=(520,416,220,193), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_confirm_white_five.png")
@@ -322,13 +342,13 @@ class RichManAssets:
 	I_S_CONFIRM_WHITE_FOUR = RuleImage(roi_front=(548,486,176,62), roi_back=(509,404,252,231), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_confirm_white_four.png")
 	# description 
 	I_S_CONFIRM_BLACK = RuleImage(roi_front=(547,496,180,62), roi_back=(532,426,214,184), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_confirm_black.png")
-	# 一键增加按钮
-	I_S_BUY_UP = RuleImage(roi_front=(763, 455, 44, 50), roi_back=(763, 455, 44, 50), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_up.png")
-	# 检查黑蛋
+	# description 
+	I_S_BUY_UP = RuleImage(roi_front=(762,412,56,54), roi_back=(762,412,56,54), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_buy_up.png")
+	# 检查黑蛋 
 	I_S_CHECK_BLACK = RuleImage(roi_front=(595, 221, 89, 89), roi_back=(595, 221, 89, 89), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_check_black.png")
-	# 检查五星白蛋
+	# 检查五星白蛋 
 	I_S_CHECK_WHITE_FIVE = RuleImage(roi_front=(596, 221, 91, 88), roi_back=(596, 221, 91, 88), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_check_white_five.png")
-	# 检查四星白蛋
+	# 检查四星白蛋 
 	I_S_CHECK_WHITE_FOUR = RuleImage(roi_front=(592, 186, 93, 92), roi_back=(592, 186, 93, 92), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_check_white_four.png")
 	# 召唤页面前往神龛标志 
 	I_S_SUMMON_TO_SHRINE = RuleImage(roi_front=(1235,353,16,38), roi_back=(864,210,413,337), threshold=0.8, method="Template matching", file="./tasks/RichMan/shrine/shrine_s_summon_to_shrine.png")
@@ -373,7 +393,7 @@ class RichManAssets:
 	# 替换式神 
 	I_TT_SHIKIGAMI_REPLACE = RuleImage(roi_front=(755,641,57,19), roi_back=(703,580,148,134), threshold=0.7, method="Template matching", file="./tasks/RichMan/tt/tt_tt_shikigami_replace.png")
 	# 借出确认 
-	I_TT_BORROW_CONFIRM = RuleImage(roi_front=(960,508,50,53), roi_back=(886,444,222,194), threshold=0.8, method="Template matching", file="./tasks/RichMan/tt/tt_tt_borrow_confirm.png")
+	I_TT_BORROW_CONFIRM = RuleImage(roi_front=(957,507,89,81), roi_back=(943,493,122,107), threshold=0.8, method="Template matching", file="./tasks/RichMan/tt/tt_tt_borrow_confirm.png")
 
 
 	# Ocr Rule Assets
