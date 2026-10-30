@@ -1,4 +1,5 @@
 from module.atom.image import RuleImage
+from module.atom.frame import RuleFrame, Image, Ocr, Click
 from module.atom.click import RuleClick
 from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
@@ -12,7 +13,7 @@ class DelegationAssets:
 
 
 	# Click Rule Assets
-	#
+	# 
 	C_D_ALL = RuleClick(roi_front=(1097,449,133,39), roi_back=(1090,445,144,48), name="d_all")
 
 
@@ -25,12 +26,10 @@ class DelegationAssets:
 	I_D_START = RuleImage(profile="High", roi_front=(1101,534,120,129), roi_back=(1096,529,130,139), threshold=0.8, method="Template matching", file="./tasks/Delegation/d/d_d_start.png")
 	# 跳过 
 	I_D_SKIP = RuleImage(profile="High", roi_front=(661,518,70,39), roi_back=(656,513,80,49), threshold=0.67, method="Template matching", file="./tasks/Delegation/d/d_d_skip.png")
-	# 首位出战
+	# 首位出战 
 	I_D_SELECT_FIRST = RuleImage(profile="High", roi_front=(225,581,44,41), roi_back=(166,491,142,178), threshold=0.7, method="Template matching", file="./tasks/Delegation/d/d_d_select_first.png")
 	# 返回 
-	I_D_BACK = RuleImage(roi_front=(940,415,138,51), roi_back=(935,410,148,61), threshold=0.8, method="Template matching", file="./tasks/Delegation/d/d_d_back.png")
-	# 特殊委派，如演武 
-	I_D_SPECIAL_1 = RuleImage(roi_front=(1228,125,31,37), roi_back=(1228,125,31,37), threshold=0.8, method="Template matching", file="./tasks/Delegation/d/d_d_special_1.png")
+	I_D_BACK = RuleImage(profile="High", roi_front=(940,415,138,51), roi_back=(935,410,148,61), threshold=0.8, method="Template matching", file="./tasks/Delegation/d/d_d_back.png")
 
 
 	# Ocr Rule Assets
@@ -52,12 +51,12 @@ class DelegationAssets:
 	# description 
 	I_CHAT_1 = RuleImage(profile="High", roi_front=(735,350,318,100), roi_back=(651,161,601,391), threshold=0.8, method="Template matching", file="./tasks/Delegation/rewards/rewards_chat_1.png")
 	# description 
-	I_CHAT_2 = RuleImage(profile="High", roi_front=(721,384,325,100), roi_back=(671,309,428,258), threshold=0.8, method="Template matching", file="./tasks/Delegation/rewards/rewards_chat_2.png")
+	I_CHAT_2 = RuleImage(roi_front=(721,384,325,100), roi_back=(671,309,428,258), threshold=0.8, method="Template matching", profile="High", file="./tasks/Delegation/rewards/rewards_chat_2.png")
+	#
+	I_D_DONE = RuleImage(roi_front=(984,132,86,39), roi_back=(969,129,290,506), threshold=0.8, method="Template matching", profile="High", file="./tasks/Delegation/rewards/rewards_d_done.png")
 
 
 	# Ocr Rule Assets
-	# 完成 
-	O_D_DONE = RuleOcr(roi=(804,129,311,439), area=(804,129,311,439), mode="Full", method="Default", keyword="完成", name="d_done")
 	# 完成对话 
 	O_D_DONE_CHAT = RuleOcr(roi=(282,580,695,140), area=(282,580,695,140), mode="Single", method="Default", keyword="", name="d_done_chat")
 

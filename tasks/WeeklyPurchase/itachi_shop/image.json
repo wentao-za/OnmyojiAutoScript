@@ -3,7 +3,7 @@
     "itemName": "itachi_shop_entry",
     "imageName": "itachi_shop_itachi_shop_entry.png",
     "roiFront": "47,635,45,40",
-    "roiBack": "42,630,321,57",
+    "roiBack": "34,627,341,60",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",

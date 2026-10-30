@@ -8,27 +8,10 @@ from module.atom.image import RuleImage
 
 from pydantic import BaseModel, Field
 
-from tasks.Component.SwitchSoul.switch_soul_config import SwitchSoulConfig
 from tasks.Component.config_base import ConfigBase, Time
+from tasks.Component.SwitchSoul.switch_soul_config import SwitchSoulConfig
 from tasks.Component.config_scheduler import Scheduler
 from typing import List
-
-
-# 放在类外，避免被 Enum 当成成员
-_WQ_TYPE_ALIASES = {
-    '式神': '挑战',  # 老逻辑
-    '式神碎': '挑战',
-    '式': '挑战',
-    '神': '挑战',
-    '挑': '挑战',
-    '战': '挑战',  # OCR 容错
-    '探': '探索',
-    '索': '探索',
-    '秘': '秘闻',
-    '闻': '秘闻',
-    '妖': '妖气',
-    '气': '妖气',
-}
 
 
 class WQType(str, Enum):
@@ -38,36 +21,24 @@ class WQType(str, Enum):
     SECRET = '秘闻'
     YOKAI = '妖气'
 
-    @classmethod
-    def _missing_(cls, value):
-        """当 value 不是正式成员时，尝试用别名归一化"""
-        alias = _WQ_TYPE_ALIASES.get(value)
-        if alias is not None:
-            return cls(alias)
-        return None
-
-    @classmethod
-    def contains(cls, value) -> bool:
-        try:
-            cls(value)
-            return True
-        except ValueError:
-            return False
-
-
     def __repr__(self):
         return self.value
 
+    @staticmethod
+    def contains(type_str: str):
+        try:
+            WQType(type_str)
+            return True
+        except ValueError:
+            return False
 
 
 @dataclass(frozen=True)
 class WQInfo:
     """悬赏信息"""
     type: WQType    # 悬赏类型
-    dest: str       # 目的地(探索第十章/秘闻第七层/...)
     number: int     # 怪物数量
     goto_btn: RuleImage # 前往按钮
-    do_num: int     # 执行次数(探索一章节4个怪,需要打12个怪,则执行3次)
 
 
 class CooperationType(int, Enum):
@@ -128,6 +99,7 @@ class CooperationSelectMaskDescription(str, Enum):
 
 
 class WantedQuestsConfig(BaseModel):
+    auto_rotate: bool = Field(default=True, title="自动轮换", description="探索悬赏时自动开启轮换并补充候补式神")
     before_end: Time = Field(default=Time(0, 0, 0), description='before_end_help')
     invite_friend_name: str = Field(default=str(""), description="invite_friend_name_help")
     cooperation_type: CooperationSelectMaskDescription = Field(default=CooperationSelectMaskDescription.Any,
@@ -158,4 +130,4 @@ class WantedQuestsConfig(BaseModel):
 class WantedQuests(ConfigBase):
     scheduler: Scheduler = Field(default_factory=Scheduler)
     wanted_quests_config: WantedQuestsConfig = Field(default_factory=WantedQuestsConfig)
-    switch_soul_config: SwitchSoulConfig = Field(default_factory=SwitchSoulConfig)
+    switch_soul: SwitchSoulConfig = Field(default_factory=SwitchSoulConfig)

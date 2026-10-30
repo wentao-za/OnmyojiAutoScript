@@ -1,9 +1,9 @@
 [
   {
     "itemName": "wq_invite_1",
-    "imageName": "invite_wq_invite.png",
-    "roiFront": "150,400,40,35",
-    "roiBack": "120,370,100,100",
+    "imageName": "invite_wq_invite_1.png",
+    "roiFront": "157,401,30,33",
+    "roiBack": "124,354,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -11,9 +11,9 @@
   },
   {
     "itemName": "wq_invite_2",
-    "imageName": "invite_wq_invite.png",
-    "roiFront": "440,400,40,35",
-    "roiBack": "410,370,100,100",
+    "imageName": "invite_wq_invite_2.png",
+    "roiFront": "480,399,30,33",
+    "roiBack": "448,357,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -21,9 +21,9 @@
   },
   {
     "itemName": "wq_invite_3",
-    "imageName": "invite_wq_invite.png",
-    "roiFront": "730,400,40,35",
-    "roiBack": "700,370,100,100",
+    "imageName": "invite_wq_invite_3.png",
+    "roiFront": "764,397,30,33",
+    "roiBack": "728,352,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -36,7 +36,7 @@
     "roiBack": "240,185,180,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -46,7 +46,7 @@
     "roiBack": "530,185,180,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -56,7 +56,7 @@
     "roiBack": "240,285,180,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -66,7 +66,7 @@
     "roiBack": "530,285,180,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -76,7 +76,7 @@
     "roiBack": "240,385,180,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "description"
   },
   {
@@ -86,7 +86,7 @@
     "roiBack": "500,540,140,65",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "悬赏封印邀请确定按钮"
   },
   {
@@ -96,17 +96,17 @@
     "roiBack": "230,540,140,65",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "悬赏封印邀请取消按钮"
   },
   {
     "itemName": "wq_invite_selected",
     "imageName": "wq_invite_selected.png",
-    "roiFront": "393,203,32,32",
+    "roiFront": "370,180,32,32",
     "roiBack": "370,180,370,355",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "邀请好友被选中标记"
   },
   {
@@ -116,27 +116,27 @@
     "roiBack": "370,180,370,355",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "好友列表已加载标志"
   },
   {
     "itemName": "wq_invite_same_svr",
     "imageName": "wq_invite_same_svr.png",
     "roiFront": "170,90,60,35",
-    "roiBack": "150,80,105,65",
+    "roiBack": "170,90,105,65",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "邀请同服好友,由于选中与未选中亮度有区别,查找图片可能会出错,建议只使用位置信息"
   },
   {
     "itemName": "wq_invite_diff_svr",
     "imageName": "wq_invite_diff_svr.png",
     "roiFront": "280,90,60,35",
-    "roiBack": "265,83,105,65",
+    "roiBack": "280,90,105,65",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "邀请跨服好友,由于选中与未选中亮度有区别,查找图片可能会出错,建议只使用位置信息"
   },
   {
@@ -146,14 +146,14 @@
     "roiBack": "260,70,120,90",
     "method": "Template matching",
     "threshold": 0.9,
-    "profile": "Default",
+    "profile": "High",
     "description": "邀请跨服好友,已选中状态，高亮状态"
   },
   {
     "itemName": "wq_cooperation_type_gold_1",
     "imageName": "wq_cooperation_type_gold.png",
-    "roiFront": "230,535,75,50",
-    "roiBack": "230,535,75,75",
+    "roiFront": "195,505,180,90",
+    "roiBack": "89,461,296,192",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -162,8 +162,8 @@
   {
     "itemName": "wq_cooperation_type_jade_1",
     "imageName": "wq_cooperation_type_jade.png",
-    "roiFront": "230,535,75,50",
-    "roiBack": "230,535,75,75",
+    "roiFront": "195,505,180,90",
+    "roiBack": "89,461,296,192",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -172,28 +172,28 @@
   {
     "itemName": "wq_cooperation_type_dog_food_1",
     "imageName": "wq_cooperation_type_dog_food.png",
-    "roiFront": "230,535,75,75",
-    "roiBack": "230,535,75,75",
+    "roiFront": "195,505,180,90",
+    "roiBack": "89,461,296,192",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "从左到右第一个协作任务的类型为狗粮"
   },
   {
     "itemName": "wq_cooperation_type_cat_food_1",
     "imageName": "wq_cooperation_type_cat_food.png",
-    "roiFront": "230,535,75,75",
-    "roiBack": "230,535,75,75",
+    "roiFront": "195,505,180,90",
+    "roiBack": "89,461,296,192",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "从左到右第一个协作任务的类型为猫粮"
   },
   {
     "itemName": "wq_cooperation_type_sushi_1",
     "imageName": "wq_cooperation_type_sushi.png",
-    "roiFront": "230,535,75,75",
-    "roiBack": "230,535,75,75",
+    "roiFront": "195,505,180,90",
+    "roiBack": "89,461,296,192",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -202,8 +202,8 @@
   {
     "itemName": "wq_cooperation_type_gold_2",
     "imageName": "wq_cooperation_type_gold.png",
-    "roiFront": "510,535,75,50",
-    "roiBack": "510,535,75,75",
+    "roiFront": "490,505,180,90",
+    "roiBack": "402,474,271,173",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -212,8 +212,8 @@
   {
     "itemName": "wq_cooperation_type_jade_2",
     "imageName": "wq_cooperation_type_jade.png",
-    "roiFront": "510,535,75,50",
-    "roiBack": "510,535,75,75",
+    "roiFront": "490,505,180,90",
+    "roiBack": "402,474,271,173",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -222,28 +222,28 @@
   {
     "itemName": "wq_cooperation_type_dog_food_2",
     "imageName": "wq_cooperation_type_dog_food.png",
-    "roiFront": "510,535,75,75",
-    "roiBack": "510,535,75,75",
+    "roiFront": "490,505,180,90",
+    "roiBack": "402,474,271,173",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "从左到右第二个协作任务的类型为狗粮"
   },
   {
     "itemName": "wq_cooperation_type_cat_food_2",
     "imageName": "wq_cooperation_type_cat_food.png",
-    "roiFront": "510,535,75,75",
-    "roiBack": "510,535,75,75",
+    "roiFront": "490,505,180,90",
+    "roiBack": "402,474,271,173",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "从左到右第二个协作任务的类型为猫粮"
   },
   {
     "itemName": "wq_cooperation_type_sushi_2",
     "imageName": "wq_cooperation_type_sushi.png",
-    "roiFront": "510,535,75,75",
-    "roiBack": "510,535,75,75",
+    "roiFront": "490,505,180,90",
+    "roiBack": "402,474,271,173",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -252,8 +252,8 @@
   {
     "itemName": "wq_cooperation_type_gold_3",
     "imageName": "wq_cooperation_type_gold.png",
-    "roiFront": "790,535,75,50",
-    "roiBack": "790,535,75,75",
+    "roiFront": "790,505,180,90",
+    "roiBack": "685,481,290,161",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -262,8 +262,8 @@
   {
     "itemName": "wq_cooperation_type_jade_3",
     "imageName": "wq_cooperation_type_jade.png",
-    "roiFront": "790,535,75,50",
-    "roiBack": "790,535,75,75",
+    "roiFront": "790,505,180,90",
+    "roiBack": "685,481,290,161",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -272,28 +272,28 @@
   {
     "itemName": "wq_cooperation_type_dog_food_3",
     "imageName": "wq_cooperation_type_dog_food.png",
-    "roiFront": "790,535,75,75",
-    "roiBack": "790,535,75,75",
+    "roiFront": "790,505,180,90",
+    "roiBack": "685,481,290,161",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "从左到右第三个协作任务的类型为狗粮"
   },
   {
     "itemName": "wq_cooperation_type_cat_food_3",
     "imageName": "wq_cooperation_type_cat_food.png",
-    "roiFront": "790,535,75,75",
-    "roiBack": "790,535,75,75",
+    "roiFront": "790,505,180,90",
+    "roiBack": "685,481,290,161",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
+    "profile": "High",
     "description": "从左到右第三个协作任务的类型为猫粮"
   },
   {
     "itemName": "wq_cooperation_type_sushi_3",
     "imageName": "wq_cooperation_type_sushi.png",
-    "roiFront": "790,535,75,75",
-    "roiBack": "790,535,75,75",
+    "roiFront": "790,505,180,90",
+    "roiBack": "685,481,290,161",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",

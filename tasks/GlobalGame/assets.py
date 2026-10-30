@@ -13,33 +13,28 @@ class GlobalGameAssets:
 
 
 	# Image Rule Assets
-	# 接受协作邀请 
-	I_G_ACCEPT = RuleImage(roi_front=(846,474,56,46), roi_back=(816,433,117,110), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_accept.png")
-	# 拒绝协作邀请 
-	I_G_REJECT = RuleImage(roi_front=(845,561,53,51), roi_back=(827,534,108,101), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_reject.png")
-	# 勾玉协作 
-	I_G_JADE = RuleImage(roi_front=(661,466,43,46), roi_back=(515,441,278,149), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_jade.png")
-	# 猫粮协作 
-	I_G_CAT_FOOD = RuleImage(roi_front=(565,463,59,65), roi_back=(515,441,278,149), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
-	# 狗粮协作 
-	I_G_DOG_FOOD = RuleImage(roi_front=(565,464,60,63), roi_back=(515,441,278,149), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
-	# 忽略协作邀请 
-	I_G_IGNORE = RuleImage(roi_front=(792,82,21,21), roi_back=(781,68,48,48), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
+	# 接受协作邀请
+	I_G_ACCEPT = RuleImage(roi_front=(846, 476, 56, 46), roi_back=(814, 430, 117, 110), threshold=0.8,
+	                       method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_accept.png")
+	# 拒绝协作邀请
+	I_G_REJECT = RuleImage(roi_front=(846,562,53,51), roi_back=(819,536,108,101), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_reject.png")
+	# 勾玉协作
+	I_G_JADE = RuleImage(roi_front=(676,512,43,46), roi_back=(650,489,94,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_jade.png")
+	# 猫粮协作
+	I_G_CAT_FOOD = RuleImage(roi_front=(666,499,59,65), roi_back=(543,421,205,176), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
+	# 狗粮协作
+	I_G_DOG_FOOD = RuleImage(roi_front=(575,510,63,54), roi_back=(543,421,205,176), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
+	# 忽略协作邀请
+	I_G_IGNORE = RuleImage(roi_front=(792,86,21,21), roi_back=(777,65,48,48), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
 	# 网络异常 
 	I_NETWORK_ABNORMAL = RuleImage(roi_front=(588,335,211,57), roi_back=(583,330,221,67), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_network_abnormal.png")
 	# 已端口游戏服务器，需要重新连接，这种情况一般是断开很久了 
 	I_NETWORK_ERROR = RuleImage(roi_front=(436,258,406,198), roi_back=(431,253,416,208), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_network_error.png")
-	# 客户端重启确认 
+	# 客户端重启确认
 	I_CLIENT_CLEAR = RuleImage(roi_front=(599,383,85,42), roi_back=(594,378,95,52), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_client_clear.png")
 	# description 
 	I_CHAT_CLOSE_BUTTON = RuleImage(roi_front=(632,343,49,103), roi_back=(632,343,49,103), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_chat_close_button.png")
-	# 接受协作邀请 
-	I_NG_ACCEPT = RuleImage(roi_front=(846,476,56,46), roi_back=(814,430,117,110), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_ng_accept.png")
-	# 拒绝协作邀请 
-	I_NG_REJECT = RuleImage(roi_front=(846,562,53,51), roi_back=(819,536,108,101), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_ng_reject.png")
-	# 忽略协作邀请 
-	I_NG_IGNORE = RuleImage(roi_front=(789,82,21,21), roi_back=(779,69,48,48), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_ng_ignore.png")
-	# 体力协作 
+	# 体力协作
 	I_G_SUSHI = RuleImage(roi_front=(660,504,75,50), roi_back=(515,441,278,149), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_sushi.png")
 
 
@@ -49,10 +44,12 @@ class GlobalGameAssets:
 
 
 	# Image Rule Assets
-	# 通用确认 
-	I_UI_CONFIRM = RuleImage(roi_front=(667,417,169,47), roi_back=(547,368,322,122), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_confirm.png")
+	# 通用确认
+	I_UI_CONFIRM = RuleImage(roi_front=(692,419,124,39), roi_back=(547,368,322,122), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_confirm.png")
+	# 备用确认
+	I_UI_CONFIRM_BACKUP = RuleImage(roi_front=(700,419,109,41), roi_back=(640,362,255,128), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_confirm_backup.png")
 	# 长一点的取消 
-	I_UI_CANCEL = RuleImage(roi_front=(432,403,177,62), roi_back=(432,403,177,62), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_cancel.png")
+	I_UI_CANCEL = RuleImage(roi_front=(472,417,111,42), roi_back=(424,371,212,116), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_cancel.png")
 	# '获得奖励' 四个大字 
 	I_UI_REWARD = RuleImage(roi_front=(521,212,237,66), roi_back=(361,47,556,286), threshold=0.73, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_reward.png")
 	# 右上角红色关闭按钮 
