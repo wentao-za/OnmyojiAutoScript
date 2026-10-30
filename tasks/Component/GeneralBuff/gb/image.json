@@ -6,6 +6,7 @@
     "roiBack": "344,14,128,76",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "庭院左上角的加成"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "360,107,80,447",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "361,121,71,388",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "御魂加成"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "367,120,64,391",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "365,121,74,407",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "365,127,70,393",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -60,15 +66,17 @@
     "roiBack": "368,126,58,386",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
     "itemName": "buff_open_yellow",
     "imageName": "gb_open_yellow.png",
-    "roiFront": "774,299,6,13",
+    "roiFront": "774,299,8,13",
     "roiBack": "766,133,35,366",
     "method": "Template matching",
     "threshold": 0.6,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "764,134,38,369",
     "method": "Template matching",
     "threshold": 0.6,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -87,46 +96,47 @@
     "roiBack": "313,484,158,75",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "用来判定是否点击的那个"
   },
   {
     "itemName": "gold_open_yellow",
     "imageName": "gb_gold_open_yellow.png",
-    "profile": "High",
     "roiFront": "774,299,13,18",
     "roiBack": "766,133,35,366",
     "method": "Template matching",
     "threshold": 0.6,
+    "profile": "High",
     "description": "description"
   },
   {
     "itemName": "experience_open_yellow",
     "imageName": "gb_experience_open_yellow.png",
-    "profile": "High",
-    "roiFront": "774,299,13,18",
+    "roiFront": "774,299,10,18",
     "roiBack": "766,133,35,366",
     "method": "Template matching",
     "threshold": 0.6,
+    "profile": "High",
     "description": "description"
   },
   {
     "itemName": "gold_close_red",
     "imageName": "gb_gold_close_red.png",
-    "profile": "High",
     "roiFront": "773,365,12,20",
     "roiBack": "764,134,38,369",
     "method": "Template matching",
     "threshold": 0.6,
+    "profile": "High",
     "description": "description"
   },
   {
     "itemName": "experience_close_red",
     "imageName": "gb_experience_close_red.png",
-    "profile": "High",
-    "roiFront": "773,365,12,20",
+    "roiFront": "773,365,10,20",
     "roiBack": "764,134,38,369",
     "method": "Template matching",
     "threshold": 0.6,
+    "profile": "High",
     "description": "description"
   }
 ]

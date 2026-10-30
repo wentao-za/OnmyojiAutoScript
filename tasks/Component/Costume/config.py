@@ -1,7 +1,9 @@
 # This Python file uses the following encoding: utf-8
 # @author runhey
 # github https://github.com/runhey
-from pydantic import BaseModel, Field, field_validator
+import json
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from enum import Enum
 
 
@@ -25,7 +27,6 @@ class MainType(str, Enum):
     COSTUME_MAIN_15 = 'costume_main_15'  # 茨心乐园
     COSTUME_MAIN_16 = 'costume_main_16'  # 琦梦茨庭
     COSTUME_MAIN_17 = 'costume_main_17'  # 狐栖归处
-
 
 # 结界皮肤
 class RealmType(str, Enum):
@@ -53,7 +54,6 @@ class ShikigamiType(str, Enum):
     COSTUME_SHIKIGAMI_11 = 'costume_shikigami_11'  # 花札幕台
     COSTUME_SHIKIGAMI_12 = 'costume_shikigami_12'  # 拾光之窗
 
-
 # 签到主题
 class SignType(str, Enum):
     COSTUME_SIGN_DEFAULT = 'costume_sign_default'  # 默认
@@ -79,39 +79,54 @@ class BattleType(str, Enum):
     COSTUME_BATTLE_15 = 'costume_battle_15'  # 灵狐寄愿
 
 
-
 # 庭院事务主题
 class CourtyardAffairType(str, Enum):
     CUSTOM_COURTYARD_AFFAIR_DEFAULT = 'custom_courtyard_affair_default'  # 默认
     CUSTOM_COURTYARD_AFFAIR_1 = 'custom_courtyard_affair_1'  # 龙仪星引
 
-
 class CostumeConfig(BaseModel):
-    # 皮肤配置
-    costume_main_type: MainType = Field(
-        default=MainType.COSTUME_MAIN, description='costume_main_type_help'
-    )
-    costume_realm_type: RealmType = Field(
-        default=RealmType.COSTUME_REALM_DEFAULT, description='costume_realm_type_help'
-    )
-    costume_theme_type: ThemeType = Field(
-        default=ThemeType.COSTUME_THEME_DEFAULT, description='costume_theme_type_help'
-    )
-    costume_shikigami_type: ShikigamiType = Field(
-        default=ShikigamiType.COSTUME_SHIKIGAMI_DEFAULT,
-        description='costume_shikigami_type_help',
-    )
-    costume_sign_type: SignType = Field(
-        default=SignType.COSTUME_SIGN_DEFAULT, description='costume_sign_type_help'
-    )
-    costume_battle_type: BattleType = Field(
-        default=BattleType.COSTUME_BATTLE_DEFAULT,
-        description='costume_battle_type_help',
-    )
-    custom_courtyard_affair: CourtyardAffairType = Field(
-        default=CourtyardAffairType.CUSTOM_COURTYARD_AFFAIR_DEFAULT
-    )
+    model_config = ConfigDict(validate_assignment=True)
 
-    @field_validator('costume_realm_type', mode='before')
+    # 皮肤配置
+    costume_main_type: list[MainType] = Field(
+        default=[MainType.COSTUME_MAIN],
+        min_length=1,
+        description='costume_main_type_help',
+    )
+    costume_realm_type: RealmType = Field(default=RealmType.COSTUME_REALM_DEFAULT, description='costume_realm_type_help')
+    costume_theme_type: ThemeType = Field(default=ThemeType.COSTUME_THEME_DEFAULT, description='costume_theme_type_help')
+    costume_shikigami_type: ShikigamiType = Field(default=ShikigamiType.COSTUME_SHIKIGAMI_DEFAULT, description='costume_shikigami_type_help')
+    costume_sign_type: SignType = Field(default=SignType.COSTUME_SIGN_DEFAULT, description='costume_sign_type_help')
+    costume_battle_type: BattleType = Field(default=BattleType.COSTUME_BATTLE_DEFAULT, description='costume_battle_type_help')
+    custom_courtyard_affair: CourtyardAffairType = Field(default=CourtyardAffairType.CUSTOM_COURTYARD_AFFAIR_DEFAULT)
+
+    @field_validator('costume_main_type', mode='before')
+    @classmethod
+    def normalize_costume_main_type(cls, value):
+        """兼容旧单值、JSON数组字符串及OASX的字符串列表。"""
+        if isinstance(value, MainType):
+            values = [value]
+        elif isinstance(value, str):
+            raw_value = value.strip()
+            if raw_value.startswith('['):
+                try:
+                    values = json.loads(raw_value)
+                except json.JSONDecodeError:
+                    values = [raw_value]
+            else:
+                values = [raw_value]
+        elif isinstance(value, (list, tuple, set)):
+            values = list(value)
+        else:
+            values = [value]
+
+        normalized = []
+        for item in values:
+            main_type = item if isinstance(item, MainType) else MainType(str(item).strip())
+            if main_type not in normalized:
+                normalized.append(main_type)
+        return normalized
+
+    @field_validator("costume_realm_type", mode="before")
     def convert_old_value(cls, v):
         return RealmType.COSTUME_REALM_DEFAULT

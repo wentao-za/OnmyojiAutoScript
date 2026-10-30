@@ -6,6 +6,7 @@
     "roiBack": "1208,609,33,83",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "庭院卷轴打开"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "1162,595,77,112",
     "method": "Template matching",
     "threshold": 0.7,
+    "profile": "High",
     "description": "庭院卷轴关闭"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "40,640,100,50",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "闲庭图片"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "800,0,480,290",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "0,0,94,86",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "1,547,241,105",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "用于判断是否出现登录选区的"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "466,396,130,61",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "登录时候不观看CG视频"
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "0,0,120,120",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "指定角色进入游戏,默认第一个"
   },
   {
@@ -78,6 +86,7 @@
     "roiBack": "711,450,153,58",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "下载插画"
   },
   {
@@ -87,6 +96,7 @@
     "roiBack": "940,430,170,150",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "登录界面 弹出框 前往绑定 手机"
   },
   {
@@ -96,6 +106,7 @@
     "roiBack": "670,460,160,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "登录界面 弹出框 确定绑定手机"
   },
   {
@@ -105,6 +116,7 @@
     "roiBack": "450,460,160,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "登录界面 弹出框 取消绑定手机"
   },
   {
@@ -114,15 +126,17 @@
     "roiBack": "80,110,280,120",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "登录界面 弹出框 阴阳师精灵"
   },
   {
     "itemName": "charactars",
     "imageName": "login_charactars.png",
-    "roiFront": "246,535,100,31",
-    "roiBack": "219,523,173,57",
+    "roiFront": "235,147,100,31",
+    "roiBack": "199,131,173,57",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "已有角色"
   },
   {
@@ -132,6 +146,7 @@
     "roiBack": "504,614,263,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "description"
   },
   {
@@ -141,15 +156,17 @@
     "roiBack": "596,269,115,33",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "进入体验服过快出现弹窗"
   },
   {
     "itemName": "early_server_cancel",
     "imageName": "login_early_server_cancel.png",
-    "roiFront": "435,404,172,56",
-    "roiBack": "435,404,172,56",
+    "roiFront": "438,411,172,56",
+    "roiBack": "409,379,461,111",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "取消体验服切换弹窗"
   },
   {
@@ -159,6 +176,7 @@
     "roiBack": "367,227,545,296",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "取消继续战斗"
   },
   {
@@ -168,6 +186,7 @@
     "roiBack": "400,370,240,120",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "取消返回百鬼棋局，进入棋局结算流程"
   }
 ]

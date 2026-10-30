@@ -24,9 +24,6 @@ class TrueOrochiScheduler(Scheduler):
 
 class TrueOrochiConfig(BaseModel):
     find_true_orochi: bool = Field(default=True, description='find_true_orochi_help')
-    current_success: int = Field(default=0, description='current_success_help')
-
-    hide_fields = dynamic_hide('current_success')
 
 class TrueOrochiSwitchSoulConf(SwitchSoulConfig):
     enable_switch_layer_soul: bool = Field(default=False, description='enable_switch_layer_soul_help')

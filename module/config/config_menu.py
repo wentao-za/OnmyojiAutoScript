@@ -73,7 +73,7 @@ class ConfigMenu:
         # 每周任务
         self.menu["Weekly Task"] = [
             'TrueOrochi',
-            'RichMan',
+            'WeeklyPurchase',
             'Secret',
             'WeeklyTrifles',
             'MysteryShop',
@@ -90,12 +90,12 @@ class ConfigMenu:
             'FrogBoss',
             'FrogChallenge',
             'FloatParade',
+            'LBS',
             'Quiz',
             'KittyShop',
             'DyeTrials',
             'GuguArtStudio',
             'IbukiArena',
-            'LBS',
         ]
         # 开发工具
         self.menu["Tools"] = [

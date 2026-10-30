@@ -72,7 +72,7 @@ class ScriptTask(GameUi, DelegationAssets):
                 continue
             if self.ocr_appear_click(self.O_D_NAME, interval=1):
                 continue
-        # 进入委派  fefe e  fe
+        # 进入委派页面
         logger.info(f'Enter Delegation: {name}')
         ui_click(self.C_D_ALL, self.I_D_SELECT_FIRST)
         # 委派开始

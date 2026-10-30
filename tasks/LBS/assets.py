@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -11,30 +12,32 @@ class LBSAssets:
 
 
 	# Image Rule Assets
-	# 前往LBS活动 
-	I_MAIN_GOTO_LBS = RuleImage(roi_front=(1182,453,50,31), roi_back=(1170,117,83,400), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_main_goto_lbs.png")
-	# LBS活动页面标志 
-	I_CHECK_LBS = RuleImage(roi_front=(201,227,47,34), roi_back=(201,227,47,34), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_check_lbs.png")
-	# LBS组队按钮 
-	I_LBS_TEAM = RuleImage(roi_front=(1121,578,59,73), roi_back=(1082,539,137,142), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_lbs_team.png")
-	# LBS商店标志 
-	I_CHECK_LBS_SHOP = RuleImage(roi_front=(669,85,101,29), roi_back=(669,85,101,29), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_check_lbs_shop.png")
-	# 活动前往商店页面 
-	I_ACTIVITY_GOTO_SHOP = RuleImage(roi_front=(104,292,62,91), roi_back=(104,292,62,91), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_activity_goto_shop.png")
-	# 商店前往活动页面 
-	I_SHOP_GOTO_ACTIVITY = RuleImage(roi_front=(103,155,62,91), roi_back=(103,155,62,91), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_shop_goto_activity.png")
-	# 现世祝福 
-	I_LBS_BLESSING = RuleImage(roi_front=(489,157,95,31), roi_back=(184,126,983,520), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_lbs_blessing.png")
-	# 地图页稳定特征 
-	I_CHECK_LBS_MAP = RuleImage(roi_front=(28,614,55,51), roi_back=(28,614,55,51), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_check_lbs_map.png")
-	# 右下角活动图标 
-	I_MAP_GOTO_ACTIVITY = RuleImage(roi_front=(1128,565,55,51), roi_back=(1128,565,55,51), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_map_goto_activity.png")
-	# 购买现世祝福
-	I_BUY_BLESSING = RuleImage(roi_front=(597,499,40,45), roi_back=(597,499,40,45), threshold=0.8, method="Template matching", file="./tasks/LBS/lbs/lbs_buy_blessing.png")
+	# 庭院右栏LBS活动入口（线下庆典仓鼠）
+	I_LBS_ENTRY = RuleImage(profile="High", roi_front=(1181,295,51,35), roi_back=(1167,131,80,431), threshold=0.75, method="Template matching", file="./tasks/LBS/res/lbs_entry.png")
+	# 活动界面组队挑战按钮（兼页面check）
+	I_LBS_TEAM_CHALLENGE = RuleImage(profile="High", roi_front=(1118,614,63,37), roi_back=(900,450,380,270), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_team_challenge.png")
+	# 战斗结算后奖励转换弹窗的确定按钮
+	I_LBS_SETTLE_CONFIRM = RuleImage(profile="High", roi_front=(595,450,93,48), roi_back=(412,158,458,473), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_settle_confirm.png")
+	# 队伍公开权限弹窗：已勾选的所有人
+	I_LBS_ENSURE_PUBLIC = RuleImage(profile="High", roi_front=(504,264,40,42), roi_back=(504,264,40,42), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_ensure_public.png")
+	# 队伍公开权限弹窗：未勾选的所有人
+	I_LBS_ENSURE_PUBLIC_FALSE = RuleImage(profile="High", roi_front=(504,264,40,42), roi_back=(504,264,40,42), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_ensure_public_false.png")
+	# 队伍公开权限弹窗：未勾选的不公开
+	I_LBS_ENSURE_PRIVATE_FALSE = RuleImage(profile="High", roi_front=(504,391,43,43), roi_back=(505,391,42,43), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_ensure_private_false.png")
+	# 队伍公开权限弹窗：已勾选的不公开
+	I_LBS_ENSURE_PRIVATE = RuleImage(profile="High", roi_front=(508,392,36,40), roi_back=(508,392,36,40), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_ensure_private.png")
+	# 队伍公开权限弹窗：创建按钮
+	I_LBS_CREATE_ENSURE = RuleImage(profile="High", roi_front=(596,484,86,50), roi_back=(400,420,500,180), threshold=0.85, method="Template matching", file="./tasks/LBS/res/lbs_create_ensure.png")
+	# 活动地图界面右下角LBS策划鼠图标（兼页面check，点击回活动）
+	I_LBS_MAP_ENTRY = RuleImage(profile="High", roi_front=(1104,543,101,111), roi_back=(980,440,300,280), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_map_entry.png")
+	# 活动界面右下角寻找队伍按钮（组队模式入口）
+	I_LBS_FIND_TEAM = RuleImage(profile="High", roi_front=(973,615,65,35), roi_back=(900,540,280,175), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_find_team.png")
+	# 排队横幅右上角X（在=排队中；超时点击取消排队）
+	I_LBS_MATCH_CANCEL = RuleImage(profile="High", roi_front=(790,10,75,70), roi_back=(250,5,800,95), threshold=0.8, method="Template matching", file="./tasks/LBS/res/lbs_match_cancel.png")
 
 
 	# Ocr Rule Assets
-	# LBS剩余挑战次数 
-	O_LBS_CHALLENGE_COUNT = RuleOcr(roi=(1092,678,65,29), area=(1092,678,65,29), mode="DigitCounter", method="Default", keyword="", name="lbs_challenge_count")
+	# 挑战次数的数字区
+	O_LBS_COUNT = RuleOcr(roi=(1080,676,88,30), area=(1080,676,88,30), mode="DigitCounter", method="Default", keyword="", name="lbs_count")
 
 

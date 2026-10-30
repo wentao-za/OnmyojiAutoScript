@@ -58,25 +58,24 @@ class RuleOcr(Digit, DigitCounter, Duration, Single, Full, Quantity):
             case _:
                 return result
 
-    def ocr(self, image, keyword=None, log: bool = True):
+    def ocr(self, image, keyword=None):
         """
         :param image: 截图
         :param keyword: 只在 FULL 模式下使用的关键字
-        :param log: 是否输出识别结果日志, 循环里高频调用时传 False
         """
         match self.mode:
             case OcrMode.FULL:
-                return Full.ocr_full(self, image, keyword, log=log)
+                return Full.ocr_full(self, image, keyword)
             case OcrMode.SINGLE:
-                return Single.ocr_single(self, image, log=log)
+                return Single.ocr_single(self, image)
             case OcrMode.DIGIT:
-                return Digit.ocr_digit(self, image, log=log)
+                return Digit.ocr_digit(self, image)
             case OcrMode.DIGITCOUNTER:
-                return DigitCounter.ocr_digit_counter(self, image, log=log)
+                return DigitCounter.ocr_digit_counter(self, image)
             case OcrMode.DURATION:
-                return Duration.ocr_duration(self, image, log=log)
+                return Duration.ocr_duration(self, image)
             case OcrMode.QUANTITY:
-                return Quantity.ocr_quantity(self, image, log=log)
+                return Quantity.ocr_quantity(self, image)
             case _:
                 return None
 

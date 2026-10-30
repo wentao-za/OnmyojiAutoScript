@@ -63,7 +63,7 @@
     "itemName": "boss_fire",
     "imageName": "boss_boss_fire.png",
     "roiFront": "1062,549,100,100",
-    "roiBack": "1062,549,100,100",
+    "roiBack": "1052,539,120,120",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -72,11 +72,11 @@
   {
     "itemName": "boss_confirm",
     "imageName": "boss_boss_confirm.png",
-    "roiFront": "553,409,175,61",
-    "roiBack": "411,226,459,271",
+    "profile": "High",
+    "roiFront": "671,400,175,61",
+    "roiBack": "671,400,175,61",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "Default",
     "description": "description"
   },
   {
@@ -113,7 +113,7 @@
     "itemName": "boss_win",
     "imageName": "boss_boss_win.png",
     "roiFront": "380,43,100,100",
-    "roiBack": "371,35,223,133",
+    "roiBack": "380,43,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",

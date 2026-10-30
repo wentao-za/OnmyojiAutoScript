@@ -2,8 +2,8 @@
   {
     "itemName": "page_dailytrifles_dt_check_guild_wish",
     "imageName": "page_check_dailytrifles_dt_check_guild_wish.png",
-    "roiFront": "13,569,76,139",
-    "roiBack": "0,511,124,209",
+    "roiFront": "872,639,38,38",
+    "roiBack": "741,583,425,137",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",

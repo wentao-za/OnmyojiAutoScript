@@ -2,8 +2,8 @@
   {
     "itemName": "wq_seal",
     "imageName": "wq_wq_seal.png",
-    "roiFront": "174,184,20,29",
-    "roiBack": "27,93,693,488",
+    "roiFront": "24,335,20,29",
+    "roiBack": "0,90,724,491",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",
@@ -22,22 +22,22 @@
   {
     "itemName": "trace_enable",
     "imageName": "wq_trace_enable.png",
-    "roiFront": "1097,588,101,70",
-    "roiBack": "1097,588,101,70",
+    "roiFront": "1130,610,100,70",
+    "roiBack": "1130,610,100,70",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "一键追踪"
+    "profile": "Default",
+    "description": "悬赏封印页面的一键追踪"
   },
   {
     "itemName": "trace_disable",
     "imageName": "wq_trace_disable.png",
-    "roiFront": "1091,586,108,70",
-    "roiBack": "1091,586,108,70",
+    "roiFront": "1130,610,100,70",
+    "roiBack": "1130,610,100,70",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "取消追踪"
+    "profile": "Default",
+    "description": "悬赏封印页面的取消追踪"
   },
   {
     "itemName": "wq_box",
@@ -52,8 +52,8 @@
   {
     "itemName": "trace_true",
     "imageName": "wq_trace_true.png",
-    "roiFront": "173,187,28,29",
-    "roiBack": "173,187,28,29",
+    "roiFront": "1135,570,110,80",
+    "roiBack": "1135,570,110,80",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",
@@ -62,8 +62,8 @@
   {
     "itemName": "trace_false",
     "imageName": "wq_trace_false.png",
-    "roiFront": "170,186,31,32",
-    "roiBack": "170,186,31,32",
+    "roiFront": "1135,570,110,80",
+    "roiBack": "1135,570,110,80",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",
@@ -72,42 +72,42 @@
   {
     "itemName": "goto_1",
     "imageName": "wq_goto_1.png",
-    "roiFront": "978,234,87,45",
-    "roiBack": "978,234,87,60",
+    "roiFront": "1070,270,85,50",
+    "roiBack": "1050,270,105,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "description"
+    "profile": "Default",
+    "description": "悬赏追踪页面第一个前往"
   },
   {
     "itemName": "goto_2",
     "imageName": "wq_goto_2.png",
-    "roiFront": "979,305,88,43",
-    "roiBack": "979,305,88,58",
+    "roiFront": "1070,345,85,50",
+    "roiBack": "1050,345,105,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "description"
+    "profile": "Default",
+    "description": "悬赏追踪页面第二个前往"
   },
   {
     "itemName": "goto_3",
     "imageName": "wq_goto_3.png",
-    "roiFront": "979,395,88,32",
-    "roiBack": "979,373,88,62",
+    "roiFront": "1070,420,85,50",
+    "roiBack": "1050,420,105,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "description"
+    "profile": "Default",
+    "description": "悬赏追踪页面第三个前往"
   },
   {
     "itemName": "goto_4",
     "imageName": "wq_goto_4.png",
-    "roiFront": "979,447,87,42",
-    "roiBack": "979,447,87,57",
+    "roiFront": "1070,495,85,50",
+    "roiBack": "1050,495,105,60",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "description"
+    "profile": "Default",
+    "description": "悬赏追踪页面第四个前往"
   },
   {
     "itemName": "wq_check_task",
@@ -122,28 +122,28 @@
   {
     "itemName": "wq_trace_one_enable",
     "imageName": "wq_trace_one_enable.png",
-    "roiFront": "160,175,120,60",
-    "roiBack": "160,175,120,60",
+    "roiFront": "1135,570,110,80",
+    "roiBack": "1135,570,110,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "庭院悬赏任务界面 单个任务点开后 左上角是否追踪"
+    "profile": "Default",
+    "description": "庭院悬赏任务界面 单个任务点开后 已追踪状态"
   },
   {
     "itemName": "wq_trace_one_disable",
     "imageName": "wq_trace_one_disable.png",
-    "roiFront": "160,175,120,60",
-    "roiBack": "160,175,120,60",
+    "roiFront": "1135,570,110,80",
+    "roiBack": "1135,570,110,80",
     "method": "Template matching",
     "threshold": 0.8,
-    "profile": "High",
-    "description": "庭院悬赏任务界面 单个任务点开后 左上角是否追踪"
+    "profile": "Default",
+    "description": "庭院悬赏任务界面 单个任务点开后 未追踪状态"
   },
   {
     "itemName": "wq_trace_one_check_opened",
     "imageName": "wq_trace_one_check_opened.png",
-    "roiFront": "510,175,210,60",
-    "roiBack": "510,175,210,60",
+    "roiFront": "633,160,124,38",
+    "roiBack": "633,160,124,38",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",
@@ -152,8 +152,8 @@
   {
     "itemName": "wq_trace_one_realworld",
     "imageName": "wq_trace_one_realworld.png",
-    "roiFront": "850,470,180,180",
-    "roiBack": "850,470,180,180",
+    "roiFront": "1156,581,81,82",
+    "roiBack": "1109,537,160,164",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",

@@ -6,6 +6,7 @@
     "roiBack": "38,396,1128,157",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "邮件小图标"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "192,382,928,190",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "另一种邮件图标"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "28,551,142,144",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "全部收取"
   },
   {
@@ -33,15 +36,17 @@
     "roiBack": "149,588,182,72",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "一键已读所有邮件"
   },
   {
     "itemName": "harvest_mail_confirm",
     "imageName": "dt_harvest_mail_confirm.png",
-    "roiFront": "671, 542, 180, 62",
-    "roiBack": "671, 542, 180, 62",
+    "roiFront": "681,543,168,64",
+    "roiBack": "681,543,168,64",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "确认收取邮件"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "1127,0,61,56",
     "method": "Template matching",
     "threshold": 0.9,
+    "profile": "High",
     "description": "右上角的邮件图标"
   }
 ]

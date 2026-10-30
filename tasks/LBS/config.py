@@ -1,35 +1,34 @@
 # This Python file uses the following encoding: utf-8
+# @author runhey
+# github https://github.com/runhey
 from enum import Enum
 
-from pydantic import Field
-
+from pydantic import BaseModel, Field
+from tasks.Component.config_base import ConfigBase, Time
 from tasks.Component.GeneralBattle.config_general_battle import GeneralBattleConfig
 from tasks.Component.SwitchSoul.switch_soul_config import SwitchSoulConfig
 from tasks.Component.config_base import ConfigBase, dynamic_hide
 from tasks.Component.config_scheduler import Scheduler
+from tasks.Component.SwitchSoul.switch_soul_config import SwitchSoulConfig
 
 
 class LBSMode(str, Enum):
-    """现世妖约的组队方式。"""
-    # 创建公开房间，等待随机路人加入后开战
-    PUBLIC_TEAM = 'public_team'
-    # 创建不公开(仅邀请)房间，不等队友，进房后直接挑战单刷
-    SOLO = 'solo'
+    SOLO = '单人挑战'
+    TEAM = '组队匹配'
+    DRIVE = '开车模式'
 
 
-class LBSConfig(ConfigBase):
-    run_mode: LBSMode = Field(default=LBSMode.PUBLIC_TEAM, description='run_mode_help')
-    buy_blessing_enable: bool = Field(default=False, description='buy_blessing_enable_help')
-
-
-class LBSBattleConfig(GeneralBattleConfig):
-    """协战队伍页面没有锁定阵容控件。"""
-
-    lbs_hide_fields = dynamic_hide('lock_team_enable')
+class LBSConfig(BaseModel):
+    # 限制时间
+    limit_time: Time = Field(default=Time(minute=30), description='limit_time_help')
+    # 限制次数（想打的次数/想开的次数，与活动剩余次数无关）
+    limit_count: int = Field(default=30, description='limit_count_help')
+    # 运行模式
+    mode: LBSMode = Field(default=LBSMode.SOLO, description='lbs_mode_help')
 
 
 class LBS(ConfigBase):
     scheduler: Scheduler = Field(default_factory=Scheduler)
     lbs_config: LBSConfig = Field(default_factory=LBSConfig)
-    general_battle_config: LBSBattleConfig = Field(default_factory=LBSBattleConfig)
     switch_soul: SwitchSoulConfig = Field(default_factory=SwitchSoulConfig)
+    general_battle_config: GeneralBattleConfig = Field(default_factory=GeneralBattleConfig)

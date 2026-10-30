@@ -175,8 +175,6 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
 
         self.set_next_run(task='WantedQuests', target=next_run_datetime)
 
-
-
     def pre_work(self):
         """
         前置工作，

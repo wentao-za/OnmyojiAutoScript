@@ -8,7 +8,7 @@ import random
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from tasks.GameUi.default_pages import random_click
+from tasks.GameUi.default_pages import close_reward_details, random_click, settlement_random_click
 from typing import Callable, Union
 
 from module.atom.gif import RuleGif
@@ -683,7 +683,7 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
         context.is_win = not self.appear(self.I_FALSE, threshold=0.8)
         if context.last_page != page_battle_result:
             self.device.click_record_clear()
-        self.click(random_click(), interval=0.8)
+        self.click(self._battle_settlement_click(), interval=0.8)
         return BattleAction.CONTINUE
 
     def _handle_reward(self, context: BattleContext, config: GeneralBattleConfig) -> BattleAction:
@@ -697,14 +697,20 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
             BattleAction: 当前轮奖励页处理后的动作决策。
         """
         context.reward_no_battle_ts = None
+        if close_reward_details(self):
+            return BattleAction.CONTINUE
         # TODO: 部分副本奖励界面不一定是战斗成功, 需要重写
         context.is_win = True
         self.appear_then_click(self.I_OVER_GHOST, interval=0.8)
         self.appear_then_click(self.I_GB_SKIN_CONFIRM, interval=0.8)
         if context.last_page != page_reward:
             self.device.click_record_clear()
-        self.click(random_click(), interval=0.8)
+        self.click(self._battle_settlement_click(), interval=0.8)
         return BattleAction.CONTINUE
+
+    def _battle_settlement_click(self):
+        """生成战后结算及奖励页点击，允许任务指定自己的安全区域。"""
+        return settlement_random_click()
 
     def _handle_missing_battle_page(self, context: BattleContext, config: GeneralBattleConfig,
                                     exit_matcher: ExitMatcher | None) -> BattleAction:
@@ -858,9 +864,7 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
                 context.reward_no_battle_ts = None if page else context.reward_no_battle_ts
                 self._sync_prepare_click_timer(context, page)
                 self._ensure_battle_stuck_guard(context, page)
-                # `page is not None` 保证等待窗口只在确认处于战斗页面后才开始计时，
-                # 避免页面加载/过渡阶段（page 为空）白耗掉等退出按钮的时间。
-                if context.quick_exit and page is not None and not self._in_settlement_stage(context, page):
+                if context.quick_exit and not self._in_settlement_stage(context, page):
                     action = BattleAction.QUICK_EXIT
                 else:
                     handle = self.gb_page_handle_dict.get(page, None)

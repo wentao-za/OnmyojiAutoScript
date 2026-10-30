@@ -8,7 +8,7 @@ from tasks.GlobalGame.config_emergency import Emergency
 from module.exception import NetworkRecoveryRequired
 
 class NetworkTests(unittest.TestCase):
-    def task(self, frames, policy='wait_5s'):
+    def task(self, frames, policy='wait_10s'):
         t = object.__new__(BaseTask)
         t.device = Mock()
         t.config = SimpleNamespace(global_game=SimpleNamespace(emergency=Emergency(when_network_abnormal=policy)))
@@ -19,7 +19,7 @@ class NetworkTests(unittest.TestCase):
         return t
 
     def test_old_config(self):
-        self.assertEqual(Emergency(when_network_abnormal='wait_10s').when_network_abnormal, 'wait_5s')
+        self.assertEqual(Emergency(when_network_abnormal='wait_10s').when_network_abnormal, 'wait_10s')
 
     def test_disappears(self):
         t = self.task(['abnormal', 'clear'])

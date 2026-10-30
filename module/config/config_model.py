@@ -85,15 +85,13 @@ from tasks.LevelRush.config import LevelRush
 
 # 每周任务---------------------------------------------------------------------------------------------------------------
 from tasks.TrueOrochi.config import TrueOrochi
-from tasks.RichMan.config import RichMan
+from tasks.WeeklyPurchase.config import WeeklyPurchase
 from tasks.Secret.config import Secret
 from tasks.WeeklyTrifles.config import WeeklyTrifles
 from tasks.MysteryShop.config import MysteryShop
 from tasks.Duel.config import Duel
 from tasks.Chess.config import Chess
-
 # ----------------------------------------------------------------------------------------------------------------------
-
 
 class ConfigModel(ConfigBase):
     config_name: str = "oas"
@@ -162,7 +160,7 @@ class ConfigModel(ConfigBase):
 
     # 这些是每周任务
     true_orochi: TrueOrochi = Field(default_factory=TrueOrochi)
-    rich_man: RichMan = Field(default_factory=RichMan)
+    weekly_purchase: WeeklyPurchase = Field(default_factory=WeeklyPurchase)
     secret: Secret = Field(default_factory=Secret)
     weekly_trifles: WeeklyTrifles = Field(default_factory=WeeklyTrifles)
     mystery_shop: MysteryShop = Field(default_factory=MysteryShop)
@@ -198,52 +196,37 @@ class ConfigModel(ConfigBase):
 
     @staticmethod
     def _migrate_renamed_tasks(data: dict) -> dict:
-        """兼容历史更名前保存的用户配置。
-
-        注意：当前版本 rich_man 已恢复为"每周商店购买"任务，
-        不再做 rich_man <-> weekly_purchase 的改名迁移。
-        仅保留已从主模型移除的旧任务（大富翁 flight_chess、
-        伪神降临 fakegod）向 activity_shikigami 的合并迁移。
-        """
+        """兼容 RichMan/FlightChess 更名前保存的用户配置。"""
         data = dict(data)
-
-        # 旧任务名统一归到 activity_shikigami
         if data.get('running_task') in ('RichMan', 'Fakegod', 'FlightChess'):
             data['running_task'] = 'ActivityShikigami'
-        # old_rich_man = data.get('rich_man')
-        # is_old_weekly_purchase = isinstance(old_rich_man, dict) and any(
-        #     key in old_rich_man for key in ('special_room', 'thousand_things', 'guild_store')
-        # )
-        #
-        # if is_old_weekly_purchase and 'weekly_purchase' not in data:
-        #     data['weekly_purchase'] = old_rich_man
-        #
-        # old_flight_chess = data.pop('flight_chess', None)
-        # if old_flight_chess is not None:
-        #     data['rich_man'] = old_flight_chess
-        # elif is_old_weekly_purchase:
-        #     data.pop('rich_man', None)
+        old_rich_man = data.get('rich_man')
+        is_old_weekly_purchase = isinstance(old_rich_man, dict) and any(
+            key in old_rich_man for key in ('special_room', 'thousand_things', 'guild_store')
+        )
+
+        if is_old_weekly_purchase and 'weekly_purchase' not in data:
+            data['weekly_purchase'] = old_rich_man
+
+        old_flight_chess = data.pop('flight_chess', None)
+        if old_flight_chess is not None:
+            data['rich_man'] = old_flight_chess
+        elif is_old_weekly_purchase:
+            data.pop('rich_man', None)
 
         # 独立的大富翁和伪神降临重新并入式神活动，并由 ActivityShikigami
         # 自身的配置迁移器完成字段级转换。
-        # 只有真正已下线的旧字段才迁移
-        legacy_flight_chess = data.pop('flight_chess', None)
-        # legacy_rich_man = data.pop('rich_man', None)
+        legacy_rich_man = data.pop('rich_man', None)
         legacy_fakegod = data.pop('fakegod', None)
-
-        # weekly_purchase 字段在当前 ConfigModel 中不存在，
-        # 若历史配置里残留，直接丢弃，避免污染校验。
-        data.pop('weekly_purchase', None)
-
         activity = dict(data.get('activity_shikigami') or {})
-        if isinstance(legacy_flight_chess, dict):
-            activity['_legacy_rich_man'] = legacy_flight_chess
+        if isinstance(legacy_rich_man, dict):
+            activity['_legacy_rich_man'] = legacy_rich_man
         if isinstance(legacy_fakegod, dict):
             activity['_legacy_fakegod'] = legacy_fakegod
 
         scheduler = activity.get('scheduler', {})
         if not scheduler.get('enable'):
-            for legacy in (legacy_flight_chess, legacy_fakegod):
+            for legacy in (legacy_rich_man, legacy_fakegod):
                 legacy_scheduler = legacy.get('scheduler', {}) if isinstance(legacy, dict) else {}
                 if legacy_scheduler.get('enable'):
                     activity['scheduler'] = legacy_scheduler

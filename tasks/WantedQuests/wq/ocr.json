@@ -46,8 +46,8 @@
   },
   {
     "itemName": "wq_info_1",
-    "roiFront": "710,280,310,45",
-    "roiBack": "710,280,310,45",
+    "roiFront": "609,246,309,45",
+    "roiBack": "609,246,309,45",
     "mode": "Single",
     "method": "Default",
     "keyword": "",

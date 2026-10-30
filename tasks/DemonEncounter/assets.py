@@ -12,8 +12,8 @@ class DemonEncounterAssets:
 
 
 	# Click Rule Assets
-	# description
-	C_DM_BOSS_CLICK = RuleClick(roi_front=(593,274,100,100), roi_back=(593,274,100,100), name="dm_boss_click")
+	# 地图中央红色首领集结区域
+	C_DM_BOSS_CLICK = RuleClick(roi_front=(591,311,107,94), roi_back=(591,311,107,94), name="dm_boss_click")
 
 
 	# Image Rule Assets
@@ -30,9 +30,9 @@ class DemonEncounterAssets:
 	# 歌姬 
 	I_BOSS_SONGSTRESS = RuleImage(roi_front=(592,323,67,61), roi_back=(592,323,67,61), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_songstress.png")
 	# 集结挑战 
-	I_BOSS_FIRE = RuleImage(roi_front=(1062,549,100,100), roi_back=(1062,549,100,100), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_fire.png")
+	I_BOSS_FIRE = RuleImage(profile="High", roi_front=(1062,549,100,100), roi_back=(1052,539,120,120), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_fire.png")
 	# description 
-	I_BOSS_CONFIRM = RuleImage(roi_front=(553,409,175,61), roi_back=(411,226,459,271), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_confirm.png")
+	I_BOSS_CONFIRM = RuleImage(profile="High", roi_front=(671,400,175,61), roi_back=(671,400,175,61), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_confirm.png")
 	# 已选中 
 	I_BOSS_SELECTED = RuleImage(roi_front=(543,339,37,41), roi_back=(543,339,37,41), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_selected.png")
 	# 还没选中 
@@ -40,7 +40,7 @@ class DemonEncounterAssets:
 	# 集结 
 	I_BOSS_GATHER = RuleImage(roi_front=(801,589,100,100), roi_back=(801,589,100,100), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_gather.png")
 	# 战斗胜利 
-	I_BOSS_WIN = RuleImage(roi_front=(380,43,100,100), roi_back=(371,35,223,133), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_win.png")
+	I_BOSS_WIN = RuleImage(profile="High", roi_front=(380,43,100,100), roi_back=(380,43,100,100), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_win.png")
 	# 白色退出 
 	I_BOSS_BACK_WHITE = RuleImage(roi_front=(16,12,39,40), roi_back=(16,12,39,40), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/boss/boss_boss_back_white.png")
 	# 已击败 
@@ -62,14 +62,22 @@ class DemonEncounterAssets:
 
 
 	# Click Rule Assets
-	# 从下开始数第一个
-	C_DE_1 = RuleClick(roi_front=(1211,478,61,58), roi_back=(1211,478,61,58), name="de_1")
-	# 2
-	C_DE_2 = RuleClick(roi_front=(1196,409,55,56), roi_back=(1196,409,55,56), name="de_2")
-	# 3
-	C_DE_3 = RuleClick(roi_front=(1225,344,53,55), roi_back=(1225,344,53,55), name="de_3")
-	# 第四个
-	C_DE_4 = RuleClick(roi_front=(1200,282,56,53), roi_back=(1200,282,56,53), name="de_4")
+	# 从下开始数第1个
+	C_DE_1 = RuleClick(roi_front=(1222,497,39,25), roi_back=(1222,497,39,25), name="de_1")
+	# 从下开始数第2个
+	C_DE_2 = RuleClick(roi_front=(1204,424,39,31), roi_back=(1204,424,39,31), name="de_2")
+	# 从下开始数第3个
+	C_DE_3 = RuleClick(roi_front=(1234,364,32,22), roi_back=(1234,364,32,22), name="de_3")
+	# 从下开始数第4个
+	C_DE_4 = RuleClick(roi_front=(1214,297,34,27), roi_back=(1214,297,34,27), name="de_4")
+	# 灯笼1类型识别搜索区(须容纳完整灯笼图案, 仅供check_lantern匹配, 不用于点击)
+	C_DE_MATCH_1 = RuleClick(roi_front=(1211,478,61,58), roi_back=(1211,478,61,58), name="de_match_1")
+	# 灯笼2类型识别搜索区
+	C_DE_MATCH_2 = RuleClick(roi_front=(1196,409,55,56), roi_back=(1196,409,55,56), name="de_match_2")
+	# 灯笼3类型识别搜索区
+	C_DE_MATCH_3 = RuleClick(roi_front=(1225,344,53,55), roi_back=(1225,344,53,55), name="de_match_3")
+	# 灯笼4类型识别搜索区
+	C_DE_MATCH_4 = RuleClick(roi_front=(1200,282,56,53), roi_back=(1200,282,56,53), name="de_match_4")
 
 
 	# Image Rule Assets
@@ -92,7 +100,9 @@ class DemonEncounterAssets:
 	# 50勾玉购买 
 	I_JADE_50 = RuleImage(roi_front=(593,425,84,46), roi_back=(548,405,182,83), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/demon/demon_jade_50.png")
 	# 逢魔之时前往现世逢魔标志 
-	I_DE_TO_REAL_WORLD = RuleImage(roi_front=(993,488,104,28), roi_back=(960,458,186,104), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/demon/demon_de_to_real_world.png")
+	I_DE_TO_REAL_WORLD = RuleImage(profile="High", roi_front=(993,488,104,28), roi_back=(960,458,186,104), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/demon/demon_de_to_real_world.png")
+	# 地图中央未购买的宝箱展示
+	I_DE_BOX_CENTER = RuleImage(profile="High", roi_front=(618,325,45,34), roi_back=(547,264,190,157), threshold=0.8, method="Template matching", file="./tasks/DemonEncounter/demon/demon_de_box_center.png")
 
 
 	# Image Rule Assets
@@ -129,6 +139,8 @@ class DemonEncounterAssets:
 	# Ocr Rule Assets
 	# 计数已经开启多少的 
 	O_DE_COUNTER = RuleOcr(roi=(1204,685,48,34), area=(1204,685,48,34), mode="DigitCounter", method="Default", keyword="", name="de_counter")
+	# 今日挑战次数(剩余/总)
+	O_DE_CHALLENGE = RuleOcr(roi=(685,65,68,34), area=(540,60,220,42), mode="DigitCounter", method="Default", keyword="", name="de_challenge")
 
 
 	# Click Rule Assets

@@ -1,5 +1,6 @@
 from module.atom.image import RuleImage
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -57,11 +58,8 @@ class TrueOrochiAssets:
 	# 60体力创建 
 	I_ST_CREATE_ROOM = RuleImage(roi_front=(528,482,223,62), roi_back=(528,482,223,62), threshold=0.8, method="Template matching", file="./tasks/TrueOrochi/st/st_st_create_room.png")
 	# 头像框 
-	I_ST_FRAME = RuleImage(roi_front=(571,442,135,65), roi_back=(571,442,135,65), threshold=0.8, method="Template matching", file="./tasks/TrueOrochi/st/st_st_frame.png")
-
-
-	# Ocr Rule Assets
-	# 本周剩余奖励次数 
-	O_TIMES = RuleOcr(roi=(461,388,40,26), area=(461,388,40,26), mode="DigitCounter", method="Default", keyword="", name="times")
+	I_ST_FRAME = RuleImage(profile="High", roi_front=(571,442,135,65), roi_back=(571,442,135,65), threshold=0.8, method="Template matching", file="./tasks/TrueOrochi/st/st_st_frame.png")
+	# 玩法tab八岐大蛇模块，在场说明本周还有次数
+	I_ST_MODULE = RuleImage(profile="High", roi_front=(1111,322,84,22), roi_back=(1068,210,191,313), threshold=0.85, method="Template matching", file="./tasks/TrueOrochi/st/st_module.png")
 
 

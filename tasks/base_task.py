@@ -95,6 +95,13 @@ class BaseTask(GlobalGameAssets, CostumeBase):
                     click_button = self.I_G_ACCEPT
                 else:
                     click_button = self.I_G_IGNORE
+            case FriendInvitation.JADE_AND_SUSHI:
+                # 如果是接受勾协和体协
+                logger.info(f"Accept jade and sushi invitation")
+                if self.appear(self.I_G_JADE) or self.appear(self.I_G_SUSHI):
+                    click_button = self.I_G_ACCEPT
+                else:
+                    click_button = self.I_G_IGNORE
             case FriendInvitation.IGNORE:
                 # 如果是忽略
                 logger.info(f"Ignore friend invitation")
@@ -540,14 +547,11 @@ class BaseTask(GlobalGameAssets, CostumeBase):
             return True
         return False
 
-    def ocr_appear(
-        self, target: RuleOcr, interval: float = None, log: bool = True
-    ) -> bool:
+    def ocr_appear(self, target: RuleOcr, interval: float = None) -> bool:
         """
         ocr识别目标
         :param interval:
         :param target:
-        :param log: 是否输出识别结果日志, 循环里高频调用时可以传 False
         :return: 如果target有keyword或者是keyword存在，返回是True，否则返回False
                  但是没有指定keyword，返回的是匹配到的值，具体取决于target的mode
         """
@@ -566,7 +570,7 @@ class BaseTask(GlobalGameAssets, CostumeBase):
             if not self.interval_timer[target.name].reached():
                 return None
 
-        result = target.ocr(self.device.image, log=log)
+        result = target.ocr(self.device.image)
         appear = False
 
         if not target.keyword or target.keyword == '':
@@ -588,24 +592,20 @@ class BaseTask(GlobalGameAssets, CostumeBase):
 
         return appear
 
-    def ocr_appear_click(
-        self,
-        target: RuleOcr,
-        action: Union[RuleClick, RuleLongClick] = None,
-        interval: float = None,
-        duration: float = None,
-        log: bool = True,
-    ) -> bool:
+    def ocr_appear_click(self,
+                         target: RuleOcr,
+                         action: Union[RuleClick, RuleLongClick] = None,
+                         interval: float = None,
+                         duration: float = None) -> bool:
         """
         ocr识别目标，如果目标存在，则触发动作
         :param target:
         :param action:
         :param interval:
         :param duration:
-        :param log: 是否输出识别结果日志, 循环里高频调用时可以传 False
         :return:
         """
-        appear = self.ocr_appear(target, interval, log=log)
+        appear = self.ocr_appear(target, interval)
 
         if not appear:
             return False

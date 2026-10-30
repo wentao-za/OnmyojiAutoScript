@@ -20,7 +20,7 @@ from tasks.Component.CustomCourtyardAffair.assets import CustomCourtyardAffairAs
 # 庭院皮肤
 # 主界面皮肤（使用字典推导式动态生成）
 main_costume_model = {
-    getattr(MainType, f'COSTUME_MAIN_{i}'): {
+    getattr(MainType, f"COSTUME_MAIN_{i}"): {
         'I_CHECK_MAIN': f'I_CHECK_MAIN_{i}',
         'I_MAIN_GOTO_EXPLORATION': f'I_MAIN_GOTO_EXPLORATION_{i}',
         'I_MAIN_GOTO_SUMMON': f'I_MAIN_GOTO_SUMMON_{i}',
@@ -52,18 +52,16 @@ for i in range(1, 16):
         'I_BATTLE_INFO': f'I_BATTLE_INFO_{i}',
     }
     if i in [8, 12, 13, 14, 15]:  # 特殊处理
-        entry.update(
-            {
-                'I_WIN': f'I_WIN_{i}',
-                'I_DE_WIN': f'I_DE_WIN_{i}',
-                'I_FALSE': f'I_FALSE_{i}',
-            }
-        )
-    battle_theme_model[getattr(BattleType, f'COSTUME_BATTLE_{i}')] = entry
+        entry.update({
+            'I_WIN': f'I_WIN_{i}',
+            'I_DE_WIN': f'I_DE_WIN_{i}',
+            'I_FALSE': f'I_FALSE_{i}'
+        })
+    battle_theme_model[getattr(BattleType, f"COSTUME_BATTLE_{i}")] = entry
 
 # 幕间主题
 shikigami_costume_model = {
-    getattr(ShikigamiType, f'COSTUME_SHIKIGAMI_{i}'): {
+    getattr(ShikigamiType, f"COSTUME_SHIKIGAMI_{i}"): {
         # GameUi 进出式神录
         'I_CHECK_RECORDS': f'I_CHECK_RECORDS_{i}',
         'I_RECORD_SOUL_BACK': f'I_RECORD_SOUL_BACK_{i}',
@@ -81,23 +79,22 @@ shikigami_costume_model = {
         'I_ST_SOULS': f'I_ST_SOULS_{i}',
         'I_ST_REPLACE': f'I_ST_REPLACE_{i}',
     }
-    for i in range(1, 13)  # 目前支持 COSTUME_SHIKIGAMI_1 到 COSTUME_SHIKIGAMI_12
+    for i in range(1, 13)  # 目前支持 COSTUME_SHIKIGAMI_1 到 COSTUME_SHIKIGAMI_10
 }
 
 # 庭院事务皮肤
 courtyard_affair_model = {
-    getattr(CourtyardAffairType, f'CUSTOM_COURTYARD_AFFAIR_{i}'): {
+    getattr(CourtyardAffairType, f"CUSTOM_COURTYARD_AFFAIR_{i}"): {
         'I_CHECK_COURTYARD_AFFAIRS': f'I_CHECK_COURTYARD_AFFAIRS_{i}',
         'I_ONE_COMPLETE': f'I_ONE_COMPLETE_{i}',
         'I_ENTER_DAILY': f'I_ENTER_DAILY_{i}',
         'I_CHECK_IN_DAILY': f'I_CHECK_IN_DAILY_{i}',
-    }
-    for i in range(1, 2)
+    } for i in range(1, 2)
 }
 
 
 class CostumeBase:
-    def check_costume(self, config: CostumeConfig = None):
+    def check_costume(self, config: CostumeConfig=None):
         if config is None:
             config: CostumeConfig = self.config.model.global_game.costume_config
         self.check_costume_main(config.costume_main_type)

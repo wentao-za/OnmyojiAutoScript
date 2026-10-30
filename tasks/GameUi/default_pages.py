@@ -51,7 +51,7 @@ LOW_DENSITY_RANDOM_CLICK_TASKS = frozenset({
     'AbyssShadows', 'AreaBoss', 'Chess', 'DailyTrifles', 'Delegation',
     'DemonEncounter', 'Dokan', 'Duel', 'GoldYoukai', 'GuildBanquet',
     'Hunt', 'KekkaiUtilize', 'Orochi', 'RealmRaid', 'Restart',
-    'WantedQuests',
+    'WantedQuests', 'WeeklyPurchase',
 })
 
 
