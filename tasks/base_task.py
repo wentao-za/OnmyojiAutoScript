@@ -135,8 +135,8 @@ class BaseTask(GlobalGameAssets, CostumeBase):
             if self.config.global_game.emergency.when_network_abnormal == WhenNetworkAbnormal.RESTART:
                 raise NetworkRecoveryRequired()
             if deadline is None:
-                logger.warning('Network abnormal; wait up to 5 seconds')
-                deadline = monotonic() + 5
+                logger.warning('Network abnormal; wait up to 10 seconds')
+                deadline = monotonic() + 10
             if monotonic() >= deadline:
                 raise NetworkRecoveryRequired()
             self.device.sleep(min(0.25, max(0, deadline - monotonic())))

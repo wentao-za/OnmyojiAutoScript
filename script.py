@@ -11,10 +11,10 @@ import os
 import inflection
 import json
 import random
+import copy
 
 from datetime import date
 import threading
-from module.device.device import Device
 from typing import Any, Callable
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -24,6 +24,8 @@ from threading import Thread
 from multiprocessing.queues import Queue
 from module.config.utils import convert_to_underscore
 from module.config.config import Config
+from module.config.anti_ban import AntiBanGuard
+from module.device.device import Device
 from module.device.env import IS_WINDOWS
 from module.base.utils import load_module
 from module.base.decorator import del_cached_property
@@ -63,12 +65,15 @@ class Script:
         self._error_restart_count = 0
         self._error_restart_pending = False
         self.last_task_runtime_outcome: dict[str, Any] | None = None
+        self.task_hoarding_until: datetime | None = None
+        self.task_hoarding_released = False
         # 连续任务休息只统计调度器未进入等待状态的墙钟时间。
         self._continuous_task_started_at: float | None = None
         self._continuous_task_limit_seconds: int | None = None
         self._continuous_task_interval_range: tuple[int, int] | None = None
         # 运行loop的线程
         self.loop_thread: Thread = None
+        self.anti_ban_guard: AntiBanGuard = AntiBanGuard()
         set_ocr_model_size('medium')
         self.resource_precache_enable = bool(
             self.config.script.device.resource_precache_enable
@@ -326,20 +331,39 @@ class Script:
             if self.config.should_reload():
                 return False
 
-    @staticmethod
-    def _in_sleep_window(t, start, end) -> bool:
-        if start == end:
-            return False
-        if start < end:
-            return start <= t < end
-        return t >= start or t < end
+    def _hoard_next_task(self, task, now: datetime):
+        """在空闲时延迟首个到期任务，窗口内到达的任务一并等待。"""
+        duration = self.config.script.optimization.task_hoarding_duration
+        if duration <= 0 or not self.config.pending_task:
+            self.task_hoarding_until = None
+            self.task_hoarding_released = False
+            return task
 
-    @staticmethod
-    def _next_time_point(now: datetime, end) -> datetime:
-        candidate = now.replace(hour=end.hour, minute=end.minute, second=end.second, microsecond=0)
-        if candidate <= now:
-            candidate += timedelta(days=1)
-        return candidate
+        if (self.config.model.running_task or self.task_hoarding_released
+                or (self.is_first_task and task.command == 'Restart')
+                or (task.next_run > now and self.task_hoarding_until is None)):
+            return task
+
+        if self.task_hoarding_until is None:
+            self.task_hoarding_until = now + timedelta(minutes=duration)
+            logger.info(
+                f"Task hoarding started for {duration:g} minutes, "
+                f"release at {self.task_hoarding_until.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+
+        if now < self.task_hoarding_until:
+            task = copy.deepcopy(task)
+            task.next_run = max(self.task_hoarding_until, task.next_run)
+            logger.info(
+                f"Task hoarding active, defer pending tasks until "
+                f"{self.task_hoarding_until.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            return task
+
+        self.task_hoarding_until = None
+        self.task_hoarding_released = True
+        logger.info("Task hoarding window ended, resume scheduled task execution")
+        return task
 
     @staticmethod
     def _parse_continuous_task_interval(value: str) -> tuple[int, int]:
@@ -415,27 +439,6 @@ class Script:
         logger.info('Continuous task rest finished; reschedule pending tasks')
         return True
 
-    def _antiban_wake_time(self, now: datetime):
-        ab = self.config.script.anti_ban
-        if not ab.enable:
-            return None
-        wake = None
-        if self._in_sleep_window(now.time(), ab.sleep_start, ab.sleep_end):
-            wake = self._next_time_point(now, ab.sleep_end)
-        limit = ab.daily_active_limit.total_seconds()
-        if limit > 0:
-            if getattr(self, '_active_date', None) != now.date():
-                self._active_date = now.date()
-                self._active_seconds_today = 0
-            rest_until = getattr(self, '_rest_until', None)
-            if rest_until and now < rest_until:
-                wake = max(wake, rest_until) if wake else rest_until
-            elif getattr(self, '_active_seconds_today', 0) >= limit:
-                self._rest_until = now + ab.long_rest_duration
-                self._active_seconds_today = 0
-                wake = max(wake, self._rest_until) if wake else self._rest_until
-        return wake
-
     def get_next_task(self) -> str:
         """
         获取下一个任务的名字, 大驼峰。
@@ -447,13 +450,17 @@ class Script:
             task = self.config.get_next()
             if wake_task and task.command != 'Restart':
                 task = next(t for t in self.config.pending_task if t.command == wake_task)
+            now = datetime.now()
+            # 防风控看守器：睡眠窗 / 每日活跃上限，统一由 AntiBanGuard 单点记账。
+            original_next_run = task.next_run
+            antiban_wake = self.anti_ban_guard.wake_time(now, self.config.script.anti_ban)
+            if antiban_wake is not None:
+                task.next_run = max(task.next_run, antiban_wake)
+            # 任务攒批：空闲时把首个到期任务推迟到窗口结束，把零散任务并成一批。
+            task = self._hoard_next_task(task, now)
             self.config.task = task
             if self.state_queue:
                 self.state_queue.put({"schedule": self.config.get_schedule_data()})
-            now = datetime.now()
-            antiban_wake = self._antiban_wake_time(now)
-            if antiban_wake is not None:
-                task.next_run = max(task.next_run, antiban_wake)
             # 任务时间到了返回任务名称
             if task.next_run <= now:
                 if self._handle_continuous_task_rest():
@@ -461,7 +468,15 @@ class Script:
                 return task.command
             self._reset_continuous_task_rest(log_idle=True)
             # 根据策略执行等待逻辑
-            decision = self.runtime.handle_wait_during_idle(task.next_run)
+            wait_until = task.next_run
+            if self.task_hoarding_until and self.config.waiting_task:
+                wait_until = min(wait_until, self.config.waiting_task[0].next_run)
+            # 仅当“防风控看守器把时间顶回、且最终等待目标仍是其唤醒时刻”时，
+            # 该段空闲等待才归防风控专属策略管理（与“任务队列清空”策略解耦）。
+            anti_ban_binding = (antiban_wake is not None
+                                and antiban_wake > original_next_run
+                                and wait_until >= antiban_wake)
+            decision = self.runtime.handle_wait_during_idle(wait_until, anti_ban_binding=anti_ban_binding)
             if decision == ScriptRuntimeDecision.RESCHEDULE:
                 logger.info('Idle wait requested scheduler refresh, reload config and reschedule')
                 del_cached_property(self, "config")
@@ -582,9 +597,8 @@ class Script:
                 raise ScriptError('OCR model resource precache failed') from exc
             logger.info('Resource precache completed; scheduler tasks can start')
         self.config.model.running_task = ''
-        self._active_seconds_today = 0
-        self._active_date = date.today()
-        self._rest_until = None
+        # 睡眠窗 / 每日活跃上限的计时与状态全部收敛到 AntiBanGuard，避免双套计数器。
+        self.anti_ban_guard.reset()
 
         # Update GUI 防呆, 读取设置并立刻显示后台模拟器到前台
         if not self.config.script.device.run_background_only and IS_WINDOWS:
@@ -648,12 +662,9 @@ class Script:
             self.config.model.running_task = ''
             logger.info(f'Scheduler: End task `{task}`')
             self.is_first_task = False
+            self.anti_ban_guard.record_active((datetime.now() - _task_start).total_seconds())
             if task == 'Restart' and success:
                 self._error_restart_pending = False
-            if self._active_date != date.today():
-                self._active_date = date.today()
-                self._active_seconds_today = 0
-            self._active_seconds_today += (datetime.now() - _task_start).total_seconds()
 
             outcome = self.last_task_runtime_outcome or {}
             if outcome.get('status') in ('cooperation_waiting', 'cooperation_failed'):
