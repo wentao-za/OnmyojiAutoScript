@@ -93,7 +93,7 @@
     "itemName": "pet_collect_coins_check",
     "imageName": "pet_pet_collect_coins_check.png",
     "roiFront": "707,333,38,37",
-    "roiBack": "689,317,76,73",
+    "roiBack": "582,303,304,95",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",

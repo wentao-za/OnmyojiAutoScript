@@ -1,4 +1,5 @@
 from module.atom.image import RuleImage
+from module.atom.frame import RuleFrame, Image, Ocr, Click
 from module.atom.click import RuleClick
 from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
@@ -24,33 +25,33 @@ class PetsAssets:
 
 	# Image Rule Assets
 	# 宠物小屋 
-	I_PET_HOUSE = RuleImage(roi_front=(1012,414,56,25), roi_back=(952,412,144,60), threshold=0.7, method="Template matching", file="./tasks/Pets/pet/pet_pet_house.png")
+	I_PET_HOUSE = RuleImage(roi_front=(1012,414,56,25), roi_back=(952,412,144,60), threshold=0.7, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_house.png")
 	# 爪印 
-	I_PET_CLAW = RuleImage(roi_front=(1171,625,55,56), roi_back=(1171,625,55,56), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_claw.png")
+	I_PET_CLAW = RuleImage(roi_front=(1171,625,55,56), roi_back=(1171,625,55,56), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_claw.png")
 	# 快速喂养 
-	I_PET_FEAST = RuleImage(roi_front=(849,624,69,49), roi_back=(849,624,69,49), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_feast.png")
+	I_PET_FEAST = RuleImage(roi_front=(849,624,69,49), roi_back=(849,624,69,49), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_feast.png")
 	# 喂食 
-	I_PET_FEED = RuleImage(roi_front=(899,511,79,68), roi_back=(884,485,127,123), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_feed.png")
+	I_PET_FEED = RuleImage(roi_front=(899,511,79,68), roi_back=(884,485,127,123), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_feed.png")
 	# 跳过 
-	I_PET_SKIP = RuleImage(roi_front=(1089,119,72,41), roi_back=(999,42,242,147), threshold=0.65, method="Template matching", file="./tasks/Pets/pet/pet_pet_skip.png")
+	I_PET_SKIP = RuleImage(roi_front=(1089,119,72,41), roi_back=(999,42,242,147), threshold=0.65, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_skip.png")
 	# 前往宠物庭院 
-	I_PET_COURTYARD = RuleImage(roi_front=(22,620,70,63), roi_back=(5,593,103,114), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_courtyard.png")
+	I_PET_COURTYARD = RuleImage(roi_front=(22,620,70,63), roi_back=(5,593,103,114), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_courtyard.png")
 	# 宠物后院 
-	I_PET_BACKYARD = RuleImage(roi_front=(15,626,70,63), roi_back=(5,593,103,114), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_backyard.png")
+	I_PET_BACKYARD = RuleImage(roi_front=(15,626,70,63), roi_back=(5,593,103,114), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_backyard.png")
 	# 上方食材放置 
-	I_PET_UP_FOOD = RuleImage(roi_front=(819,389,37,20), roi_back=(808,382,60,40), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_up_food.png")
+	I_PET_UP_FOOD = RuleImage(roi_front=(819,389,37,20), roi_back=(808,382,60,40), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_up_food.png")
 	# 下方食材放置 
-	I_PET_DOWN_FOOD = RuleImage(roi_front=(334,550,59,33), roi_back=(315,539,100,60), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_down_food.png")
+	I_PET_DOWN_FOOD = RuleImage(roi_front=(334,550,59,33), roi_back=(315,539,100,60), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_down_food.png")
 	# 收取宠物币确认 
-	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(707,333,38,37), roi_back=(689,317,76,73), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_collect_coins_check.png")
+	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(707,333,38,37), roi_back=(582,303,304,95), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_collect_coins_check.png")
 	# 宠物食材页面 
-	I_PET_FOOD = RuleImage(roi_front=(557,32,129,41), roi_back=(546,22,153,65), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_food.png")
+	I_PET_FOOD = RuleImage(roi_front=(557,32,129,41), roi_back=(546,22,153,65), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_food.png")
 	# 放置宠物食材确认 
-	I_PET_FOOD_CHECK = RuleImage(roi_front=(773,557,181,61), roi_back=(758,534,211,106), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_food_check.png")
+	I_PET_FOOD_CHECK = RuleImage(roi_front=(773,557,181,61), roi_back=(758,534,211,106), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_food_check.png")
 	# 猫宠物食材卡放置确认 
-	I_PET_CAT_FOOD_CHECK = RuleImage(roi_front=(730,292,41,32), roi_back=(698,249,327,111), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_cat_food_check.png")
+	I_PET_CAT_FOOD_CHECK = RuleImage(roi_front=(730,292,41,32), roi_back=(698,249,327,111), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_cat_food_check.png")
 	# 狗宠物食材卡放置确认 
-	I_PET_DOG_FOOD_CHECK = RuleImage(roi_front=(730,292,41,32), roi_back=(698,249,327,111), threshold=0.8, method="Template matching", file="./tasks/Pets/pet/pet_pet_dog_food_check.png")
+	I_PET_DOG_FOOD_CHECK = RuleImage(roi_front=(730,292,41,32), roi_back=(698,249,327,111), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_dog_food_check.png")
 
 
 	# Ocr Rule Assets

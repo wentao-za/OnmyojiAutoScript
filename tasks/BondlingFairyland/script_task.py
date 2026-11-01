@@ -140,6 +140,28 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
             return False
         return super()._prepare_click_ready(context, config)
 
+    def _handoff_role(self) -> UserStatus:
+        """handoff1/handoff2 按当天日期奇偶决定本次运行身份(隔日轮换)。
+
+        奇数日: handoff1 当队长, handoff2 当队员
+        偶数日: handoff2 当队长, handoff1 当队员
+        跨零点时以任务启动时的日期为准, 运行过程中不再重算。
+        """
+        status = self.config.bondling_fairyland.bondling_config.user_status
+        if status not in (UserStatus.handoff1, UserStatus.handoff2):
+            return status
+        today = datetime.now()
+        is_odd = today.day % 2 == 1
+        if status == UserStatus.handoff1:
+            role = UserStatus.LEADER if is_odd else UserStatus.MEMBER
+        else:
+            role = UserStatus.MEMBER if is_odd else UserStatus.LEADER
+        logger.info(
+            f'契灵 handoff: {today:%Y-%m-%d} 为{"奇数" if is_odd else "偶数"}日, '
+            f'配置 {status.value} 本次身份 = {role.value}'
+        )
+        return role
+
     def run(self):
         cong = self.config.bondling_fairyland
 
@@ -177,15 +199,12 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
             self.set_next_run(task='BondlingFairyland', finish=True, success=True)
             raise TaskEnd
         match cong.bondling_config.user_status:
-            case UserStatus.handoff1:
-                self.limit_count //= 2
-                self.switch_ball()
-            case UserStatus.handoff2:
-                self.limit_count //= 2
-                self.run_member()
-                self.current_count = 0
-                self.goto_page(page_bondling_fairyland)
-                self.switch_ball()
+            case UserStatus.handoff1 | UserStatus.handoff2:
+                # 隔日轮换: 奇数日 handoff1 当队长, 偶数日 handoff2 当队长, 全程不再互切身份
+                if self._handoff_role() == UserStatus.LEADER:
+                    self.switch_ball()
+                else:
+                    self.run_member()
             case UserStatus.LEADER | UserStatus.ALONE:
                 self.switch_ball()
             case UserStatus.MEMBER:
@@ -326,11 +345,6 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
         if self.exit_team():
             pass
 
-        self.goto_page(page_bondling_fairyland)
-        # 引用配置
-        if UserStatus.handoff1 == self.config.bondling_fairyland.bondling_config.user_status:
-            self.current_count = 0
-            self.run_member()
         self.finish_task_navigation()
         self.set_next_run(task='BondlingFairyland', finish=True, success=True)
         raise TaskEnd
@@ -406,8 +420,9 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
             # 如果还在战斗中，就退出战斗
             if self.exit_battle():
                 pass
-                # 引用配置
-        if UserStatus.MEMBER == self.config.bondling_fairyland.bondling_config.user_status:
+        # member 与 handoff 在这条路径上都是以队员身份收尾, 需要自行结束任务
+        if self.config.bondling_fairyland.bondling_config.user_status in (
+                UserStatus.MEMBER, UserStatus.handoff1, UserStatus.handoff2):
             self.finish_task_navigation()
             self.set_next_run(task='BondlingFairyland', finish=True, success=True)
             raise TaskEnd

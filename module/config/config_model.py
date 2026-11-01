@@ -34,6 +34,7 @@ from tasks.DemonEncounter.config import DemonEncounter
 from tasks.DailyTrifles.config import DailyTrifles
 from tasks.TalismanPass.config import TalismanPass
 from tasks.Pets.config import Pets
+from tasks.PetCard.config import PetCard
 from tasks.SoulsTidy.config import SoulsTidy
 from tasks.Delegation.config import Delegation
 from tasks.WantedQuests.config import WantedQuests
@@ -114,6 +115,7 @@ class ConfigModel(ConfigBase):
     daily_trifles: DailyTrifles = Field(default_factory=DailyTrifles)
     talisman_pass: TalismanPass = Field(default_factory=TalismanPass)
     pets: Pets = Field(default_factory=Pets)
+    pet_card: PetCard = Field(default_factory=PetCard)
     souls_tidy: SoulsTidy = Field(default_factory=SoulsTidy)
     delegation: Delegation = Field(default_factory=Delegation)
     exploration: Exploration = Field(default_factory=Exploration)

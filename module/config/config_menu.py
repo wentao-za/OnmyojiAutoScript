@@ -37,6 +37,7 @@ class ConfigMenu:
             'TalismanPass',
             'DemonEncounter',
             'Pets',
+            'PetCard',
             'SoulsTidy',
             'Delegation',
             'WantedQuests',

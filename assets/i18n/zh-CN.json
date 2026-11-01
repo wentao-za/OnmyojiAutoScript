@@ -425,5 +425,11 @@
   "storage_stats": "纳物库统计",
   "storage_stats_help": "纳物库资源统计, 会同时保存图片和文件在log目录",
   "pet_food_card": "宠物食材卡",
-  "pet_food_card_help":"收获和配置宠物食材卡，需要先手动配置式神，默认选取排在第一的食材卡"
+  "pet_food_card_help":"收获和配置宠物食材卡，需要先手动配置式神，默认选取排在第一的食材卡",
+  "PetCard": "宠物挂卡",
+  "PetCardConfig": "挂卡设置",
+  "pet_card_collect_coins": "收取宠物币",
+  "pet_card_collect_coins_help": "进入宠物后院后依次点击上方、下方两处宠物币，并关闭奖励确认弹窗；关掉后只放置食材，不收取金币。",
+  "pet_card_place_food": "放置食材卡",
+  "pet_card_place_food_help": "在宠物后院上方、下方两个槽位分别放置食材卡，默认选取排在第一的食材卡；食材不足时该槽位跳过，不中断任务。"
 }
