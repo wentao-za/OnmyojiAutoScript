@@ -194,7 +194,8 @@ class ConfigModel(ConfigBase):
         if not config_name:
             super().__init__()
             return
-        data = self._migrate_renamed_tasks(self.read_json(config_name))
+        raw = self.read_json(config_name)
+        data = self._migrate_renamed_tasks(raw)
         data["config_name"] = config_name
         super().__init__(**data)
 
@@ -438,6 +439,7 @@ class ConfigModel(ConfigBase):
 
         if isinstance(task, Chess):
             result = task.oasx_args(result)
+
         return result
 
     def script_set_arg(self, task: str, group: str, argument: str, value) -> bool:
@@ -505,6 +507,13 @@ class ConfigModel(ConfigBase):
             date_time = self.restart.task_config.reset_task_datetime
             logger.info(f"reset_task_datetime={date_time}")
             self.reset_datetime_for_all_enabled_tasks(date_time)
+
+        # 一次性按钮只提交后台启动任务，立即复位，不阻塞配置 API。
+        if (task == 'script' and group == 'desktop' and argument == 'launch_instance'
+                and value is True):
+            from module.device.desktop_launch import schedule_desktop_launch
+            schedule_desktop_launch(self)
+            value = False
 
         # 设置参数
         try:
