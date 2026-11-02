@@ -5,6 +5,7 @@ import time
 
 from module.logger import logger
 
+from tasks.GameUi.page import random_click
 from tasks.Component.Buy.buy import Buy
 from tasks.WeeklyPurchase.mall.navbar import MallNavbar
 from tasks.WeeklyPurchase.config import Scales as ScalesConfig
@@ -29,28 +30,13 @@ class Scales(Buy, MallNavbar):
         self._scales_sea(con.picture_book_scrap, con.picture_book_rule)
 
     def _scales_buy_confirm(self, start_click, number: int = None):
-        # 等待确认弹窗出现。两条坏路径都必须拦住：
-        # 1) 兑换按钮模板一直在、点了没反应 -> 每 1 秒点一次，第 10 次触发 device 层
-        #    同按钮保护抛 GameTooManyClickError；
-        # 2) 兑换按钮模板消失、弹窗却没出来 -> 循环不点击也不打印任何日志地空转，
-        #    等 stuck_timer 60 秒判 GameStuckError（与坑位 21「日志静默」同形态）。
-        # 因此计数上限与绝对超时两个都要：计数只覆盖路径 1，超时才能覆盖路径 2。
-        try_click_count = 0
-        begin = time.time()
         while 1:
             self.screenshot()
             if self.appear(self.I_BUY_PLUS):
                 break
             if self.appear(self.I_SCA_SELECT_1) and self.appear(self.I_SCA_SELECT_2):
                 return
-            if try_click_count >= 5 or time.time() - begin > 20:
-                # 失败用 return 不用 break：break 会继续往下走「设置购买数量」，
-                # 在弹窗根本没出来的界面上对着不存在的加号空转。
-                logger.warning(f'Scales purchase dialog not appear, '
-                               f'try={try_click_count}, elapsed={time.time() - begin:.1f}s')
-                return
             if self.appear_then_click(start_click, interval=1):
-                try_click_count += 1
                 continue
         # 设置购买的数量
         if number is None:
@@ -79,7 +65,7 @@ class Scales(Buy, MallNavbar):
         self._scales_buy_confirm(start_click, number)
 
         # 购买确认
-        buy_more_mx_click = 5
+        clicked = 0
         while 1:
             self.screenshot()
             if self.appear(self.I_SCA_SIX_STAR) or self.appear(self.I_SCA_REWARD):
@@ -95,40 +81,39 @@ class Scales(Buy, MallNavbar):
                 logger.info('Scales get success')
                 break
 
-            # 确认弹窗已关闭 -> 本次交易已结束（朴素御魂礼盒成交后既不弹六星也不弹奖励框）
-            # C_BUY_MORE 是 RuleClick 固定坐标点击，click() 恒返回 True，不判弹窗就会一直
-            # 点列表空白处，累计 10 次触发 device 层同按钮保护抛 GameTooManyClickError。
-            if not self.appear(self.I_BUY_PLUS):
-                logger.info('Scales purchase finished, dialog closed')
+            # 单买（蛇皮只够 1 个）出的是「购买成功」六星卡，
+            # I_SCA_SIX_STAR / I_SCA_REWARD 都匹配不到这张卡（实测 0.237 / -0.081，阈值 0.8），
+            # 不单独判这一支就会掉到下面按固定坐标点 C_BUY_MORE，
+            # 每 5 秒一次、10 次后撞 device 层同按钮连点保护。
+            if self.appear(self.I_BUY_SUCCESS):
+                for _ in range(5):
+                    self.click(random_click(), interval=1)
+                    self.screenshot()
+                    if not self.appear(self.I_BUY_SUCCESS):
+                        break
+                else:
+                    logger.warning('Scales buy success card not dismissed after 5 clicks')
+                logger.info('Scales buy success (single)')
                 break
 
-            # 兜底：对齐 Buy.buy_more 的 buy_more_mx_click，5 次 x 5 秒封顶，
-            # 离 device 层 10 次阈值仍有充足余量。
-            if buy_more_mx_click <= 0:
+            # 出口：兑换点了 5 次仍没有成功画面就结束本段。
+            # 必须 return 而不是 break —— break 会回到 _scales_orochi_new 的 while True，
+            # 在弹窗已关闭的界面上重新空转。
+            if clicked >= 5:
                 logger.warning('Scales buy more click times limit')
-                break
+                return False
 
             if self.click(self.C_BUY_MORE, interval=5):
-                buy_more_mx_click -= 1
+                clicked += 1
                 continue
 
     def _scales_buy_sea_more(self, start_click, number: int = None):
         self._scales_buy_confirm(start_click, number)
-        # 点击次数封顶：C_BUY_MORE 是 RuleClick 固定坐标点击，click() 恒返回 True，
-        # 不封顶就会一直点空白处，累计 10 次触发 device 层同按钮保护抛 GameTooManyClickError。
-        buy_more_mx_click = 5
         while 1:
             self.screenshot()
             if self.appear(self.I_SCA_SELECT_1):
                 break
-            if buy_more_mx_click <= 0:
-                # 15 秒仍未进选魂界面 = 本轮购买失败。此处必须 return 而不是 break：
-                # break 会掉进下方选魂循环，而该循环在错误界面上既不点击也没有出口，
-                # 只会空转到 stuck_timer 判死，把一次可跳过的失败放大成 GameStuckError。
-                logger.warning('Scales sea buy more click times limit, skip this round')
-                return
             if self.click(self.C_BUY_MORE, interval=3):
-                buy_more_mx_click -= 1
                 continue
         logger.info('Scales start select souls')
         # 选择魂
@@ -181,7 +166,10 @@ class Scales(Buy, MallNavbar):
                 logger.warning(f'紫色蛇皮不足,数量:{cu}')
                 return
             # 购买
-            self._scales_buy_more(self.I_SCA_OROCHI_SCALES)
+            # is False 而不是 not：成功分支是 break 落下、返回 None，不能被当成失败
+            if self._scales_buy_more(self.I_SCA_OROCHI_SCALES) is False:
+                logger.warning('Scales orochi buy more failed, skip this round')
+                return
             time.sleep(0.5)
 
     def _scales_orochi(self, buy_number: int):

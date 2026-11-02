@@ -444,7 +444,10 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                 )
                 if popup_failure_count >= TOPPA_POPUP_FAILURE_LIMIT:
                     logger.warning(f'区域 {index + 1} 两次未打开挑战浮窗，切换下一区域')
-                    return False
+                    # 区域可用性已在入口 check_area 校验过，连续两次点不开挑战浮窗基本只可能是
+                    # 列表页没加载出来（白屏）。此时必须交给主循环重进列表，不能按“区域不可用”
+                    # 逐区空转：8 个区域 × 2 轮约 3 分钟，而 flush_area_cache 只滑动列表，对白屏无效。
+                    return 'click_fail'
                 continue
 
             if self.click(rcl, interval=5):
