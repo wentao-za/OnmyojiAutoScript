@@ -43,7 +43,7 @@
     "itemName": "harvest_mail_confirm",
     "imageName": "dt_harvest_mail_confirm.png",
     "roiFront": "681,543,168,64",
-    "roiBack": "681,543,168,64",
+    "roiBack": "429,529,444,94",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",

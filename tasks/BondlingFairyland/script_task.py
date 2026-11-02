@@ -141,23 +141,30 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
         return super()._prepare_click_ready(context, config)
 
     def _handoff_role(self) -> UserStatus:
-        """handoff1/handoff2 按当天日期奇偶决定本次运行身份(隔日轮换)。
+        """handoff1/handoff2 按绝对天数序号奇偶决定本次运行身份(严格一天一换)。
 
-        奇数日: handoff1 当队长, handoff2 当队员
-        偶数日: handoff2 当队长, handoff1 当队员
+        用 date.toordinal() 而不是 day: toordinal 是从公元 1 年 1 月 1 日起算的
+        连续天数, 每过一天严格 +1, 因此奇偶必然交替, 跨月/跨年/闰年都不会出现
+        连任(day % 2 会有 31 号 -> 次月 1 号连续两天为奇数日的偏差)。
+
+        toordinal 为奇数: handoff1 当队长, handoff2 当队员
+        toordinal 为偶数: handoff2 当队长, handoff1 当队员
         跨零点时以任务启动时的日期为准, 运行过程中不再重算。
         """
         status = self.config.bondling_fairyland.bondling_config.user_status
         if status not in (UserStatus.handoff1, UserStatus.handoff2):
             return status
         today = datetime.now()
-        is_odd = today.day % 2 == 1
+        ordinal = today.toordinal()
+        is_odd = ordinal % 2 == 1
+        weekday_cn = '一二三四五六日'[today.weekday()]
         if status == UserStatus.handoff1:
             role = UserStatus.LEADER if is_odd else UserStatus.MEMBER
         else:
             role = UserStatus.MEMBER if is_odd else UserStatus.LEADER
         logger.info(
-            f'契灵 handoff: {today:%Y-%m-%d} 为{"奇数" if is_odd else "偶数"}日, '
+            f'契灵 handoff: 今天 {today:%Y-%m-%d} 周{weekday_cn} {today:%H:%M:%S}, '
+            f'天数序号 {ordinal} 为{"奇数" if is_odd else "偶数"}, '
             f'配置 {status.value} 本次身份 = {role.value}'
         )
         return role
@@ -200,7 +207,7 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
             raise TaskEnd
         match cong.bondling_config.user_status:
             case UserStatus.handoff1 | UserStatus.handoff2:
-                # 隔日轮换: 奇数日 handoff1 当队长, 偶数日 handoff2 当队长, 全程不再互切身份
+                # 严格一天一换: 天数序号为奇数时 handoff1 当队长, 偶数时 handoff2 当队长, 全程不再互切身份
                 if self._handoff_role() == UserStatus.LEADER:
                     self.switch_ball()
                 else:
