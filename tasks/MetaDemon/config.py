@@ -7,7 +7,7 @@ from tasks.Component.GeneralBattle.config_general_battle import GeneralBattleCon
 from tasks.Component.config_base import ConfigBase, TimeDelta, Time, dynamic_hide
 from pydantic import Field, field_validator
 from module.config.multi_select import normalize_multi_select
-from enum import Enum, IntEnum
+from enum import IntEnum, Enum
 from tasks.Component.config_scheduler import Scheduler
 
 
