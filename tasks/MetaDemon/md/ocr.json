@@ -27,6 +27,15 @@
     "description": "合成目标星级"
   },
   {
+    "itemName": "boss_name",
+    "roiFront": "515,132,33,203",
+    "roiBack": "515,132,33,203",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": ""
+  },
+  {
     "itemName": "md_ticket",
     "roiFront": "839,510,70,30",
     "roiBack": "819,506,106,41",

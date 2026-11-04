@@ -10,20 +10,20 @@ class QuickLoadoutMode(str, Enum):
 
 
 class QuickLoadoutConfig(BaseModel):
-    """战斗界面内的一键配置。"""
+    """按分组名称和预设名称识别的一键配置。"""
 
     # 是否启用战斗前一键配置
-    enable: bool = Field(default=False)
+    enable: bool = Field(default=False, description='quick_loadout_enable_help')
     # 预设选择模式：mode_number按编号选择，mode_ocr按名称识别
     mode: QuickLoadoutMode = Field(default=QuickLoadoutMode.NUMBER)
-    # 一键配置左侧预设组编号
+    # 所选预设的预设组编号
     group_number: int = Field(default=1, ge=1, le=7)
     # 所选预设组中的预设编号
     preset_number: int = Field(default=1, ge=1)
     # OCR模式使用的预设组名称
-    group_name: str = Field(default='')
+    group_name: str = Field(default='', description='quick_loadout_group_name_help')
     # OCR模式使用的预设名称
-    preset_name: str = Field(default='')
+    preset_name: str = Field(default='', description='quick_loadout_preset_name_help')
 
     def validate_target(self) -> None:
         if self.mode != QuickLoadoutMode.OCR:
@@ -44,6 +44,6 @@ class NamedQuickLoadoutConfig(QuickLoadoutConfig):
     )
     # 格式：关卡名:(预设组,预设); ALL匹配未特别指定的关卡
     custom_preset: str = Field(
-        default='ALL:(1,1);',
+        default='',
         description='quick_loadout_custom_preset_help',
     )
