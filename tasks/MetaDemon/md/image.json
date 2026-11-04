@@ -318,5 +318,65 @@
     "threshold": 0.8,
     "profile": "High",
     "description": "无鬼王门票标志"
+  },
+  {
+    "itemName": "summon_quick_one_star",
+    "imageName": "md_summon_quick_one_star.png",
+    "roiFront": "1061,526,53,32",
+    "roiBack": "1028,465,117,97",
+    "method": "Template matching",
+    "threshold": 0.96,
+    "profile": "High",
+    "description": "快速召唤序列一星"
+  },
+  {
+    "itemName": "summon_quick_two_star",
+    "imageName": "md_summon_quick_two_star.png",
+    "roiFront": "1060,527,53,19",
+    "roiBack": "1029,466,117,98",
+    "method": "Template matching",
+    "threshold": 0.96,
+    "profile": "High",
+    "description": "快速召唤序列二星"
+  },
+  {
+    "itemName": "summon_quick_three_star",
+    "imageName": "md_summon_quick_three_star.png",
+    "roiFront": "1060,527,53,19",
+    "roiBack": "1029,466,117,98",
+    "method": "Template matching",
+    "threshold": 0.96,
+    "profile": "High",
+    "description": "快速召唤序列三星"
+  },
+  {
+    "itemName": "summon_quick_four_star",
+    "imageName": "md_summon_quick_four_star.png",
+    "roiFront": "1060,527,53,19",
+    "roiBack": "1029,466,117,98",
+    "method": "Template matching",
+    "threshold": 0.96,
+    "profile": "High",
+    "description": "快速召唤序列四星"
+  },
+  {
+    "itemName": "summon_quick_five_star",
+    "imageName": "md_summon_quick_five_star.png",
+    "roiFront": "1060,527,53,19",
+    "roiBack": "1029,466,117,98",
+    "method": "Template matching",
+    "threshold": 0.96,
+    "profile": "High",
+    "description": "快速召唤序列五星"
+  },
+  {
+    "itemName": "summon_quick_six_star",
+    "imageName": "md_summon_quick_six_star.png",
+    "roiFront": "1060,527,53,19",
+    "roiBack": "1029,466,117,98",
+    "method": "Template matching",
+    "threshold": 0.96,
+    "profile": "High",
+    "description": "快速召唤序列六星"
   }
 ]
