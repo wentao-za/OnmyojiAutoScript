@@ -485,7 +485,12 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
 
         """
         self.screenshot()
-        if not self.appear(self.I_WQ_INVITE_1):
+        # 第 1 张卡经常是「已封印 / 已领取」的普通卡，本来就没有邀请按钮。
+        # 只查 I_WQ_INVITE_1 会直接 return，导致协作任务排在第 2/3 张时永远不邀请。
+        if not (self.appear(self.I_WQ_INVITE_1)
+                or self.appear(self.I_WQ_INVITE_2)
+                or self.appear(self.I_WQ_INVITE_3)):
+            logger.info('No invite button on any card, skip invite')
             return False
 
         ret = self.get_cooperation_info()
@@ -495,13 +500,14 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
         typeMask = 15
         typeMask = CooperationSelectMask[(self.get_config()).cooperation_type.value]
         for item in ret:
-            # 该任务是需要邀请的任务类型
+            # 该任务不是勾选的协作类型 → 跳过这张卡，继续看后面的
             if not (item['type'] & typeMask):
-                # BUG 存在多个协作任务时,邀请完第一个协作任务对方接受后,未邀请的任务位置无法确定(缺少信息)
-                # 例如 按顺序存在 abc 3个协作任务,邀请完a,好友接受后,这三个任务在界面上的顺序变化,abc 还是bca
-                # 如果顺序不变 则应该没有问题
+                # 原来这里是 break：遇到第一个不匹配的类型就终止整轮，导致
+                # 首张卡是金币/体力协作时，后面即使有勾玉/狗粮协作也一张都不邀请。
+                # 位置漂移由 item['inviteBtn'].roi_front 在 ui_click 里实时刷新来兜底，
+                # 这里用 continue 只是跳过当前卡，不放弃后续卡。
                 logger.info("cooperationType %s But needed Type %s ,Skipped", item['type'], typeMask)
-                break
+                continue
             '''
                尝试5次 如果邀请失败 等待20s 重新尝试
                阴阳师BUG: 好友明明在线 但邀请界面找不到该好友(好友未接受任何协作任务的情况下)
@@ -587,7 +593,9 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
         for index in range(3):
             btn = self.__getattribute__("I_WQ_INVITE_" + str(index + 1))
             if not self.appear(btn):
-                break
+                # 非协作卡没有邀请按钮，跳过后继续看下一张；不能 break，
+                # 否则协作任务排在第 2/3 张时整个列表被判为空
+                continue
             if self.appear(self.__getattribute__("I_WQ_COOPERATION_TYPE_JADE_" + str(index + 1))):
                 retList.append({'type': CooperationType.Jade, 'inviteBtn': btn})
                 continue

@@ -3,9 +3,10 @@
     "itemName": "me_enter",
     "imageName": "ms_me_enter.png",
     "roiFront": "52,494,59,44",
-    "roiBack": "52,494,59,44",
+    "roiBack": "26,432,111,124",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "进入"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "24,571,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "点击分享"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "25,317,39,52",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "上一个"
   },
   {
@@ -33,15 +36,17 @@
     "roiBack": "1226,315,36,53",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "下一个"
   },
   {
     "itemName": "invite_ensure",
     "imageName": "ms_invite_ensure.png",
     "roiFront": "711,545,127,60",
-    "roiBack": "711,545,127,60",
+    "roiBack": "692,530,169,95",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "分享"
   }
 ]

@@ -199,9 +199,13 @@ class GeneralBuff(BaseTask, GeneralBuffAssets):
         if not self.appear(target):
             logger.warning(f'No {target.name} buff')
             return None
-        start_x = int(target.roi_front[0] + 390)
+        # 开关区域 = 描述行右端的「剩余天数条 + 勾玉圆钮」整块：条的左端固定在 x≈773，
+        # 右端随天数文字浮动（崩溃帧：条 773~859、圆钮 858~889）。
+        # 旧值 +390/width=80 得到 767~847，只盖住条主体，条尾与圆钮都在框外。
+        # 放宽到 +380/width=150（757~907）以覆盖整段。
+        start_x = int(target.roi_front[0] + 380)
         start_y = int(target.roi_front[1])
-        width = 80
+        width = 150
         height = int(target.roi_front[3])
         return start_x, start_y, width, height
 
