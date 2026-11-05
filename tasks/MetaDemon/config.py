@@ -6,7 +6,7 @@ from tasks.Component.GeneralBattle.config_general_battle import GeneralBattleCon
 
 from tasks.Component.config_base import ConfigBase, TimeDelta, Time, dynamic_hide
 from pydantic import Field
-from enum import IntEnum
+from enum import Enum, IntEnum
 from tasks.Component.config_scheduler import Scheduler
 
 
@@ -20,6 +20,15 @@ class BossType(IntEnum):
     MONEY = 7
 
 
+class RefillTask(str, Enum):
+    """掉落进度(x/50)未满时，转去刷本补票的任务（单选）。"""
+    DISABLE = '不转刷'
+    EXPLORATION = '探索'
+    AWAKEN = '觉醒'
+    OROCHI = '御魂八岐大蛇'
+    BONDLING = '契灵之境'
+
+
 class MetaDemonConfig(ConfigBase):
     limit_time: Time = Field(default=Time(minute=45), description='limit_time_help')
     limit_count: int = Field(default=50, description='limit_count_help')
@@ -27,6 +36,7 @@ class MetaDemonConfig(ConfigBase):
     fire_sequence: str = Field(default='1 2 3 4', description='攻击顺序:从左到右,空格分隔(1:一星鬼王,2:二星鬼王...)\n例:3 2(先攻击三星鬼王然后二星鬼王)')
     powerful_list: str = Field(default='', description='开启强力鬼王列表(空格分隔),例:4 5(四星鬼王和五星鬼王开启强力追击)')
     synthesis_list: str = Field(default='1', description='鬼王合成列表(空格分隔),支持1-5星合成,例:1 2 3(合成一星,二星,三星鬼王)')
+    refill_task: RefillTask = Field(default=RefillTask.DISABLE, description='掉落进度(x/50)未满且无鬼王可打时,转去刷本补票的任务(单选);所选任务的调度器未启用时按原逻辑退出')
 
     @property
     def limit_time_v(self) -> timedelta:
@@ -61,6 +71,16 @@ class MetaDemonConfig(ConfigBase):
         synthesis_boss_type_list = [BossType(int(num_text)) for num_text in synthesis_num_list]
         return synthesis_boss_type_list
 
+    @property
+    def refill_task_v(self) -> str | None:
+        """补票任务的大驼峰名；未配置返回 None。"""
+        return {
+            RefillTask.EXPLORATION: 'Exploration',
+            RefillTask.AWAKEN: 'EvoZone',
+            RefillTask.OROCHI: 'Orochi',
+            RefillTask.BONDLING: 'BondlingFairyland',
+        }.get(self.refill_task)
+
 
 class MetaDemonSwitchSoulConfig(ConfigBase):
     enable: bool = Field(default=False, description='是否启用自动切换御魂,清空则不会切换对应御魂\n若是数字,则以编号方式切换御魂(组号,队伍号),组1-7,队伍1-4\n若非数字,则以ocr方式切换御魂(组名,队伍名)')
@@ -80,11 +100,11 @@ class MetaDemonSwitchSoulConfig(ConfigBase):
     # money: str = Field(default='', description='氪金鬼王切换御魂配置')
     # enable_money_preset: bool = Field(default=False, description='是否切换氪金鬼王预设')
 
-    def get_switch_by_enum(self, boss_type: BossType) -> tuple[str, tuple[str | int, str | int]]:
+    def get_switch_by_enum(self, boss_type: BossType) -> tuple[str | None, tuple[str | int | None, str | int | None]]:
         """根据枚举获取对应的 切换类型, (group,team)"""
         return self.get_switch_by_name(boss_type.name.lower())
 
-    def get_switch_by_name(self, switch_name: str) -> tuple[str, tuple[str | int, str | int]]:
+    def get_switch_by_name(self, switch_name: str) -> tuple[str | None, tuple[str | int | None, str | int | None]]:
         """根据名称获取对应的御魂预设"""
         group_team = getattr(self, switch_name, None)
         if group_team is None or group_team.strip() == '' or ',' not in group_team or len(group_team.split(',')) != 2:
@@ -94,7 +114,7 @@ class MetaDemonSwitchSoulConfig(ConfigBase):
             return 'int', (int(group), int(team))
         return 'str', (group, team)
 
-    def get_general_battle_conf(self, boss_type: BossType) -> GeneralBattleConfig:
+    def get_general_battle_conf(self, boss_type: BossType | None) -> GeneralBattleConfig:
         """获取通用战斗配置"""
         if boss_type is None:
             return GeneralBattleConfig()

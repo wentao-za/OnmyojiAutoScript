@@ -16,5 +16,41 @@
     "method": "Default",
     "keyword": "",
     "description": "好友列表"
+  },
+  {
+    "itemName": "md_ticket",
+    "roiFront": "839,510,70,30",
+    "roiBack": "819,506,106,41",
+    "mode": "DigitCounter",
+    "method": "Default",
+    "keyword": "",
+    "description": "今日掉落门票(掉落/总)"
+  },
+  {
+    "itemName": "md_friend_remain",
+    "roiFront": "142,426,86,25",
+    "roiBack": "142,426,86,25",
+    "mode": "Full",
+    "method": "Default",
+    "keyword": "",
+    "description": "好友分享鬼王剩余时间"
+  },
+  {
+    "itemName": "md_boss_escape",
+    "roiFront": "670,485,185,28",
+    "roiBack": "670,485,185,28",
+    "mode": "Full",
+    "method": "Default",
+    "keyword": "",
+    "description": "鬼王逃跑倒计时"
+  },
+  {
+    "itemName": "md_assist_count",
+    "roiFront": "40,320,244,26",
+    "roiBack": "40,320,244,26",
+    "mode": "Full",
+    "method": "Default",
+    "keyword": "",
+    "description": "今日协助击杀鬼王计数:(协助数/总数)"
   }
 ]
