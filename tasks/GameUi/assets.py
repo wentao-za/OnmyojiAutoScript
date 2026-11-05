@@ -369,11 +369,11 @@ class GameUiAssets:
 
 	# Image Rule Assets
 	# 活动列表页超鬼王活动标志 
-	I_PAGE_METADEMON_CHECK_ACT_LIST_METADEMON_ACT = RuleImage(roi_front=(718,293,448,127), roi_back=(675,249,566,240), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_check_act_list_metademon_act.png")
+	I_PAGE_METADEMON_CHECK_ACT_LIST_METADEMON_ACT = RuleImage(roi_front=(1213,224,45,317), roi_back=(1185,201,92,359), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_check_act_list_metademon_act.png")
 	# 鬼王页面标志 
 	I_PAGE_METADEMON_CHECK_BOSS_PAGE = RuleImage(roi_front=(1064,19,43,40), roi_back=(1054,7,62,63), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_check_boss_page.png")
 	# 超鬼王主界面 
-	I_PAGE_METADEMON_MD_CHECK_MAIN_PAGE = RuleImage(roi_front=(464,231,39,213), roi_back=(449,220,72,244), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_md_check_main_page.png")
+	I_PAGE_METADEMON_MD_CHECK_MAIN_PAGE = RuleImage(roi_front=(901,59,115,212), roi_back=(888,46,146,238), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_md_check_main_page.png")
 
 
 	# Image Rule Assets

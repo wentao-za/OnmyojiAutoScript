@@ -492,12 +492,16 @@ class GameUi(ChessBattleNavigationMixin, BaseTask, GameUiAssets):
             context="goto_page",
         )
 
-    def _wait_for_destination(self, destination: Page, timeout: float = 4.0) -> bool:
+    # 模拟器实际转场（活动入口进入活动主页、战斗进出等）需 8-10 秒，
+    # 低于该量级会把"已到达"误判成"未到达"，随后点返回把刚加载好的页面关掉，
+    # 形成 到达→判失败→退出→重进 的死循环。设为 10 秒可覆盖真实延迟；
+    # 成功时 confirm_page 命中即刻返回，不会因此变慢。
+    def _wait_for_destination(self, destination: Page, timeout: float = 10.0) -> bool:
         """等待下一页面稳定出现。
 
         Args:
             destination: 目标页面。
-            timeout: 等待超时时间。
+            timeout: 等待超时时间，默认 10 秒（需覆盖 8-10 秒的真实转场）。
 
         Returns:
             是否在超时前稳定识别到目标页面。
