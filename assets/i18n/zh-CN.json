@@ -3,6 +3,7 @@
   "Script_full": "全局配置",
   "jade_and_sushi": "勾协+体协",
 
+  "assistance_config": "鬼王协助",
   "Chess": "百鬼棋局",
   "emulatorinfo_path": "模拟器路径",
   "emulatorinfo_path_help": "举例：\"E:\\ProgramFiles\\MuMuPlayer-12.0\\shell\\MuMuPlayer.exe\"",
@@ -763,7 +764,7 @@
   "checkin_config": "签到配置",
   "usage": "使用说明",
   "checkin_big_god_usage_help": "自动领取网易大神APP的阴阳师福利礼包。\n\n使用前准备：\n1. 开启模拟器的Root模式\n2. 模拟器中安装并登录「网易大神」APP\n3. 在大神APP中绑定阴阳师角色\n\nFrida Server 会自动推送到模拟器并启动，无需手动操作。",
-  "manual_claim" : "是否手动领取",
+  "manual_claim": "是否手动领取",
   "checkin_big_god_manual_claim_help": "1.启用后使用纯UI操作领取福利（不依赖Frida）。\n2.适用于Frida不可用或Root环境异常的情况。\n3.需确保模拟器已登录「网易大神」APP并绑定阴阳师角色，同时添加阴阳师圈子！！！",
   "costume_main_14": "雪月华庭",
   "GuguArtStudio": "呱呱画室",
@@ -858,11 +859,11 @@
   "enable_switch_pass_hard_by_name": "按名称切换困难门票御魂",
   "pass_hard_group_team_name": "困难门票预设组名,队伍名",
   "boss_battle_conf": "首领战斗配置",
-  "ap100_battle_conf": "100体战斗配置",
+  "ap100_battle_conf": "百体战斗配置",
   "pass_limit": "门票战斗次数",
   "pass_limit_help": "填写单个数字时仅执行简单模式；填写“简单次数,困难次数”时分别限制两种模式，困难模式优先执行，两项均可为0，0为不执行。",
   "ap_limit": "体力战斗次数",
-  "ap100_limit": "100体战斗次数",
+  "ap100_limit": "百体战斗次数",
   "boss_limit": "首领战斗次数",
   "run_sequence": "运行顺序",
   "random_sleep": "执行前随机休眠",
@@ -1028,7 +1029,7 @@
   "boss_quick_loadout_config": "首领战一键配置",
   "quick_loadout_enable_help": "使用战斗界面的一键配置装配御魂并上阵预设；启用后跳过执行任务前切换御魂和旧战斗预设，切换完成后仍按通用战斗配置确认阵容锁定状态",
   "quick_loadout_mode_help": "mode_number按分组和预设编号选择；mode_ocr按分组和预设名称识别",
-  "quick_loadout_group_number_help": "一键配置左侧预设组编号",
+  "quick_loadout_group_number_help": "所选预设的预设组编号",
   "quick_loadout_preset_number_help": "所选预设组中的预设编号",
   "quick_loadout_group_name_help": "OCR模式使用的预设组名称",
   "quick_loadout_preset_name_help": "OCR模式使用的预设名称",
@@ -1089,7 +1090,7 @@
   "consignment_enable": "启用寄售屋购买",
   "save_touch_fish": "惠比寿的摸鱼行动",
   "save_touch_fish_help": "默认使用全部存储按钮，主要目的是为了配合真蛇每周打一次即可获得俩次奖励(并不会节省体力)",
-  "hyakki_draft_enabled":"百鬼优先所需御魂",
+  "hyakki_draft_enabled": "百鬼优先所需御魂",
   "custom_lineup": "自定义阵容标识",
   "custom_lineup_help": "在 chesslineup 工具中保存并应用的阵容标识",
   "LevelRush": "一键起号",
@@ -1559,4 +1560,3 @@
   "args_unsaved_prompt": "当前有未保存的修改，是否放弃？",
   "Success": "成功"
 }
-

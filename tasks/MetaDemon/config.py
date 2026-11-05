@@ -31,6 +31,18 @@ class RefillTask(str, Enum):
 
 
 class MetaDemonConfig(ConfigBase):
+    mode: list[MetaDemonMode] = Field(default=[MetaDemonMode.BOSS_BATTLE], title='运行模式', json_schema_extra={'ui_exclusive_groups': [['门票刷取：觉醒七层', '门票刷取：探索']]}, description='勾选执行；两种门票刷取至多选一种，可与鬼王战斗共存，先刷门票再战斗')
+
+    @field_validator('mode', mode='before')
+    @classmethod
+    def parse_modes(cls, value):
+        selected = [MetaDemonMode('门票刷取：探索' if item == '门票刷取：探索绘卷' else item)
+                    for item in normalize_multi_select(value)]
+        tickets = [item for item in (MetaDemonMode.AWAKE, MetaDemonMode.EXPLORATION) if item in selected]
+        if len(tickets) > 1:
+            raise ValueError('觉醒和探索门票刷取至多选择一种')
+        return tickets + ([MetaDemonMode.BOSS_BATTLE] if MetaDemonMode.BOSS_BATTLE in selected else [])
+
     limit_time: Time = Field(default=Time(minute=45), description='limit_time_help')
     limit_count: int = Field(default=50, description='limit_count_help')
     auto_tea: bool = Field(default=False, description='疲劳度满时是否自动喝茶, 关闭则自动根据调度器等待间隔时间安排下一次调度')
