@@ -71,20 +71,15 @@ class ScriptTask(GameUi, GuildBanquetAssets):
             raise TaskEnd
         logger.info("Start guild banquet!")
         self.device.stuck_record_clear()
-        max_wait_seconds = 660
         wait_interval_seconds = 6
         start_banquet_time = datetime.now()
         exp_full_appeared = False
-        banquet_finished = False
-        while True:
+        # 不设等待上限（对齐 self 7e037221）：寮宴会实际时长常超过 11 分钟，
+        # 超时中断会让本轮按失败间隔重排、在宴会结束前反复空转。
+        # 循环退出完全依赖 _wait_banquet_flag 的「停留在寮页面且旗子连续缺失 5 秒」判定；
+        # 等待期间 stuck_record_clear() 会清掉卡死计时，故此处没有额外兜底。
+        while self._wait_banquet_flag():
             self.screenshot()
-            if datetime.now() - start_banquet_time > timedelta(seconds=max_wait_seconds):
-                logger.info('Guild banquet timeout, exit')
-                break
-            if not self._wait_banquet_flag():
-                logger.info("Guild banquet finished, exit")
-                banquet_finished = True
-                break
             logger.attr(f'{(datetime.now()-start_banquet_time).seconds}s',"Banquet ongoing, waiting...")
             if self.config.guild_banquet.guild_banquet_config.auto_switch_shikigami:
                 if self.appear(self.I_BANQUET_EXP_FULL):
@@ -96,9 +91,10 @@ class ScriptTask(GameUi, GuildBanquetAssets):
                     exp_full_appeared = False
             self.device.stuck_record_clear()
             time.sleep(wait_interval_seconds)
+        logger.info("Guild banquet finished, exit")
         self._watching_banquet = False
         self.set_next_run(task='GuildBanquet', server=False,
-                          target=self.get_next_dt(datetime.now(), banquet_finished))
+                          target=self.get_next_dt(datetime.now(), success=True))
         self.finish_task_navigation()
         raise TaskEnd
 

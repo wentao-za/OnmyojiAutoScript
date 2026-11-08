@@ -265,6 +265,10 @@ class Cooperation:
             self.validate(task, source)
             config.reload()
             config.task_call(task, force_call=False)
+            # 接受方先回主界面再执行任务：部分界面（如斗技）收不到协同邀请弹窗，
+            # 接受方若停留在任意任务页面直接开跑，会与发起方互等死锁（2026-11-07 排查）。
+            # 标志由 script.py 主循环在执行该任务前消费：先跑一次 GotoMain 再跑原任务。
+            config._cooperation_woken_task = task
             peers = getattr(config, '_cooperation_peers', None) or {}
             peers[task] = source
             config._cooperation_peers = peers

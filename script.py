@@ -61,6 +61,8 @@ class Script:
         self.runtime = ScriptRuntimeController(self)
         self.gui_update_task: Callable = None  # 回调函数, gui进程注册当每次config更新任务的时候更新gui的信息
         self.config_name = config_name
+        from module.config.config_updater import ConfigUpdater
+        ConfigUpdater().update_config(config_name)
         # Skip first restart
         self.is_first_task = True
         # Failure count of tasks
@@ -639,6 +641,20 @@ class Script:
                     self.config.task_delay(task='Restart', success=True, server=True)
                     del_cached_property(self, 'config')
                     continue
+                # 协同接受方先回主界面再执行任务：被唤醒的任务 next_run 已被 task_call
+                # 拉到当前时刻，本应就是下一个任务；若在任意任务页面直接开跑，部分界面
+                # 收不到邀请弹窗（如停在斗技收不到协斗邀请，2026-11-07 排查）。
+                # 标志在唤醒时由 cooperation.wake_next 设置，此处消费：无论命中与否都
+                # 立即复位，避免任务被异常插队（如错误重启）后残留到几天后的下一次运行。
+                woken_task = getattr(self.config, '_cooperation_woken_task', '')
+                if woken_task:
+                    self.config._cooperation_woken_task = ''
+                    if task == woken_task:
+                        logger.info(f'Cooperation woken `{task}`: goto main page before executing')
+                        self.run('GotoMain')
+                        # GotoMain 期间画面已回主界面；配置可能因任务结算变动，重读一轮
+                        # 由调度器重新取到该任务（next_run 仍为当前时刻，不会被跳过）。
+                        del_cached_property(self, 'config')
                 decision = self.runtime.prepare_task_execution(task)
             except Exception as e:
                 self._handle_task_exception(e, task)

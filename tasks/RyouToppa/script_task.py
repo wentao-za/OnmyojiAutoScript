@@ -164,7 +164,7 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
         # --------------------------------------------------------------------------------------------------------------
         area_index = 0
         success = True
-        refresh_fail_count = 0  # 白屏刷新重进失败计数
+        refresh_fail_count = 0  # 列表页不可用（白屏 / 连续三区进不去）后重进列表的失败计数
         while 1:
             # 设置长任务标志,用来寻找寮突可进攻的目标
             self.device.stuck_record_add('PREPARE_BEFORE_BATTLE')
@@ -180,14 +180,22 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                 break
             # 进攻
             res = self.attack_area(area_index)
-            # 页面白屏（寮突破列表加载卡死）：点击 5 次失败仍未进入战斗
-            if res == 'click_fail':
+            # 列表页不可用：'click_fail' = 白屏（列表加载卡死，浮窗连续两次点不开）；
+            # 'reenter' = 连续三个区域点击挑战都进不去战斗。两者都退出到探索页重进列表，
+            # 通过刷新界面让任务继续，不再直接 RequestHumanTakeover 停止任务。
+            if res in ('click_fail', 'reenter'):
                 refresh_fail_count += 1
                 if refresh_fail_count > 2:
-                    logger.warning('Ryou toppa page is still not loaded after 2 refreshes, give up this round')
+                    logger.warning(
+                        f'Ryou toppa list is still not usable after 2 refreshes '
+                        f'(last={res}), give up this round')
                     success = False
                     break
-                logger.info(f'Ryou toppa list seems not loaded, refresh the page ({refresh_fail_count}/2)')
+                logger.info(
+                    f'Re-enter ryou toppa list to refresh the page '
+                    f'({refresh_fail_count}/2), reason={res}')
+                self.consecutive_entry_failures = 0
+                area_index = 0
                 self.enter_ryou_toppa_list()
                 continue
             # 如果战斗失败或区域不可用，则弹出当前区域索引，开始进攻下一个
@@ -344,16 +352,25 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
             return 0
         return index
 
-    def record_area_entry_failure(self, index: int):
+    def record_area_entry_failure(self, index: int) -> bool:
+        """记录一次区域进入失败；连续 3 个区域失败时返回 True，由主循环重进列表。
+
+        原先达到上限直接 raise RequestHumanTakeover 停止任务（2026-11-07 22:11 oas2 实测：
+        area 3/4/5 各 2 次点击挑战都进不去战斗 → 任务中断、进程退出）。该现象与白屏同源
+        （列表页状态异常导致浮窗里点不出战斗），退回探索页重进列表即可恢复，因此改为与
+        'click_fail' 共用同一条恢复路径，不再停任务。
+        """
         # 离开寮突导致的失败交给切区恢复处理，不能触发连续失败停止。
         if not self.match_page_once(page_kekkai_toppa):
-            return
+            return False
         self.consecutive_entry_failures += 1
         if self.consecutive_entry_failures >= 3:
-            raise RequestHumanTakeover(
-                f'寮突连续三个区域无法进入挑战，停止任务：当前区域 {index + 1}，'
-                f'每个区域已达到 {TOPPA_CLICK_FAILURE_LIMIT} 次进入失败上限'
-            )
+            logger.warning(
+                f'寮突连续 {self.consecutive_entry_failures} 个区域无法进入挑战'
+                f'（当前区域 {index + 1}，每区已达 {TOPPA_CLICK_FAILURE_LIMIT} 次进入失败上限），'
+                f'退出到探索页重新进入寮突破列表')
+            return True
+        return False
 
     def dismiss_challenge_before_switch(self) -> bool:
         """左右随机点击一次，确认挑战浮窗关闭；迟到的战斗交回战斗处理。"""
@@ -403,7 +420,8 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, RyouToppaAssets):
                 if self.dismiss_challenge_before_switch():
                     self.consecutive_entry_failures = 0
                     return self.run_general_battle(config=self.config.ryou_toppa.general_battle_config)
-                self.record_area_entry_failure(index)
+                if self.record_area_entry_failure(index):
+                    return 'reenter'
                 return False
 
             # 点击挑战按钮后只等待战斗出现。等待期间不重复点击，只有等待

@@ -225,6 +225,23 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
         logger.info('Bondling private confirmed, create team')
         return self.create_ensure(ensure_rules=[self.I_CREATE_TEAM])
 
+    def _room_cooperation(self):
+        """覆写 GeneralInvite._room_cooperation：peer 改从自身配置的
+        invite_config.cooperation_script 解析（对齐 DraftDuel 参照实现）。
+
+        不依赖 _battle_cooperation_task：调度器对 BATTLE_TASKS 预置
+        _battle_cooperation_prepared=True 使 prepare_battle_cooperation 短路，
+        该属性在调度路径下永远为空，基类取 peer 恒为 ''
+        （2026-11-07 实测：7 天 0 次 Cooperation completed，队员 9 次全部靠超时结束）。
+        """
+        runtime = getattr(self.config, 'cooperation_runtime', None)
+        peer = self.config.bondling_fairyland.invite_config.cooperation_script.strip()
+        if runtime is None or not peer:
+            return runtime, 'BondlingFairyland', ''
+        if self.config.bondling_fairyland.bondling_config.user_status == UserStatus.ALONE:
+            return runtime, 'BondlingFairyland', ''
+        return runtime, 'BondlingFairyland', peer
+
     def _begin_bondling_completion_phase(self):
         runtime, task, peer = self._room_cooperation()
         self._bondling_completion_since = (
@@ -297,7 +314,13 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
             if success:
                 is_first = True
                 if not create_bond_team():
-                    self._notify_bondling_completion('no_bondling_available')
+                    # 战斗胜利后 create_bond_team 返回 False 有两种情况：
+                    # ① 球数耗尽('ball is not enough')；② 回到球区(I_BALL_AREA)——
+                    # 这是正常回合结束(每颗球单独建房重邀)，不代表任务结束。
+                    # 任务级结束通知统一放在 switch_ball 出口，不在此发：
+                    # 否则队员在第一轮战斗后收到 no_bondling_available 提前退出，
+                    # 队长后续每颗球都在向已退出的队员空发邀请
+                    # (2026-11-07 15:33 oas1/oas2 实例，通知链修复后首次显形)。
                     return True
 
             self.check_and_invite(True)
@@ -482,6 +505,13 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
                 break
 
         logger.info('BondlingFairyland task finished')
+        # 队长整个任务到此结束(无结契石/盘子耗尽/球数耗尽/BondlingNumberMax/
+        # run_catch 内次数或时间到)，统一在这里通知队员收尾退出；
+        # peer 为空或 ALONE 时 _notify_bondling_completion 内部自动跳过。
+        # run_leader 内 break 的路径(次数到/时间到/邀请失败)会在 run_leader
+        # 内部直接 TaskEnd，走不到这里，那些路径已有各自通知
+        # (count_limit_reached / time_limit_reached / leader_stopped)。
+        self._notify_bondling_completion('no_bondling_available')
         self.finish_task_navigation()
         self.set_next_run(task='BondlingFairyland', finish=True, success=True)
         raise TaskEnd
