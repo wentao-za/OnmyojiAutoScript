@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 # @author AzurTian
+import re
 import time
 import numpy as np
 from cached_property import cached_property
@@ -21,7 +22,7 @@ from tasks.Utils.config_enum import ShikigamiClass
 import tasks.GameUi.task_pages as pages
 
 from module.logger import logger
-from module.exception import TaskEnd, GameStuckError
+from module.exception import TaskEnd, GameStuckError, GameTooManyClickError
 from module.atom.animate import RuleAnimate
 from typing import Optional
 
@@ -29,6 +30,7 @@ from typing import Optional
 class BaseExploration(GameUi, GeneralBattle, GeneralRoom, GeneralInvite, ReplaceShikigami, SwitchSoul, ExplorationAssets):
     fire_monster_type: str = ''
     need_exit: bool = False
+    paper_reward_pending: bool = False
     user_status: UserStatus = UserStatus.ALONE
     wait_start_time: datetime = datetime.now()
     pre_page: pages.Page = None
@@ -41,7 +43,10 @@ class BaseExploration(GameUi, GeneralBattle, GeneralRoom, GeneralInvite, Replace
 
     @cached_property
     def _config(self) -> Exploration:
-        self.config.exploration.general_battle_config.lock_team_enable = True
+        # 自动轮换需要换阵容, 锁阵容会阻塞轮换; 只在非轮换时锁定阵容
+        self.config.exploration.general_battle_config.lock_team_enable = (
+            self.config.exploration.exploration_config.auto_rotate != AutoRotate.yes
+        )
         limit_time = self.config.exploration.exploration_config.limit_time
         self.limit_time: timedelta = timedelta(
             hours=limit_time.hour,
@@ -99,36 +104,36 @@ class BaseExploration(GameUi, GeneralBattle, GeneralRoom, GeneralInvite, Replace
     def open_expect_level(self):
         swipeCount = 0
         config_exploration_level = self._config.exploration_config.exploration_level
+        target_index = config_exploration_level.get_index()
         while True:
             # 判断有无目标章节
             self.screenshot()
             # 获取当前章节名
             results = self.O_E_EXPLORATION_LEVEL_NUMBER.detect_and_ocr(self.device.image)
             text1 = [result.ocr_text for result in results]
-            exp_level_enum_list = []
+            # OCR 文本里可能混着章节与关卡名, 只取"第X章"片段转索引
+            visible_indices = []
             for txt in text1:
-                try:
-                    exp_level_enum_list.append(ExplorationLevel(txt))
-                except ValueError as e:
-                    logger.warning(f'convert {txt} failed')
-            sorted(exp_level_enum_list, key=lambda x: x.get_index())  # Sort by index
-            # 判断当前章节有无目标章节
-            result = set(text1).intersection({config_exploration_level})
+                for chapter in re.findall(r'第[一二三四五六七八九十]+章', txt):
+                    try:
+                        visible_indices.append(ExplorationLevel(chapter).get_index())
+                    except ValueError:
+                        logger.warning(f'convert {chapter} failed')
             # 有则跳出检测
-            if self.appear(self.I_E_EXPLORATION_CLICK) or result and len(result) > 0:
+            if self.appear(self.I_E_EXPLORATION_CLICK) or target_index in visible_indices:
                 break
             if self.appear_then_click(self.I_UI_CONFIRM, interval=1):
                 continue
             if self.appear_then_click(self.I_UI_CONFIRM_SAMLL, interval=1):
                 continue
             self.device.click_record_clear()
-            if len(exp_level_enum_list) > 0:
-                min_level = exp_level_enum_list[0]
-                max_level = exp_level_enum_list[-1]
-                if config_exploration_level.get_index() < min_level.get_index():
-                    self.swipe(self.S_SWIPE_LEVEL_UP)
-                elif config_exploration_level.get_index() > max_level.get_index():
+            if visible_indices:
+                if target_index > max(visible_indices):
+                    logger.info(f'向下翻找章节：{config_exploration_level.value}')
                     self.swipe(self.S_SWIPE_LEVEL_DOWN)
+                elif target_index < min(visible_indices):
+                    logger.info(f'向上翻找章节：{config_exploration_level.value}')
+                    self.swipe(self.S_SWIPE_LEVEL_UP)
             swipeCount += 1
             debug_info = f"Swiped {swipeCount} times, current exploration level: {text1}"
             logger.info(debug_info)
@@ -374,15 +379,40 @@ class BaseExploration(GameUi, GeneralBattle, GeneralRoom, GeneralInvite, Replace
         # 没打boss或者收集纸人奖励, 且出现了纸人则处理掉落奖励
         if self.appear(self.I_BATTLE_REWARD) and self._config.exploration_config.collect_paper_reward:
             self.ui_get_reward(self.I_BATTLE_REWARD)
+            self.paper_reward_pending = True  # 结算后可能落到"妖怪发现"页, 交由 handle_paper_reward_page 收尾
             self.wait_start_time = datetime.now()  # 队友等待时间重置
             return True
         return False
 
+    def handle_paper_reward_page(self, current_page: pages.Page | None) -> bool:
+        """纸人奖励结算后可能停在"妖怪发现"页, 优先关掉再谈页面处理
+
+        仅在 paper_reward_pending 为真时生效; 一旦离开结算页(page_reward)即清标,
+        避免误点在其它页面重复触发。
+        """
+        if not self.paper_reward_pending:
+            return False
+        if self.ocr_appear_click(self.O_FIND_SHIKIGAMI, interval=1):
+            return True
+        if current_page is not None and current_page != pages.page_reward:
+            self.paper_reward_pending = False
+        return False
+
     def quit_exp_main(self):
-        """退出探索主界面(要求当前必须处于探索主界面, 不保证任何后续结果)"""
+        """退出探索主界面(要求当前必须处于探索主界面, 不保证任何后续结果)
+
+        一次调用只推进一步, 由主循环继续识别页面: 点返回会弹出「确认退出探索吗?」,
+        页面被识别为 page_exp_exit 后由 run_on_exp_exit 点 RES_E_EXIT_CONFIRM 收尾。
+        确认弹窗已在画面上时优先点确认, 省掉一次主循环往返(坑位 46 修订 2026-11-07)。
+
+        不要用「返回键仍可见」判定点击失效: 弹窗遮罩下返回键依然渲染、模板依然命中,
+        且探索主界面/退出确认页/探索入口页共用同一返回键, 该判据无法区分点击是否生效。
+        """
         self.need_exit = True
-        self.appear_then_click(self.I_UI_BACK_YELLOW, interval=0.8)
         self.wait_start_time = datetime.now()  # 队友等待时间重置
+        if self.appear_then_click(self.I_E_EXIT_CONFIRM, interval=0.8):
+            return
+        self.appear_then_click(self.I_UI_BACK_YELLOW, interval=0.8)
 
     def collect_reward(self) -> bool:
         """处理掉落奖励(True表示进行了操作, False表示没有操作)"""

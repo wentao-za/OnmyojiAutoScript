@@ -1,6 +1,8 @@
 # This Python file uses the following encoding: utf-8
 # @author runhey
 # github https://github.com/runhey
+from tasks.AutoStory.config import AutoStory
+from tasks.CustomTask.config import CustomTask, ENTRY_PREFIX
 from tasks.GuguArtStudio.config import GuguArtStudio
 from tasks.GuildActivityMonitor.config import GuildActivityMonitor
 from tasks.OtherWorldTwilight.config import OtherWorldTwilight
@@ -18,6 +20,7 @@ from module.logger import logger
 # 导入配置的Python文件
 from tasks.Component.config_base import ConfigBase, TimeDelta
 from tasks.Exploration.config import Exploration
+from tasks.ExplorationFight.config import ExplorationFight
 from tasks.RyouToppa.config import RyouToppa
 from tasks.Dokan.config import Dokan
 from tasks.Script.config import Script
@@ -119,6 +122,7 @@ class ConfigModel(ConfigBase):
     souls_tidy: SoulsTidy = Field(default_factory=SoulsTidy)
     delegation: Delegation = Field(default_factory=Delegation)
     exploration: Exploration = Field(default_factory=Exploration)
+    exploration_fight: ExplorationFight = Field(default_factory=ExplorationFight)
     wanted_quests: WantedQuests = Field(default_factory=WantedQuests)
     tako: Tako = Field(default_factory=Tako)
     auto_checkin_big_god: AutoCheckinBigGod = Field(default_factory=AutoCheckinBigGod)
@@ -158,6 +162,7 @@ class ConfigModel(ConfigBase):
     hero_test: HeroTest = Field(default_factory=HeroTest)
     find_jade: FindJade = Field(default_factory=FindJade)
     memory_scrolls: MemoryScrolls = Field(default_factory=MemoryScrolls)
+    auto_story: AutoStory = Field(default_factory=AutoStory)
     assist_battle: AssistBattle = Field(default_factory=AssistBattle)
     level_rush: LevelRush = Field(default_factory=LevelRush)
 

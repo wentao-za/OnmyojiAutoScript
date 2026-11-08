@@ -99,6 +99,8 @@ class ConfigMenu:
             'GuguArtStudio',
             'IbukiArena',
         ]
+        # 游戏辅助
+        self.menu["gamehelper"] = ["AutoStory", "ExplorationFight"]
         # 开发工具
         self.menu["Tools"] = [
             'Image Rule',
