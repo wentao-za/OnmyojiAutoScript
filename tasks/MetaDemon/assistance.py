@@ -1,4 +1,19 @@
-"""Six-star offerings: summon, share with named friends, then wait for defeat."""
+# This Python file uses the following encoding: utf-8
+"""超鬼王协助域：上供（只召唤六星、按名字分享给指定好友、等好友击杀）。
+
+职责边界
+--------
+- 只做「把六星鬼王交出去」这件事：召唤六星 → 勾选指定好友 → 提交分享 → 轮询等待被击杀。
+- **不挑战**任何鬼王（`tick` 永不进入战斗），**不切御魂**，**不处理补票**以外的门票逻辑
+  —— 门票开窗与补票复用 `ticket_farming.ensure_ticket` / `exhaust_ticket`。
+
+两条硬约束（来自上游 self 版，实测有效，保留）
+------------------------------------------
+1. 星级未知的鬼王一律不分享：好友鬼王与自家鬼王在界面上都显示「挑战」，
+   星级无法从界面反查，只有刚由本进程召唤的那一只才知道是六星。
+2. 分享提交前必须重新截图并确认勾选状态，「选择 → 截图 → 提交」不能跨帧复用，
+   否则会把未完成的勾选当成已完成，重复分享同一只鬼王。
+"""
 import re
 import time
 from datetime import datetime
@@ -7,14 +22,19 @@ from module.atom.click import RuleClick
 from module.atom.swipe import RuleSwipe
 from module.exception import RequestHumanTakeover, TaskEnd
 from module.logger import logger
+
 from tasks.MetaDemon.config import AssistanceRole, BossType
+from tasks.MetaDemon.ticket_farming import TicketStatus
 import tasks.GameUi.task_pages as pages
 
 
 class GhostOffering:
+    """上供流程的状态机。所有动作都通过 `self.task`（BossBattle/ScriptTask）完成。"""
+
     def __init__(self, task):
         self.task = task
         self.settings = task.conf.assistance_config
+        # 已经分享出去的那一代鬼王；与 task._boss_generation 比对，避免重复分享
         self.shared_generation = None
         self.waiting = False
         self.empty_frames = 0
@@ -25,11 +45,14 @@ class GhostOffering:
         return (datetime.now() - t.start_time < t.limit_time and
                 t.total_count < t.limit_count and not t.State.done)
 
+    # -------------------------------------------------------------- 好友列表
+
     @staticmethod
     def normalize_name(name):
         return re.sub(r'\s+', '', str(name))
 
     def friend_rows(self):
+        """OCR 好友列表，返回 {规范化名字: [(left, top, width, height), ...]}。"""
         t = self.task
         x, y, _, _ = t.O_MD_FRIENDS.roi
         rows = {}
@@ -37,7 +60,8 @@ class GhostOffering:
             name = self.normalize_name(result.ocr_text)
             box = result.box
             left, top = int(min(box[:, 0])) + x, int(min(box[:, 1])) + y
-            width, height = max(1, int(max(box[:, 0]) - min(box[:, 0]))), max(1, int(max(box[:, 1]) - min(box[:, 1])))
+            width = max(1, int(max(box[:, 0]) - min(box[:, 0])))
+            height = max(1, int(max(box[:, 1]) - min(box[:, 1])))
             rows.setdefault(name, []).append((left, top, width, height))
         return rows
 
@@ -46,6 +70,7 @@ class GhostOffering:
         return len(t.I_MD_FRIEND_SELECTED.match_all(t.device.image, frame_id=t.device.image_frame_id))
 
     def list_to_top(self):
+        """反向滑动直到列表稳定在顶部，避免「只扫到半屏」漏掉好友。"""
         t = self.task
         swipe = t.S_MD_SWIPE_FRIEND_UP
         reverse = RuleSwipe(roi_front=swipe.roi_back, roi_back=swipe.roi_front,
@@ -77,6 +102,7 @@ class GhostOffering:
         return False
 
     def select_friend(self, name, area):
+        """点一行好友，并确认勾选数 +1；未确认就整体失败。"""
         t = self.task
         before = self.selected_count()
         t.click(RuleClick(roi_front=area, roi_back=area, name='metademon_offering_friend'))
@@ -96,8 +122,7 @@ class GhostOffering:
         wanted = {self.normalize_name(name): name for name in self.settings.friends}
         if not wanted or not self.list_to_top():
             return False
-        # Inspect the whole list before selecting, so stale selections cannot
-        # silently include an unconfigured recipient on an off-screen row.
+        # 先把整份列表扫完再选：否则屏幕外的残留勾选会带进未配置的收件人
         previous = None
         stable = 0
         available = set()
@@ -135,10 +160,8 @@ class GhostOffering:
             t.screenshot()
             if not t.appear(t.I_MD_INVITE_FRIENDS):
                 return False
-            rows = self.friend_rows()
             for name in tuple(remaining):
-                # Selection can reorder rows; resolve each subsequent name on
-                # the latest screenshot instead of reusing an earlier box.
+                # 勾选会改变行的顺序，每个名字都要在最新截图上重新定位
                 rows = self.friend_rows()
                 if name not in rows:
                     continue
@@ -150,6 +173,8 @@ class GhostOffering:
             t.swipe(t.S_MD_SWIPE_FRIEND_UP, interval=1.2)
         return False
 
+    # ---------------------------------------------------------------- 分享
+
     def share(self):
         t = self.task
         if t.cur_boss_type != BossType.SIX_STARS:
@@ -157,7 +182,7 @@ class GhostOffering:
             return False
         if not self.open_share_panel() or not self.select_friends():
             return False
-        # Select -> fresh screenshot -> submit, never submit a partial selection.
+        # 选择 → 重新截图 → 提交，绝不提交不完整的勾选
         t.screenshot()
         if not t.appear_then_click(t.I_MD_INVITE_FRIENDS, interval=1.5):
             return False
@@ -171,8 +196,10 @@ class GhostOffering:
         logger.warning('未确认分享面板关闭，停止本次上供，避免重复分享')
         return False
 
+    # ---------------------------------------------------------------- 主循环
+
     def tick(self):
-        """Return False only when this run should stop; never enter a battle."""
+        """推进一拍。返回 False 表示本次运行应当停止；永不进入战斗。"""
         t = self.task
         if t.appear(t.I_UI_REWARD):
             t.click(t.C_UI_REWARD, interval=0.8)
@@ -195,6 +222,7 @@ class GhostOffering:
         if not t.appear(t.I_MD_SUMMON_BOSS):
             self.empty_frames = 0
             return True
+        # 「召唤鬼王」按钮消失要连续两帧才算数：单帧多半是转场残影
         self.empty_frames += 1
         if self.empty_frames < 2:
             return True
@@ -209,30 +237,40 @@ class GhostOffering:
             if not self.within_limit():
                 return True
         self.empty_frames = 0
-        return t.check_and_switch_ticket(sequence=(BossType.SIX_STARS,)) or t.State.done
+        # 只召唤六星：序列里只放 SIX_STARS，其余星级不碰
+        status = t.ensure_ticket()
+        if status is TicketStatus.BLOCKED:
+            # 已结束（无票/已委派补票）时返回 True 让循环自然退出；
+            # 弹窗 15 秒开不出来属于环境异常，按失败停止
+            return t.State.done
+        if status is TicketStatus.SUMMON:
+            if not t.summon_and_fire(sequence=[BossType.SIX_STARS]):
+                t.exhaust_ticket()
+                return t.State.done
+        return True
 
 
-def run_assistance(task):
+def run_assistance(task) -> bool:
+    """鬼王上供主流程。
+
+    :return: 本次运行是否正常完成；由分派层（ScriptTask.run）据此收尾。
+    """
     settings = task.config.meta_demon.assistance_config
     if settings.role == AssistanceRole.ASSIST:
         logger.warning('鬼王协助身份尚未实现，本次不执行')
-        task.set_next_run(task='MetaDemon', success=False)
-        raise TaskEnd
+        return False
     if not settings.friends:
         raise RequestHumanTakeover('鬼王上供需要填写分享好友名字')
     task.before_run()
     task.goto_page(pages.page_meta_demon_boss)
     offering = GhostOffering(task)
-    success = True
     while offering.within_limit():
-        # Waiting for someone else to kill a boss is intentional inactivity.
+        # 等别人来杀是刻意的静止，不能算卡死
         task.device.stuck_record_clear()
         task.screenshot()
         if not offering.tick():
-            success = False
             logger.warning('鬼王上供流程未完成，结束本次运行')
-            break
+            return False
         remaining = max(0, (task.limit_time - (datetime.now() - task.start_time)).total_seconds())
         time.sleep(min(settings.poll_interval, remaining))
-    task.set_next_run(task='MetaDemon', success=success)
-    task.finish_task()
+    return True

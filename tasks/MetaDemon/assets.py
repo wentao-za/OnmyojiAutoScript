@@ -12,19 +12,13 @@ from module.atom.list import RuleList
 class MetaDemonAssets: 
 
 
-	# Image Rule Assets
-	F_QUICK_LOADOUT_FRAME = RuleFrame(name='quick_loadout_frame', roi_badge=(1217, 429, 44, 39), roi_range=[(496, 224, 553, 387), (762, 557, 108, 36)], roi_back=(474, 177, 800, 450), threshold=0.8, method='Template matching', profile='High', badgefile=['./tasks/MetaDemon/md/quick_loadout_frame_badge_1.png'], range=[Image(method='Template matching', threshold=0.8), Image(method='Template matching', threshold=0.8, file='./tasks/MetaDemon/md/md_quick_loadout_frame_fight.png')])
-
-
 	# Click Rule Assets
 	# 点击好友分享鬼王
 	C_MD_FRIEND_BOSS = RuleClick(roi_front=(46,372,84,86), roi_back=(46,372,84,86), name="md_friend_boss")
 
 
-	# List Rule Assets
-	# 前往超鬼王活动
-	L_GOTO_METADEMON_LIST = RuleList(folder="./tasks/MetaDemon/md", direction="vertical", mode="ocr", roi_back=(53,121,48,557), size=(43, 68),
-					 array=["版本"])
+	# Image Rule Assets
+	F_QUICK_LOADOUT_FRAME = RuleFrame(name='quick_loadout_frame', roi_badge=(1217, 429, 44, 39), roi_range=[(496, 224, 553, 387), (762, 557, 108, 36)], roi_back=(474, 177, 800, 450), threshold=0.8, method='Template matching', profile='High', badgefile=['./tasks/MetaDemon/md/quick_loadout_frame_badge_1.png'], range=[Image(method='Template matching', threshold=0.8), Image(method='Template matching', threshold=0.8, file='./tasks/MetaDemon/md/md_quick_loadout_frame_fight.png')])
 
 
 	# Image Rule Assets
@@ -34,9 +28,9 @@ class MetaDemonAssets:
 	I_MD_SHIKIGAMI = RuleImage(roi_front=(1039,628,40,38), roi_back=(1018,617,81,77), threshold=0.8, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_md_shikigami.png")
 	# 鬼王结算中 
 	I_MD_SETTLING = RuleImage(roi_front=(723,441,82,32), roi_back=(714,431,100,51), threshold=0.8, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_md_settling.png")
-	# 好友分享鬼王剩余时间
+	# 好友分享鬼王剩余时间 
 	I_MD_FRIEND_SHARED = RuleImage(roi_front=(148,404,80,21), roi_back=(142,397,96,36), threshold=0.8, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_md_friend_shared.png")
-	# 领取昨日奖励
+	# 领取昨日奖励 
 	I_MD_GET_YESTERDAY_REWARD = RuleImage(roi_front=(708,541,183,56), roi_back=(625,501,327,163), threshold=0.8, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_md_get_yesterday_reward.png")
 	# 一星鬼王召唤票 
 	I_MD_ONE_STAR = RuleImage(roi_front=(411,315,65,69), roi_back=(261,299,754,133), threshold=0.85, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_md_one_star.png")
@@ -104,6 +98,8 @@ class MetaDemonAssets:
 	I_SUMMON_QUICK_FIVE_STAR = RuleImage(roi_front=(1060,527,53,19), roi_back=(1029,466,117,98), threshold=0.96, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_summon_quick_five_star.png")
 	# 快速召唤序列六星 
 	I_SUMMON_QUICK_SIX_STAR = RuleImage(roi_front=(1060,527,53,19), roi_back=(1029,466,117,98), threshold=0.96, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_summon_quick_six_star.png")
+	# 礼包购买关闭 
+	I_MD_GIFT_CLOSE = RuleImage(roi_front=(1183,98,36,36), roi_back=(1150,70,110,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/MetaDemon/md/md_md_close_popup.png")
 
 
 	# Ocr Rule Assets
@@ -112,18 +108,18 @@ class MetaDemonAssets:
 	# 好友列表 
 	O_MD_FRIENDS = RuleOcr(roi=(435,179,486,351), area=(435,178,489,352), mode="Full", method="Default", keyword="", name="md_friends")
 	# 合成目标星级 
-	O_SYNTHESIS_LEVEL = RuleOcr(roi=(747,424,181,34), area=(747,424,181,34), mode="Single", method="Default", keyword="", name="synthesis_level")
-	#  
-	O_BOSS_NAME = RuleOcr(roi=(515,132,33,203), area=(515,132,33,203), mode="Single", method="Default", keyword="", name="boss_name")
-	# 探索页面超鬼王门票获得数量
+	O_SYNTHESIS_LEVEL = RuleOcr(roi=(305,148,165,40), area=(305,148,165,40), mode="Single", method="Default", keyword="", name="synthesis_level")
+	# 鬼王名字 
+	O_BOSS_NAME = RuleOcr(roi=(515,133,32,202), area=(515,133,32,202), mode="Single", method="Default", keyword="", name="boss_name")
+	# 探索页面超鬼王门票获得数量 
 	O_METADEMON_PASS_EXP = RuleOcr(roi=(919,16,114,34), area=(919,16,114,34), mode="DigitCounter", method="Default", keyword="", name="metademon_pass_exp")
-	# 今日掉落门票(掉落/总)
+	# 今日掉落门票(掉落/总) 
 	O_MD_TICKET = RuleOcr(roi=(839,510,70,30), area=(819,506,106,41), mode="DigitCounter", method="Default", keyword="", name="md_ticket")
-	# 好友分享鬼王剩余时间
+	# 好友分享鬼王剩余时间 
 	O_MD_FRIEND_REMAIN = RuleOcr(roi=(142,426,86,25), area=(142,426,86,25), mode="Full", method="Default", keyword="", name="md_friend_remain")
-	# 鬼王逃跑倒计时
+	# 鬼王逃跑倒计时 
 	O_MD_BOSS_ESCAPE = RuleOcr(roi=(670,485,185,28), area=(670,485,185,28), mode="Full", method="Default", keyword="", name="md_boss_escape")
-	# 今日协助击杀鬼王计数:(协助数/总数)
+	# 今日协助击杀鬼王计数:(协助数/总数) 
 	O_MD_ASSIST_COUNT = RuleOcr(roi=(40,320,244,26), area=(40,320,244,26), mode="Full", method="Default", keyword="", name="md_assist_count")
 
 

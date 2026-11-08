@@ -378,5 +378,15 @@
     "threshold": 0.96,
     "profile": "High",
     "description": "快速召唤序列六星"
+  },
+  {
+    "itemName": "md_gift_close",
+    "imageName": "md_md_close_popup.png",
+    "roiFront": "1183,98,36,36",
+    "roiBack": "1150,70,110,100",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "礼包购买关闭"
   }
 ]

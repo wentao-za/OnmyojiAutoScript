@@ -19,8 +19,8 @@
   },
   {
     "itemName": "synthesis_level",
-    "roiFront": "747,424,181,34",
-    "roiBack": "747,424,181,34",
+    "roiFront": "305,148,165,40",
+    "roiBack": "305,148,165,40",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
@@ -28,12 +28,12 @@
   },
   {
     "itemName": "boss_name",
-    "roiFront": "515,132,33,203",
-    "roiBack": "515,132,33,203",
+    "roiFront": "515,133,32,202",
+    "roiBack": "515,133,32,202",
     "mode": "Single",
     "method": "Default",
     "keyword": "",
-    "description": ""
+    "description": "鬼王名字"
   },
   {
     "itemName": "metademon_pass_exp",

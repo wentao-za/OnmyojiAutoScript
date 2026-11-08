@@ -49,7 +49,7 @@ class GameUiAssets:
 	# Image Rule Assets
 	# 活动列表页前往活动 
 	I_ACT_LIST_GOTO_ACT = RuleImage(roi_front=(1063,627,156,60), roi_back=(1007,552,272,166), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_act_list_goto_act.png")
-	# 活动列表页标志
+	# 活动列表页标志 
 	I_CHECK_ACT_LIST = RuleImage(roi_front=(112,13,125,44), roi_back=(75,3,205,66), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_check_act_list.png")
 
 
@@ -142,15 +142,17 @@ class GameUiAssets:
 	I_MAIN_GOTO_SUMMON = RuleImage(roi_front=(1073,174,57,65), roi_back=(571,153,586,124), threshold=0.7, method="Template matching", profile="High", file="./tasks/GameUi/page/page_main_goto_summon.png")
 	# 阴阳寮前往神社 
 	I_GUILD_TO_SHRIN = RuleImage(roi_front=(877,629,49,53), roi_back=(840,602,302,113), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_guild_to_shrin.png")
-	# 闲庭设置
+	#  
+	I_MAIN_SCROLL_CLOSE_DECADE = RuleImage(roi_front=(1198,634,28,39), roi_back=(1167,595,77,112), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_main_scroll_close_decade.png")
+	# 闲庭设置 
 	I_CHECK_MAIN_SET = RuleImage(roi_front=(255,37,41,36), roi_back=(214,6,120,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_check_main_set.png")
-	# 协战页面标志
+	# 协战页面标志 
 	I_CHECK_ASSIT_BATTLE = RuleImage(roi_front=(856,109,31,30), roi_back=(856,109,31,30), threshold=0.8, method="Template matching", profile="Default", file="./tasks/GameUi/page/page_check_assit_battle.png")
-	# 组队界面标志备用
+	# 组队界面标志备用 
 	I_CHECK_TEAM_TITLE = RuleImage(roi_front=(97,27,67,35), roi_back=(81,0,140,82), threshold=0.8, method="Template matching", profile="Default", file="./tasks/GameUi/page/page_check_team_title.png")
-	# 庭院前往纳物库
+	# 庭院前往纳物库 
 	I_MAIN_GOTO_STORAGE = RuleImage(roi_front=(320,620,49,40), roi_back=(285,597,120,100), threshold=0.8, method="Template matching", profile="Default", file="./tasks/GameUi/page/page_main_goto_storage.png")
-	# 纳物库标志
+	# 纳物库标志 
 	I_CHECK_STORAGE = RuleImage(roi_front=(84,14,104,45), roi_back=(84,14,104,45), threshold=0.8, method="Template matching", profile="Default", file="./tasks/GameUi/page/page_check_storage.png")
 
 
@@ -190,7 +192,7 @@ class GameUiAssets:
 	# 活动通用子页面2标志 
 	I_PAGE_CHECK_ACT_GENERAL_2 = RuleImage(roi_front=(151,18,134,40), roi_back=(141,0,157,67), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_act_general_2.png")
 	# 活动通用子页面1标志 
-	I_PAGE_CHECK_ACT_GENERAL_1 = RuleImage(roi_front=(592,0,136,41), roi_back=(554,0,213,59), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_act_general_1.png")
+	I_PAGE_CHECK_ACT_GENERAL_1 = RuleImage(roi_front=(150,17,136,41), roi_back=(117,8,213,59), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_act_general_1.png")
 	# 活动体力挑战标志 
 	I_PAGE_CHECK_BATTLE_AP = RuleImage(roi_front=(151,18,141,41), roi_back=(141,0,192,69), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_battle_ap.png")
 	# 活动大富翁主页面 
@@ -373,7 +375,7 @@ class GameUiAssets:
 	# 鬼王页面标志 
 	I_PAGE_METADEMON_CHECK_BOSS_PAGE = RuleImage(roi_front=(1064,19,43,40), roi_back=(1054,7,62,63), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_check_boss_page.png")
 	# 超鬼王主界面 
-	I_PAGE_METADEMON_MD_CHECK_MAIN_PAGE = RuleImage(roi_front=(901,59,115,212), roi_back=(888,46,146,238), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_md_check_main_page.png")
+	I_PAGE_METADEMON_MD_CHECK_MAIN_PAGE = RuleImage(roi_front=(909,66,100,200), roi_back=(901,59,115,212), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_metademon_md_check_main_page.png")
 
 
 	# Image Rule Assets
@@ -410,7 +412,7 @@ class GameUiAssets:
 	# Image Rule Assets
 	# 寮商店标志 
 	I_PAGE_WEEKLYPURCHASE_RM_CHECK_GUILD_STORE = RuleImage(roi_front=(519,66,193,38), roi_back=(483,34,257,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_weeklypurchase_rm_check_guild_store.png")
-	# 鼬乐币商店页面确认
+	# 鼬乐币商店页面确认 
 	I_PAGE_WEEKLYPURCHASE_ITACHI_SHOP_CHECK = RuleImage(roi_front=(121,37,78,39), roi_back=(116,33,88,49), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page_checks/page_check_weeklypurchase_itachi_shop_check.png")
 
 
