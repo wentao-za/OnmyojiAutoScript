@@ -92,8 +92,8 @@
   {
     "itemName": "wq_trace_one_enable",
     "imageName": "wq_trace_one_enable.png",
-    "roiFront": "1149,563,84,88",
-    "roiBack": "1120,533,146,146",
+    "roiFront": "1141,587,84,88",
+    "roiBack": "1118,565,146,146",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -102,8 +102,8 @@
   {
     "itemName": "wq_trace_one_disable",
     "imageName": "wq_trace_one_disable.png",
-    "roiFront": "1149,563,84,88",
-    "roiBack": "1101,539,163,135",
+    "roiFront": "1146,591,84,88",
+    "roiBack": "1102,570,163,135",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",

@@ -1,5 +1,7 @@
 from module.atom.image import RuleImage
+from module.atom.frame import RuleFrame, Image, Ocr, Click
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -12,22 +14,26 @@ class SwitchOnmyojiAssets:
 
 	# Image Rule Assets
 	# 晴明战标志 
-	I_SEIMI_BATTLE = RuleImage(roi_front=(253,429,79,78), roi_back=(147,388,222,153), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_seimi_battle.png")
+	I_SEIMI_BATTLE = RuleImage(roi_front=(253,429,79,78), roi_back=(147,388,222,153), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_seimi_battle.png")
 	# 神乐战标志 
-	I_KAGURA_BATTLE = RuleImage(roi_front=(509,428,79,78), roi_back=(401,394,222,153), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_kagura_battle.png")
+	I_KAGURA_BATTLE = RuleImage(roi_front=(509,428,79,78), roi_back=(401,394,222,153), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_kagura_battle.png")
 	# 源博雅战标志 
-	I_HIROMASA_BATTLE = RuleImage(roi_front=(761,427,79,78), roi_back=(657,396,222,153), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_hiromasa_battle.png")
+	I_HIROMASA_BATTLE = RuleImage(roi_front=(761,427,79,78), roi_back=(657,396,222,153), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_hiromasa_battle.png")
 	# 八百比丘尼战标志 
-	I_YAO_BIKUNI_BATTLE = RuleImage(roi_front=(1017,428,79,78), roi_back=(910,387,222,153), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_yao_bikuni_battle.png")
+	I_YAO_BIKUNI_BATTLE = RuleImage(roi_front=(1017,428,79,78), roi_back=(910,387,222,153), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_yao_bikuni_battle.png")
 	# 阴阳师交替按钮 
-	I_ONMYOJI_SWITCH = RuleImage(roi_front=(39,385,40,33), roi_back=(19,362,80,91), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_onmyoji_switch.png")
+	I_ONMYOJI_SWITCH = RuleImage(roi_front=(39,385,40,33), roi_back=(19,362,80,91), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_onmyoji_switch.png")
 	# 阴阳术阴阳师页面标志 
-	I_ONMYOJI_CHECK = RuleImage(roi_front=(67,622,82,58), roi_back=(58,608,100,88), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_onmyoji_check.png")
+	I_ONMYOJI_CHECK = RuleImage(roi_front=(67,622,82,58), roi_back=(58,608,100,88), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_onmyoji_check.png")
 	# 阴阳术英杰页面标志 
-	I_HERO_CHECK = RuleImage(roi_front=(70,624,75,55), roi_back=(60,602,100,100), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_hero_check.png")
+	I_HERO_CHECK = RuleImage(roi_front=(70,624,75,55), roi_back=(60,602,100,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_hero_check.png")
 	# 源赖光战标志 
-	I_YORIMITSU_BATTLE = RuleImage(roi_front=(511,424,100,100), roi_back=(448,401,181,142), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_yorimitsu_battle.png")
+	I_YORIMITSU_BATTLE = RuleImage(roi_front=(511,424,100,100), roi_back=(448,401,181,142), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_yorimitsu_battle.png")
 	# 藤原道长战标志 
-	I_MICHINAGA_BATTLE = RuleImage(roi_front=(741,421,100,100), roi_back=(689,399,171,133), threshold=0.8, method="Template matching", file="./tasks/Component/SwitchOnmyoji/so/so_michinaga_battle.png")
+	I_MICHINAGA_BATTLE = RuleImage(roi_front=(741,421,100,100), roi_back=(689,399,171,133), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_michinaga_battle.png")
+	# 阴阳师选择界面 
+	I_ONMYOJI_CHECK_PAGE = RuleImage(roi_front=(24,184,38,145), roi_back=(24,184,38,145), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_onmyoji_check_page.png")
+	# 英杰选择界面 
+	I_HERO_CHECK_PAGE = RuleImage(roi_front=(22,411,41,142), roi_back=(22,411,41,142), threshold=0.8, method="Template matching", profile="High", file="./tasks/Component/SwitchOnmyoji/so/so_hero_check_page.png")
 
 

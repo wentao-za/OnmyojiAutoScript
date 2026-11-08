@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime
 
 from module.base.timer import Timer
+from module.config.utils import desktop_mode_enabled
 from module.device.handle import Handle, WindowNode, handle_num2title, handle_title2num, is_handle_valid
 from module.logger import logger
 from module.base.utils import point2str
@@ -28,14 +29,34 @@ class HyaDevice(BaseTask):
     """
     hya_screenshot_interval = Timer(0.2)  # 300ms
     hya_fs_check_timer = Timer(3 * 60)  # 五分钟跑不完就应该是出问题了
+    _fallback_warned = False  # 降级通道告警只报一次，防止每帧刷屏
+
+    def _warn_fallback_once(self, message: str) -> None:
+        """降级运行告警只打一次。
+
+        桌面模式或 handle 缺失时不存在 root_node，fast_screenshot / fast_click
+        每帧都会回落到标准通道，逐帧告警在单局内可达数十条，会把真正的
+        ERROR 淹掉。降级本身是预期行为，首帧报一次即可。
+        """
+        if self._fallback_warned:
+            return
+        self._fallback_warned = True
+        logger.warning(message)
 
     def _ensure_root_node(self) -> None:
         """Ensure root_node is initialized on the Device.
 
-        Handle.__init__ returns early without creating root_node when
-        config.script.device.handle is empty. This rebuilds it on demand.
+        Handle.__init__ returns early without creating root_node in two cases:
+        1. config.script.device.handle is empty, this rebuilds it on demand.
+        2. desktop client mode, Handle binds PID/hwnd instead of a handle tree,
+           root_node is absent by design, so there is nothing to rebuild.
         """
         if hasattr(self.device, 'root_node'):
+            return
+        # 桌面客户端模式（script.desktop.enable=True）由 Handle 绑定 PID/hwnd，
+        # 全程不构建 root_node，这是设计如此、不是 handle 配置缺失，
+        # 不应每帧打告警把真正的 ERROR 淹没
+        if desktop_mode_enabled(self.device.config):
             return
         from module.config.config import Config
         root_handle = self.device.config.script.device.handle
@@ -71,7 +92,7 @@ class HyaDevice(BaseTask):
         if hasattr(self.device, 'root_node'):
             self.device.image = self.device.screenshot_window_background() if screenshot == ScreenshotMethod.WINDOW_BACKGROUND else self.device.screenshot_nemu_ipc()
         else:
-            logger.warning('root_node unavailable, falling back to standard screenshot')
+            self._warn_fallback_once('root_node unavailable, falling back to standard screenshot')
             self.device.screenshot()
         self.device.image_frame_id = None
         if image_black(self.device.image):
@@ -91,8 +112,13 @@ class HyaDevice(BaseTask):
             'Click %s @ %s' % (point2str(x, y), 'Click')
         )
         if not hasattr(self.device, 'root_node'):
-            logger.warning('root_node unavailable, falling back to standard click')
-            self.device.click(x, y)
+            self._warn_fallback_once('root_node unavailable, falling back to standard click')
+            # 一局投豆 30+ 次全走这条降级路径，若用默认 control_name='Click' 会写进
+            # click_record（deque(maxlen=15)），第 10 次必触 GameTooManyClickError。
+            # 有 root_node 的快通道 click_window_message 本来就不计数，此处对齐之。
+            # control_check=False 顺带跳过 handle_control_check 里的 stuck_record_clear()，
+            # 这正好保住 detect_record 中的 BATTLE_STATUS_S 白名单（device.py:35），勿补回。
+            self.device.click(x, y, control_check=False)
             return
         if control_method == ControlMethod.MINITOUCH:
             try:

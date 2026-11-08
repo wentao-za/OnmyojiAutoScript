@@ -1,9 +1,9 @@
 [
   {
     "itemName": "wq_invite_1",
-    "imageName": "invite_wq_invite_1.png",
-    "roiFront": "157,401,30,33",
-    "roiBack": "124,354,100,100",
+    "imageName": "invite_wq_invite.png",
+    "roiFront": "154,401,30,33",
+    "roiBack": "100,370,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -11,9 +11,9 @@
   },
   {
     "itemName": "wq_invite_2",
-    "imageName": "invite_wq_invite_2.png",
-    "roiFront": "444,401,30,33",
-    "roiBack": "411,367,100,100",
+    "imageName": "invite_wq_invite.png",
+    "roiFront": "386,401,30,33",
+    "roiBack": "370,370,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -21,9 +21,9 @@
   },
   {
     "itemName": "wq_invite_3",
-    "imageName": "invite_wq_invite_3.png",
-    "roiFront": "729,398,30,33",
-    "roiBack": "692,363,100,100",
+    "imageName": "invite_wq_invite.png",
+    "roiFront": "680,401,30,33",
+    "roiBack": "640,370,100,100",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -162,7 +162,7 @@
   {
     "itemName": "wq_cooperation_type_jade_1",
     "imageName": "wq_cooperation_type_jade.png",
-    "roiFront": "265,536,42,45",
+    "roiFront": "265,530,42,45",
     "roiBack": "89,461,296,192",
     "method": "Template matching",
     "threshold": 0.8,

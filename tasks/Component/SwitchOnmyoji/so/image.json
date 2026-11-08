@@ -6,6 +6,7 @@
     "roiBack": "147,388,222,153",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "晴明战标志"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "401,394,222,153",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "神乐战标志"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "657,396,222,153",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "源博雅战标志"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "910,387,222,153",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "八百比丘尼战标志"
   },
   {
@@ -42,6 +46,7 @@
     "roiBack": "19,362,80,91",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "阴阳师交替按钮"
   },
   {
@@ -51,6 +56,7 @@
     "roiBack": "58,608,100,88",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "阴阳术阴阳师页面标志"
   },
   {
@@ -60,6 +66,7 @@
     "roiBack": "60,602,100,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "阴阳术英杰页面标志"
   },
   {
@@ -69,6 +76,7 @@
     "roiBack": "448,401,181,142",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "源赖光战标志"
   },
   {
@@ -78,6 +86,27 @@
     "roiBack": "689,399,171,133",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "藤原道长战标志"
+  },
+  {
+    "itemName": "onmyoji_check_page",
+    "imageName": "so_onmyoji_check_page.png",
+    "roiFront": "24,184,38,145",
+    "roiBack": "24,184,38,145",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "阴阳师选择界面"
+  },
+  {
+    "itemName": "hero_check_page",
+    "imageName": "so_hero_check_page.png",
+    "roiFront": "22,411,41,142",
+    "roiBack": "22,411,41,142",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "英杰选择界面"
   }
 ]

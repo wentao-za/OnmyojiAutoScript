@@ -91,7 +91,7 @@ class ScriptTask(FriendshipPoints, MysteryShopAssets, GeneralInvite):
                                     money_ocr=self.O_MALL_RESOURCE_5, buy_money=85):
                 pass
         if shop_config.black_daruma_scrap:
-            while self.buy_mall_one(buy_button=self.I_MS_BLACK, buy_check=self.I_MS_CHECK_BLACK,
+            while self.buy_mall_one(buy_button=self.I_MS_BLACK_SHARD, buy_check=self.I_MS_CHECK_BLACK_SHARD,
                                     money_ocr=self.O_MALL_RESOURCE_5, buy_money=60):
                 pass
         if shop_config.shop_kaiko_3:

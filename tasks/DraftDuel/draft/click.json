@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "itemName": "safe_area",
+    "roiFront": "10,650,60,60",
+    "roiBack": "10,650,60,60",
+    "profile": "Default",
+    "description": "误点开式神技能弹窗后的关闭用安全点击区域"
+  }
+]

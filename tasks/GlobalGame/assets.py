@@ -13,18 +13,18 @@ class GlobalGameAssets:
 
 
 	# Image Rule Assets
-	# 接受协作邀请
+	# 接受协作邀请 
 	I_G_ACCEPT = RuleImage(roi_front=(846,476,56,46), roi_back=(814,430,117,110), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_accept.png")
-	# 拒绝协作邀请
+	# 拒绝协作邀请 
 	I_G_REJECT = RuleImage(roi_front=(846,562,53,51), roi_back=(819,536,108,101), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_reject.png")
-	# 勾玉协作
-	I_G_JADE = RuleImage(roi_front=(676,512,43,46), roi_back=(650,489,94,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_jade.png")
-	# 猫粮协作
-	I_G_CAT_FOOD = RuleImage(roi_front=(666,499,59,65), roi_back=(543,421,205,176), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
-	# 狗粮协作
-	I_G_DOG_FOOD = RuleImage(roi_front=(575,510,63,54), roi_back=(543,421,205,176), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
-	# 忽略协作邀请
-	I_G_IGNORE = RuleImage(roi_front=(792,86,21,21), roi_back=(777,65,48,48), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
+	# 勾玉协作 
+	I_G_JADE = RuleImage(roi_front=(676,480,43,46), roi_back=(646,457,94,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_jade.png")
+	# 猫粮协作 
+	I_G_CAT_FOOD = RuleImage(roi_front=(664,475,59,65), roi_back=(543,421,205,176), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_cat_food.png")
+	# 狗粮协作 
+	I_G_DOG_FOOD = RuleImage(roi_front=(585,494,63,54), roi_back=(543,421,205,176), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_dog_food.png")
+	# 忽略协作邀请 
+	I_G_IGNORE = RuleImage(roi_front=(792,86,21,21), roi_back=(777,49,154,64), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_ignore.png")
 	# 网络异常 
 	I_NETWORK_ABNORMAL = RuleImage(roi_front=(588,335,211,57), roi_back=(583,330,221,67), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_network_abnormal.png")
 	# 已端口游戏服务器，需要重新连接，这种情况一般是断开很久了 
@@ -33,7 +33,7 @@ class GlobalGameAssets:
 	I_CLIENT_CLEAR = RuleImage(roi_front=(599,383,85,42), roi_back=(594,378,95,52), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_client_clear.png")
 	# description 
 	I_CHAT_CLOSE_BUTTON = RuleImage(roi_front=(632,343,49,103), roi_back=(632,343,49,103), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_chat_close_button.png")
-	# 体力协作
+	# 体力协作 
 	I_G_SUSHI = RuleImage(roi_front=(660,504,75,50), roi_back=(515,441,278,149), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/gg/gg_g_sushi.png")
 
 
@@ -45,7 +45,7 @@ class GlobalGameAssets:
 	# Image Rule Assets
 	# 通用确认 
 	I_UI_CONFIRM = RuleImage(roi_front=(692,419,124,39), roi_back=(547,368,322,122), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_confirm.png")
-	# 备用确认
+	# 备用确认 
 	I_UI_CONFIRM_BACKUP = RuleImage(roi_front=(700,419,109,41), roi_back=(640,362,255,128), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_confirm_backup.png")
 	# 长一点的取消 
 	I_UI_CANCEL = RuleImage(roi_front=(472,417,111,42), roi_back=(424,371,212,116), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_cancel.png")
