@@ -7,10 +7,108 @@
 from module.device.method.desktop_impl import (
     desktop_pid_alive, desktop_window_titles, desktop_write_instance_state,
     find_desktop_window_by_pid)
+from module.exception import GameInputStaleError
 from module.logger import logger
+import hashlib
+import time
 
 
 class DesktopDevice:
+    # 输入失效效果面探针（坑位 46 方案 C）：同一控制名连续 N 次点击、跨越
+    # N 个不同截图帧、画面零变化，即判定前 N-1 次点击零视觉响应。
+    DESKTOP_PROBE_MIN_CLICKS = 3
+    # 截图抽样步长：1280x720 每 8 像素取一点，签名输入约 43KB，md5 毫秒级
+    DESKTOP_PROBE_SAMPLE_STRIDE = 8
+
+    def _desktop_probe_signature(self):
+        """当前截图的抽样签名，用于效果面比对（不依赖消息通道）。"""
+        image = getattr(self, 'image', None)
+        if image is None:
+            return None
+        stride = self.DESKTOP_PROBE_SAMPLE_STRIDE
+        return hashlib.md5(image[::stride, ::stride].tobytes()).hexdigest()
+
+    def _desktop_click_probe(self, control_name):
+        """受控点击后的输入失效判定与分级恢复；仅桌面实例生效。
+
+        判定只用截图比对，不向窗口发送任何探活消息——忙等态下消息可能被
+        静默吞掉且不报错，发送面检测不可靠（坑位 46）。随机点击（SAFE_RANDOM_
+        CLICK 等）设计上不要求画面变化、裸坐标点击（control_name='Click'）
+        语义过宽，均不参与判定。配置缺 script.desktop 组（模板未升级）时
+        is_desktop 会抛 AttributeError，视作非桌面、探针不启用。
+        """
+        try:
+            enabled = self.is_desktop
+        except AttributeError:
+            enabled = False
+        if not enabled:
+            return
+        if 'RANDOM' in control_name or control_name == 'Click':
+            return
+        sig = self._desktop_probe_signature()
+        frame = getattr(self, 'image_frame_id', None)
+        if sig is None or frame is None:
+            return
+        state = getattr(self, '_desktop_probe_state', None)
+        if state is None:
+            state = self._desktop_probe_state = {'name': None, 'frames': [], 'level': 0}
+        if state['name'] != control_name or not state['frames']:
+            state['name'] = control_name
+            state['frames'] = [(frame, sig)]
+            return
+        first_sig = state['frames'][0][1]
+        last_frame = state['frames'][-1][0]
+        if sig != first_sig or frame == last_frame:
+            # 画面发生过变化（点击有效）或尚未出现新截图帧（同帧重复点击），
+            # 重新计数；画面变化同时把恢复阶梯清零
+            if sig != first_sig:
+                state['level'] = 0
+            state['frames'] = [(frame, sig)]
+            return
+        state['frames'].append((frame, sig))
+        if len(state['frames']) < self.DESKTOP_PROBE_MIN_CLICKS:
+            return
+        # 连续 3 次同名点击、跨 3 个不同截图帧、画面零变化：前两次点击均无效
+        state['frames'] = [(frame, sig)]
+        self._desktop_input_stale_recover(control_name)
+
+    def _desktop_input_stale_recover(self, control_name):
+        """输入失效三级恢复（坑位 46 方案 C）：
+
+        ① 还原最小化窗口并按初始化同源逻辑重绑 PID/句柄（排除最小化与句柄
+           过期两类可自愈因素）；
+        ② 冷却 5s 后放行重试（吸收客户端短暂忙等）；
+        ③ 仍无效则判定忙等态不可自愈，抛 GameInputStaleError 走 script.py 的
+           GameStuckError 恢复路径（Restart，桌面实例为 force kill 客户端），
+           不必等 device 层全局 10 次点击硬限被动触发。
+
+        ①是尽力而为：重绑失败只告警不中断，后续两级仍会推进。任意一次点击
+        产生画面变化即视为恢复成功，等级清零。
+        """
+        state = self._desktop_probe_state
+        state['level'] += 1
+        if state['level'] == 1:
+            logger.warning(f'Desktop input possibly ineffective (control={control_name}, '
+                           f'{self.DESKTOP_PROBE_MIN_CLICKS - 1} clicks no visual response), '
+                           f'restore window and rebind')
+            self.desktop_window_restore_if_minimized()
+            try:
+                pid, hwnd = self._desktop_locate_window()
+                if pid and hwnd:
+                    self.desktop_bind_pid(pid, hwnd, just_launched=False)
+            except Exception as e:
+                logger.warning(f'Desktop handle rebind failed (recovery ladder continues): {e}')
+            return
+        if state['level'] == 2:
+            logger.warning(f'Desktop input still ineffective (control={control_name}), '
+                           f'cooldown 5s then retry')
+            time.sleep(5)
+            return
+        logger.error(f'Desktop window_message input stale (control={control_name}), '
+                     f'recovery ladder exhausted, force restart required')
+        state['level'] = 0
+        raise GameInputStaleError(f'Desktop input stale: control={control_name}')
+
     # 登录态：OAS 自动启动的客户端停在 MPay 登录页时为 False，登录流程成功后
     # 置 True，运行期发现弹窗置回 False。默认 True 表示假设已在游戏中。
     _desktop_login_done = True

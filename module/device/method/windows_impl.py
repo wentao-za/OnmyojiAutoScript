@@ -11,12 +11,13 @@ from cached_property import cached_property
 from win32gui import (GetWindowText, EnumWindows, FindWindow, FindWindowEx,
                       IsWindow, GetWindowRect, GetWindowDC, DeleteObject,
                       SetForegroundWindow, IsWindowVisible, GetDC, GetParent,
-                      EnumChildWindows, SetForegroundWindow, GetClientRect, ReleaseDC)
+                      EnumChildWindows, SetForegroundWindow, GetClientRect, ReleaseDC,
+                      SendMessageTimeout)
 from win32con import (SRCCOPY, DESKTOPHORZRES, DESKTOPVERTRES, WM_LBUTTONUP,
                       WM_LBUTTONDOWN, WM_ACTIVATE, WA_ACTIVE, MK_LBUTTON,
                       WM_NCHITTEST, WM_SETCURSOR, HTCLIENT, WM_MOUSEMOVE,
                       WM_PARENTNOTIFY, WM_MOUSEACTIVATE, WM_MOUSEWHEEL,
-                      WM_SETFOCUS, WM_CAPTURECHANGED)
+                      WM_SETFOCUS, WM_CAPTURECHANGED, SMTO_ABORTIFHUNG)
 from win32ui import CreateDCFromHandle, CreateBitmap
 from win32api import GetSystemMetrics, SendMessage, MAKELONG, PostMessage
 from win32con import SRCCOPY
@@ -257,7 +258,10 @@ class Window(Handle):
         PostMessage(hwnd, WM_LBUTTONDOWN, MK_LBUTTON, lparam)
         time.sleep(press_time)
         PostMessage(hwnd, WM_LBUTTONUP, 0, lparam)
-        SendMessage(hwnd, WM_CAPTURECHANGED, 0, 0)
+        # 同步消息带超时（坑位 46 方案 C 加固）：裸 SendMessage 在客户端消息循环
+        # 死锁时会无限阻塞 OAS 点击线程；SMTO_ABORTIFHUNG + 2s 上限兜底。
+        # 忙等态（消息循环存活、游戏逻辑不消费输入）实测 0.1-0.2s 返回，不受影响。
+        SendMessageTimeout(hwnd, WM_CAPTURECHANGED, 0, 0, SMTO_ABORTIFHUNG, 2000)
         PostMessage(hwnd, WM_MOUSEMOVE, 0, lparam)
 
     def click_desktop_window_message(self, x: int, y: int, fast: bool = False):
