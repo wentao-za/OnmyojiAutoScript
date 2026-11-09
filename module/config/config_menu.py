@@ -88,6 +88,7 @@ class ConfigMenu:
             'MartialArts',
             'MartialTournament',
             'ActivityExploration',
+            'MetaDemonTicket',
             'MetaDemon',
             'FrogBoss',
             'FrogChallenge',

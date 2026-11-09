@@ -64,6 +64,7 @@ from tasks.MartialTournament.config import MartialTournament
 from tasks.ActivityExploration.config import ActivityExploration
 from tasks.MartialArts.config import MartialArts
 from tasks.MetaDemon.config import MetaDemon
+from tasks.MetaDemonTicket.config import MetaDemonTicket
 from tasks.FrogBoss.config import FrogBoss
 from tasks.FrogChallenge.config import FrogChallenge
 from tasks.FloatParade.config import FloatParade
@@ -144,6 +145,7 @@ class ConfigModel(ConfigBase):
     )
     martial_arts: MartialArts = Field(default_factory=MartialArts)
     meta_demon: MetaDemon = Field(default_factory=MetaDemon)
+    meta_demon_ticket: MetaDemonTicket = Field(default_factory=MetaDemonTicket)
     frog_boss: FrogBoss = Field(default_factory=FrogBoss)
     frog_challenge: FrogChallenge = Field(default_factory=FrogChallenge)
     float_parade: FloatParade = Field(default_factory=FloatParade)
@@ -243,6 +245,12 @@ class ConfigModel(ConfigBase):
                     break
         data['activity_shikigami'] = activity
 
+        # 不接入 MetaDemonTicket.config.split_legacy_meta_demon：dev 的 MetaDemon 仍在用
+        # ticket_farming_battle_conf 做前置刷票（tasks/MetaDemon/ticket_farming.py 的
+        # ticket_farming_config()）。该迁移以「meta_demon 里存在 ticket_farming_battle_conf
+        # 键」为触发条件，而 pydantic 保存时会回写全部字段、这个键必然存在，接入即必然把
+        # 刷票战斗配置 pop 进独立任务、重置为默认值。MetaDemonTicket 字段独立建档，不与
+        # meta_demon 共享配置段；确需迁移时再显式调用该函数。
         return data
 
     def __setattr__(self, key, value):
