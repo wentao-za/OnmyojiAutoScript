@@ -346,6 +346,7 @@ class MetaDemonSettingsChecks(unittest.TestCase):
                 task.collect_reward = Mock(return_value=False)
                 task.switch_rotate = Mock(return_value=False)
                 task.get_fire_button = Mock(return_value=None)
+                task.ensure_exploration_team_locked = Mock(return_value=False)
                 task.swipe = Mock(return_value=True)
                 task.arrive_end = Mock(return_value=True)
                 task.appear_then_click = Mock(return_value=True)
