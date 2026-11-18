@@ -138,6 +138,9 @@ class ScriptRuntimeController:
         if isinstance(wait_until, datetime):
             self.server_update_wait_until = wait_until
             self.server_update_wait_log_until = None
+        # 一次性事件：取走后立即清空。否则等到开服时间后再进恢复流程时，
+        # 会读到同一条残留 outcome 反复返回 RESCHEDULE，永远不重启客户端。
+        self.script.last_task_runtime_outcome = None
         logger.info(
             f'{source} delayed by server update, '
             f'reschedule scheduler and wait until {self._format_datetime(self.server_update_wait_until)}'
@@ -226,6 +229,12 @@ class ScriptRuntimeController:
             logger.info('Desktop client logged in without restart, continue')
             return ScriptRuntimeDecision.READY
 
+        # 登录阶段可能已被判定为「早间停服」：待办任务已推到开服时刻，
+        # 此时再重启客户端只会重复失败一次，直接回调度器等待开服。
+        decision = self._consume_server_update_delay_outcome('Desktop login recovery')
+        if decision is not None:
+            return decision
+
         if not self.script.run('Restart'):
             logger.warning('Restart task failed during runtime recovery')
             return ScriptRuntimeDecision.FAILED
@@ -289,7 +298,25 @@ class ScriptRuntimeController:
     def _ensure_game_closed(self) -> ScriptRuntimeDecision:
         """
         确保模拟器已启动，但游戏处于关闭状态。
+
+        桌面模式下「运行环境」就是游戏客户端本身，所以不走 `_ensure_emulator_running`：
+        那一步在桌面模式等于启动客户端，紧接着又被这里关掉，每次等待都白开一次。
+        桌面分支改为「在跑就停掉，并同步把 `emulator_down` 置真」——标志不同步的话，
+        下个任务到来时 `_ensure_emulator_running` 会认为环境还在、跳过重建 Device，
+        需要客户端的任务只能卡在「Desktop client window not found」。
         """
+        if self.device.is_desktop:
+            if self.device.app_is_running():
+                logger.info('Ensure game is closed during wait')
+                self.device.app_stop()
+                # 与 `_wait_close_emulator_or` 的 emulator_stop 分支保持一致：
+                # 环境已关的标志置真，预热/唤醒路径才会重建 Device 重新拉起客户端
+                logger.info('Desktop client stopped during wait, mark emulator down for next wake')
+                self.emulator_down = True
+            else:
+                logger.info('Game is already closed during wait')
+            return ScriptRuntimeDecision.READY
+
         self._ensure_emulator_running('Wake emulator before ensuring close_game state')
         if self.device.app_is_running():
             logger.info('Ensure game is closed during wait')

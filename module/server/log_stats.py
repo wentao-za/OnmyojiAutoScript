@@ -21,6 +21,9 @@ _TASK_LINE_RE = re.compile(r"\[Task\]\s+(?P<task>[A-Za-z0-9_]+)\s+\(")
 _EQ_LINE_RE = re.compile(r"^═{15,}\s*$")
 _EQ_TITLE_LINE_RE = re.compile(r"^═{10,}\s+(?P<title>.*?)\s+═{10,}\s*$")
 _TITLE_LINE_RE = re.compile(r"^─{10,}\s*(?P<title>.*?)\s*─{10,}\s*$")
+# 任务名标题中英对照后形如「宠物挂卡(petcard)」，括号内是英文任务 key。
+# 统计仍按 key 聚合，见 _extract_boundary_title。
+_TASK_KEY_IN_TITLE_RE = re.compile(r"\((?P<key>[A-Za-z0-9_]+)\)$")
 _TASK_ENDED_RE = re.compile(r"^(?P<title>.+?)\s+task ended\b", re.IGNORECASE)
 # script.py 在任务 run() 返回后打的收尾行，才是任务真正的结束时刻。
 _SCHEDULER_END_TASK_RE = re.compile(r"Scheduler:\s*End task\s+`(?P<title>[^`]+)`", re.IGNORECASE)
@@ -140,7 +143,14 @@ class LogStatsParser:
     @staticmethod
     def _extract_boundary_title(line: str) -> str:
         matched = _TITLE_LINE_RE.match(line.strip())
-        return matched.group("title").strip() if matched else ""
+        if not matched:
+            return ""
+        title = matched.group("title").strip()
+        # 任务名标题形如「宠物挂卡(petcard)」，统计仍按括号内的英文 key 聚合。
+        # hr() 会对整串做 capitalize()，括号内英文必为小写，这里再 capitalize()
+        # 还原成改造前的样式（Petcard），与历史日志的 summary key 保持一致。
+        key = _TASK_KEY_IN_TITLE_RE.search(title)
+        return key.group("key").capitalize() if key else title
 
     @staticmethod
     def _extract_equal_boundary_title(line: str) -> str | None:

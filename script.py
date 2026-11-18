@@ -32,7 +32,7 @@ from module.base.decorator import del_cached_property
 from module.atom.scatter import RuleScatter
 from module.logger import logger
 from module.exception import *
-from module.server.i18n import I18n
+from module.server.i18n import I18n, Addition
 from module.image.rpc import ensure_image_server_ready
 from module.ocr.rpc import (
     ensure_ocr_server_ready,
@@ -100,6 +100,16 @@ class Script:
         except Exception as e:
             logger.exception(e)
             exit(1)
+
+    @cached_property
+    def task_name_cn(self) -> dict:
+        """任务目录名 -> 中文名，来源 assets/i18n/zh-CN.json。
+
+        仅用于任务名日志的中英对照（OAS_development.md §3.6 第四小节）。
+        注意不能用 I18n.trans_zh_cn()：它读 module/config/i18n/zh-CN.json，
+        该文件不存在，实际是空转、原样返回入参。
+        """
+        return Addition.load_additions().get('zh-CN', {})
 
     @cached_property
     def device(self) -> Device | None:
@@ -555,6 +565,11 @@ class Script:
         self._set_task_runtime_outcome(task=task, status='server_update_delayed', wait_until=delay_target)
         return True
 
+    def _delayed_by_server_update(self) -> bool:
+        """本次恢复是否已被停服延迟通道接管（待办任务已推到开服时刻）。"""
+        outcome = self.last_task_runtime_outcome
+        return isinstance(outcome, dict) and outcome.get('status') == 'server_update_delayed'
+
     def run(self, command: str) -> bool:
         """
         :param command:  大写驼峰命名的任务名字
@@ -577,7 +592,11 @@ class Script:
             self.config.cooperation_runtime = cooperation
             if command in BATTLE_TASKS:
                 prepare_task_cooperation(self.config, command)
-            self.device.screenshot()
+            if command != 'Restart':
+                # Restart 的职责就是把客户端拉起来，不能用「客户端必须已在」的预检截图
+                # 把它挡在门外——否则恢复手段被自身前置条件否决，重启额度原地空转耗光。
+                # Restart 内部 app_start 之后自行截图与登录，不依赖进入前的帧。
+                self.device.screenshot()
             module_name = 'script_task'
             module_path = str(Path.cwd() / 'tasks' / command / (module_name + '.py'))
             logger.info(f'module_path: {module_path}, module_name: {module_name}')
@@ -675,7 +694,10 @@ class Script:
             logger.info(f'Scheduler: Start task `{task}`')
             self.device.stuck_record_clear()
             self.device.click_record_clear()
-            logger.hr(task, level=0)
+            # 任务名标题中英对照（OAS_development.md §3.6 第四小节）。
+            # 无中文名的任务只打英文 key，不自造中文名。
+            _task_cn = self.task_name_cn.get(task)
+            logger.hr(f'{_task_cn}({task})' if _task_cn else task, level=0)
             self.config.model.running_task = task
             self._cooperation.publish(task)
             _task_start = datetime.now()
@@ -789,6 +811,14 @@ class Script:
         try:
             LoginService(config=self.config, device=self.device).app_handle_login()
         except RequestHumanTakeover as e:
+            # 早间停服窗口内服务端拒绝进入，重启客户端与重试登录都不会成功：
+            # 复用停服延迟通道把待办任务推到开服后，不在这里停机等人。
+            if self._delay_tasks_for_server_update(
+                task=command,
+                reason=f'desktop login failed inside server update window: {e}',
+            ):
+                logger.warning('Desktop login blocked by server update window, delay pending tasks')
+                return False
             self._request_human_takeover(e, command)
         except GameNotRunningError as e:
             # 登录过程中窗口被关掉：登录无从继续，退回重启路径由 Restart 重拉客户端
@@ -859,6 +889,10 @@ class Script:
                 # 登录完成，回调度器重跑原任务（GotoMain 由 require_main 重新驱动）
                 self._login_retry_pending = True
                 return True
+            if self._delayed_by_server_update():
+                # 停服窗口内登录被拒：待办任务已延后到开服，不再消耗异常重启额度
+                logger.info('Desktop login delayed by server update window, skip error restart')
+                return False
             self._request_error_restart(command)
             return True
 
