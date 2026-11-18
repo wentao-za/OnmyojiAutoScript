@@ -40,6 +40,14 @@ class GameUi(ChessBattleNavigationMixin, BaseTask, GameUiAssets):
 
     REPEATED_TRANSITION_FAILURE_THRESHOLD = 3
 
+    # 未知页关闭动作命中后、进入下一轮页面识别前的等待时间（秒）。
+    # 未列出的动作沿用原默认值 0.8~1.5 秒。
+    # 回庭院图标会切换整个场景：等 1.5 秒时庭院往往还没渲染完，下一轮仍判未知页，
+    # 白白耗掉一次导航超时窗口，因此单独延长。
+    UNKNOWN_CLOSER_SETTLE = {
+        GlobalGameAssets.I_UI_GOTO_MAIN.name: (2.2, 3.2),
+    }
+
     # 全局未知页关闭动作，所有任务共享。
     DEFAULT_UNKNOWN_CLOSERS = [
         GlobalGameAssets.I_UI_BACK_RED,
@@ -52,6 +60,9 @@ class GameUi(ChessBattleNavigationMixin, BaseTask, GameUiAssets):
         GlobalGameAssets.I_UI_BACK_YELLOW,
         SixRealmsAssets.I_EXIT_SIXREALMS,
         GlobalGameAssets.I_UI_BACK_BLUE,
+        # 放最后：回庭院等于放弃当前进度，只有上面十个关弹窗/逐层返回的轻量动作
+        # 全部未命中时才用它做归一化兜底。
+        GlobalGameAssets.I_UI_GOTO_MAIN,
     ]
 
     def __init__(self, config, device):
@@ -766,6 +777,18 @@ class GameUi(ChessBattleNavigationMixin, BaseTask, GameUiAssets):
             raise GameNotRunningError('Client dropped back to login')
 
         logger.warning("Try switch to a supported page")
+
+        # 庭院角色操作菜单（点主角立绘弹出「闲庭模式/切换角色/姿度配饰」）没有关闭按钮，
+        # 且会盖住 page_main 的 I_CHECK_MAIN（实测 0.52 < 0.95），使导航把该界面判为未知页。
+        # 「切换角色」按钮位置固定 (864,412)：201 张崩溃帧中仅此类 4 帧得分 >0.95，其余 <0.55。
+        # 点左侧背景收起菜单。连续 3 次仍关不掉则放弃，交回下面的常规关闭动作与导航超时。
+        if self.navigator.unknown_close_history[-3:] != ['shikigami_menu_blank'] * 3 \
+                and self.appear(self.I_MAIN_SHIKIGAMI_SWITCH):
+            self._record_unknown_close_event('shikigami_menu_blank')
+            self.click(self.C_BLANK_CLICK, interval=0)
+            time.sleep(random.randrange(8, 16, 1) / 10)
+            return True
+
         actions = [*self.navigator.local_unknown_closers, *self.DEFAULT_UNKNOWN_CLOSERS]
         if getattr(self, '_six_realms_confirm_overlays', False) is True:
             from tasks.SixRealms.page import handle_sr_confirm
@@ -781,7 +804,11 @@ class GameUi(ChessBattleNavigationMixin, BaseTask, GameUiAssets):
             if self._execute_action(action, interval=1.5, skip_first_screenshot=False):
                 self._record_unknown_close_event(f"{action_name}")
                 # 关掉未知界面后等待页面变化, 防止多次识别到未知界面
-                time.sleep(random.randrange(8, 16, 1) / 10)
+                settle = self.UNKNOWN_CLOSER_SETTLE.get(action_name)
+                if settle:
+                    time.sleep(random.uniform(*settle))
+                else:
+                    time.sleep(random.randrange(8, 16, 1) / 10)
                 return True
         self._record_unknown_close_event(f"None")
 

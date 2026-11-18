@@ -138,5 +138,15 @@
     "threshold": 0.8,
     "profile": "High",
     "description": "通用返回按钮1：左上角圆框返回箭头"
+  },
+  {
+    "itemName": "ui_goto_main",
+    "imageName": "ui_ui_goto_main.png",
+    "roiFront": "92,12,48,48",
+    "roiBack": "75,0,130,85",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "左上角回庭院图标：点击直接返回主页庭院"
   }
 ]

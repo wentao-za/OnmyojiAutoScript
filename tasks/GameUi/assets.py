@@ -33,6 +33,8 @@ class GameUiAssets:
 	C_RANDOM_LEFT = RuleClick(roi_front=(34,169,140,437), roi_back=(34,169,140,437), name="random_left")
 	# 
 	C_RANDOM_RIGHT = RuleClick(roi_front=(1100,158,140,437), roi_back=(1100,158,140,437), name="random_right")
+	# 庭院角色操作菜单的空白收起落点（无任何 UI）
+	C_BLANK_CLICK = RuleClick(roi_front=(940,124,40,40), roi_back=(940,124,40,40), name="blank_click")
 
 
 	# Image Rule Assets
@@ -154,6 +156,8 @@ class GameUiAssets:
 	I_MAIN_GOTO_STORAGE = RuleImage(roi_front=(320,620,49,40), roi_back=(285,597,120,100), threshold=0.8, method="Template matching", profile="Default", file="./tasks/GameUi/page/page_main_goto_storage.png")
 	# 纳物库标志 
 	I_CHECK_STORAGE = RuleImage(roi_front=(84,14,104,45), roi_back=(84,14,104,45), threshold=0.8, method="Template matching", profile="Default", file="./tasks/GameUi/page/page_check_storage.png")
+	# 庭院角色操作菜单（点击主角立绘后弹出闲庭模式/切换角色/姿度配饰）中的姿度配饰按钮 
+	I_MAIN_SHIKIGAMI_SWITCH = RuleImage(roi_front=(814,507,68,60), roi_back=(761,458,180,160), threshold=0.85, method="Template matching", profile="High", file="./tasks/GameUi/page/page_main_shikigami_switch.png")
 
 
 	# Image Rule Assets

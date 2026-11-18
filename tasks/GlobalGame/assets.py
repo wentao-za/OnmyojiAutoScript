@@ -71,5 +71,7 @@ class GlobalGameAssets:
 	I_UI_BACK_CIRCLE = RuleImage(roi_front=(24,21,36,39), roi_back=(0,0,95,101), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_back_circle.png")
 	# 通用返回按钮1：左上角圆框返回箭头 
 	I_UI_BACK_GENERAL_1 = RuleImage(roi_front=(17,17,47,42), roi_back=(0,0,76,76), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_back_general_1.png")
+	# 左上角回庭院图标：点击直接返回主页庭院 
+	I_UI_GOTO_MAIN = RuleImage(roi_front=(92,12,48,48), roi_back=(75,0,130,85), threshold=0.8, method="Template matching", profile="High", file="./tasks/GlobalGame/ui/ui_ui_goto_main.png")
 
 

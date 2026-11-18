@@ -180,7 +180,12 @@ class LoginService(
             if skip_login_animation:
                 if self.ocr_appear_click(self.O_LOGIN_ANIMATION_SKIP, interval=2.5):  # 点击跳过登录动画
                     continue
-                if self.click(self.C_LOGIN_ANIMATION_CENTER, interval=5):  # 点击屏幕中央触发跳过显示
+                # 主界面已露出（底部式神录按钮可见）时不再点中央：此刻画面已是庭院，
+                # 中央正压着主角立绘，点下去会弹出角色操作菜单；该菜单没有关闭按钮，
+                # 且会盖住 page_main 的 I_CHECK_MAIN（实测 0.52 < 0.95），使后续导航把庭院判为未知页。
+                # 不带 interval 复核，避免把上方判定的冷却期误当作按钮未出现。
+                if not self.appear(self.I_MAIN_GOTO_SHIKIGAMI_RECORDS) \
+                        and self.click(self.C_LOGIN_ANIMATION_CENTER, interval=5):  # 点击屏幕中央触发跳过显示
                     skip_click_mx_cnt -= 1
 
             if self.ocr_appear_click(self.O_LOGIN_ENTER_GAME, interval=3) or self.ocr_appear_click(self.O_LOGIN_ENTER_GAME_OLD, interval=3):

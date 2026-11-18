@@ -218,5 +218,15 @@
     "threshold": 0.8,
     "profile": "Default",
     "description": "纳物库标志"
+  },
+  {
+    "itemName": "main_shikigami_switch",
+    "imageName": "page_main_shikigami_switch.png",
+    "roiFront": "814,507,68,60",
+    "roiBack": "761,458,180,160",
+    "method": "Template matching",
+    "threshold": 0.85,
+    "profile": "High",
+    "description": "庭院角色操作菜单（点击主角立绘后弹出闲庭模式/切换角色/姿度配饰）中的姿度配饰按钮"
   }
 ]
