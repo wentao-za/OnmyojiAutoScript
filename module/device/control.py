@@ -125,8 +125,13 @@ class Control(Minitouch, Adb, Scrcpy, Window):
         elapsed = time.perf_counter() - start
         logger.info(f'{self._format_action_duration(elapsed)}Click {point2str(x, y)} @ {control_name} {duration}')
 
-    def swipe(self, p1, p2, duration=(0.1, 0.2), control_name='SWIPE', distance_check=True):
-        self.handle_control_check(control_name)
+    def swipe(self, p1, p2, duration=(0.1, 0.2), control_name='SWIPE', distance_check=True,
+              control_check=True):
+        # control_check=False：跳过 handle_control_check()，不登记 click_record，不重置
+        # stuck_timer，也不清空 detect_record（BATTLE_STATUS_S 等白名单）。语义与
+        # click(control_check=False) 一致，局内高频滑动（百鬼切豆）必须走这条。见坑位 43/54。
+        if control_check:
+            self.handle_control_check(control_name)
         p1, p2 = ensure_int(p1, p2)
         duration = ensure_time(duration)
         method = self.config.script.device.control_method

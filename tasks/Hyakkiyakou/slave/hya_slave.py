@@ -206,11 +206,14 @@ class HyaSlave(HyaDevice, HyaColor, HyakkiyakouAssets):
     def recognize_bean_10(self) -> bool:
         return self.appear(self.I_BEAN10)
 
+    # 切豆滑动必须 control_check=False：局内点击走 fast_click（同为 False），滑动若走默认
+    # 通道会在**不重置 60s 计时**的情况下 stuck_record_clear() 掉 detect_record 里的
+    # BATTLE_STATUS_S 白名单，60s 后 stuck_record_check 见集合为空即误判 GameStuckError。
     def bean_05to10(self):
-        self.swipe(self.S_BEAN_05TO10)
+        self.swipe(self.S_BEAN_05TO10, control_check=False)
 
     def bean_10to05(self):
-        self.swipe(self.S_BEAN_10TO05)
+        self.swipe(self.S_BEAN_10TO05, control_check=False)
 
     # main process
     # ------------------------------------------------------------------------------------------------------------------

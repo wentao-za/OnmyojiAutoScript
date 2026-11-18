@@ -51,7 +51,8 @@ class DesktopDevice:
             return
         state = getattr(self, '_desktop_probe_state', None)
         if state is None:
-            state = self._desktop_probe_state = {'name': None, 'frames': [], 'level': 0}
+            state = self._desktop_probe_state = {
+                'name': None, 'frames': [], 'level': 0, 'stale_control': None}
         if state['name'] != control_name or not state['frames']:
             state['name'] = control_name
             state['frames'] = [(frame, sig)]
@@ -63,6 +64,7 @@ class DesktopDevice:
             # 重新计数；画面变化同时把恢复阶梯清零
             if sig != first_sig:
                 state['level'] = 0
+                state['stale_control'] = None
             state['frames'] = [(frame, sig)]
             return
         state['frames'].append((frame, sig))
@@ -73,41 +75,51 @@ class DesktopDevice:
         self._desktop_input_stale_recover(control_name)
 
     def _desktop_input_stale_recover(self, control_name):
-        """输入失效三级恢复（坑位 46 方案 C）：
+        """输入失效三级恢复（坑位 46 方案 C；坑位 62 恢复梯按控件分桶）：
+
+        换控件归 1 重计，只有同一控件连续多轮零变化才逐级升级——「画面零变化」
+        可能是点击落在游戏侧本来就不响应的 UI（锁定条目/空白区/已售罄），这类
+        预期 no-op 常分散在多个控件上，跨控件累加会把独立事件串成一次失效
+        （2026-11-17 AreaBoss 悬赏照片连崩 3 轮烧满重启额度停服实锤）。
 
         ① 还原最小化窗口并按初始化同源逻辑重绑 PID/句柄（排除最小化与句柄
            过期两类可自愈因素）；
         ② 冷却 5s 后放行重试（吸收客户端短暂忙等）；
-        ③ 仍无效则判定忙等态不可自愈，抛 GameInputStaleError 走 script.py 的
-           GameStuckError 恢复路径（Restart，桌面实例为 force kill 客户端），
-           不必等 device 层全局 10 次点击硬限被动触发。
+        ③ 同一控件仍无效则判定忙等态不可自愈，抛 GameInputStaleError 走
+           script.py 的 GameStuckError 恢复路径（Restart，桌面实例为 force
+           kill 客户端），不必等 device 层全局 10 次点击硬限被动触发。
 
         ①是尽力而为：重绑失败只告警不中断，后续两级仍会推进。任意一次点击
         产生画面变化即视为恢复成功，等级清零。
         """
         state = self._desktop_probe_state
-        state['level'] += 1
+        if state.get('stale_control') != control_name:
+            # 坑位 62：换控件归 1 重计
+            state['stale_control'] = control_name
+            state['level'] = 1
+        else:
+            state['level'] += 1
         if state['level'] == 1:
-            logger.warning(f'Desktop input possibly ineffective (control={control_name}, '
-                           f'{self.DESKTOP_PROBE_MIN_CLICKS - 1} clicks no visual response), '
-                           f'restore window and rebind')
+            logger.warning(f'桌面输入疑似无效（control={control_name}，'
+                           f'连续{self.DESKTOP_PROBE_MIN_CLICKS - 1}次点击画面无响应），'
+                           f'还原窗口并重绑句柄')
             self.desktop_window_restore_if_minimized()
             try:
                 pid, hwnd = self._desktop_locate_window()
                 if pid and hwnd:
                     self.desktop_bind_pid(pid, hwnd, just_launched=False)
             except Exception as e:
-                logger.warning(f'Desktop handle rebind failed (recovery ladder continues): {e}')
+                logger.warning(f'桌面句柄重绑失败（恢复阶梯继续）：{e}')
             return
         if state['level'] == 2:
-            logger.warning(f'Desktop input still ineffective (control={control_name}), '
-                           f'cooldown 5s then retry')
+            logger.warning(f'桌面输入仍然无效（control={control_name}），冷却 5 秒后重试')
             time.sleep(5)
             return
-        logger.error(f'Desktop window_message input stale (control={control_name}), '
-                     f'recovery ladder exhausted, force restart required')
+        logger.error(f'桌面窗口消息输入失效（control={control_name}），'
+                     f'恢复阶梯已穷尽，需要强制重启')
         state['level'] = 0
-        raise GameInputStaleError(f'Desktop input stale: control={control_name}')
+        state['stale_control'] = None
+        raise GameInputStaleError(f'桌面输入失效：control={control_name}')
 
     # 登录态：OAS 自动启动的客户端停在 MPay 登录页时为 False，登录流程成功后
     # 置 True，运行期发现弹窗置回 False。默认 True 表示假设已在游戏中。
@@ -150,7 +162,7 @@ class DesktopDevice:
         """
         if not self.is_desktop or not self.find_desktop_login_popup():
             return False
-        logger.warning('Desktop MPay login popup present, client is not logged in')
+        logger.warning('桌面客户端存在 MPay 登录弹窗，客户端未登录')
         self.desktop_mark_logged_out()
         return True
 
@@ -179,20 +191,20 @@ class DesktopDevice:
 
     def _init_desktop(self) -> None:
         """桌面客户端模式初始化：跳过模拟器健康检查/full_recovery。"""
-        logger.info('Desktop client mode: skip emulator health check and full recovery')
+        logger.info('桌面客户端模式：跳过模拟器健康检查与完全恢复')
         if self.config.script.device.screenshot_method == 'auto':
             # auto 是「自动选择」的语义，桌面模式自动落到后台截图，无需告警
             self.config.script.device.screenshot_method = 'window_background'
         elif self.config.script.device.screenshot_method != 'window_background':
             logger.warning(
-                f'Desktop mode requires screenshot_method=window_background, '
-                f'current={self.config.script.device.screenshot_method}, overriding'
+                f'桌面模式要求 screenshot_method=window_background，'
+                f'当前={self.config.script.device.screenshot_method}，已自动改写'
             )
             self.config.script.device.screenshot_method = 'window_background'
         if self.config.script.device.control_method != 'window_message':
             logger.warning(
-                f'Desktop mode requires control_method=window_message, '
-                f'current={self.config.script.device.control_method}, overriding'
+                f'桌面模式要求 control_method=window_message，'
+                f'当前={self.config.script.device.control_method}，已自动改写'
             )
             self.config.script.device.control_method = 'window_message'
         self.config.save()
