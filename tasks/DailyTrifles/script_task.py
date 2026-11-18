@@ -476,8 +476,24 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
         logger.hr('pick up email', 2)
         self.goto_page(page_main)
         timeout_timer = Timer(3).start()
+        # 「获得奖励」会盖住邮件列表，使下面所有按钮连续失配，循环因此提前判退，
+        # 并把奖励界面残留给下一个任务（2026-11-15 20:01 事故：该界面含通用素材
+        # I_UI_REWARD，被下一个任务误判为棋局结算页后进入无上限随机点击）。
+        # 放在第一优先级：奖励界面弹着时右上角邮件图标仍可能命中（20:00:34.932 即此情况），
+        # 只有排在最前才能先清障、再继续领取。
+        # 点中会重置 3 秒计时，因此必须自带上限：否则奖励界面点不掉时本循环永不退出，
+        # 等于把 ui_get_reward 内层无出口的问题搬过来。
+        reward_clicks = 0
         while not timeout_timer.reached():
             self.screenshot()
+            if self.appear_then_click(self.I_UI_REWARD, action=self.C_UI_REWARD,
+                                      interval=1, threshold=0.6):
+                reward_clicks += 1
+                if reward_clicks >= 8:
+                    logger.warning('获得奖励界面连续 8 次点击未关闭，结束领取以免空转')
+                    break
+                timeout_timer.reset()
+                continue
             if self.appear_then_click(self.I_DT_HARVEST_MAIL_COPY2, interval=1.2) or \
                     self.appear_then_click(self.I_HARVEST_MAIL, interval=1.2) or \
                     self.appear_then_click(self.I_HARVEST_MAIL_COPY, interval=1.2):
