@@ -15,6 +15,14 @@ class BondlingMode(str, Enum):
     MODE2 = '只刷契灵(低级式盘)'
     MODE3 = '只刷契灵(中级式盘)'
     MODE4 = '只刷契灵(高级式盘)'
+    MODE_AUTO = '智能选盘(自动识别)'
+
+
+class BondlingPlatePriority(str, Enum):
+    """智能选盘平局裁决: 数量相同时按此优先级选盘(未列出的档位按 低级→中级→高级 顺序排后)"""
+    LOW_FIRST = '平局优先低级'
+    MEDIUM_FIRST = '平局优先中级'
+    HIGH_FIRST = '平局优先高级'
 
 
 class BondlingClass(str, Enum):
@@ -53,7 +61,8 @@ class UserStatus(str, Enum):
 class BondlingConfig(ConfigBase):
     # 身份
     user_status: UserStatus = Field(default=UserStatus.ALONE, description='user_status_help')
-    bondling_mode: BondlingMode = Field(default=BondlingMode.MODE1,description='只刷探查:自动切换契灵对应地域\n低级式盘:自动切换非连续,非羁绊\n中级式盘:自动切换连续,羁绊')
+    bondling_mode: BondlingMode = Field(default=BondlingMode.MODE1,description='只刷探查:自动切换契灵对应地域\n低级式盘:自动切换非连续,非羁绊\n中级式盘:自动切换连续,羁绊\n智能选盘:每次进入结契界面时识别三档识盘(百物/千咒/万象)剩余数量,选数量最多的一档作为本轮目标')
+    plate_tie_break: BondlingPlatePriority = Field(default=BondlingPlatePriority.LOW_FIRST, description='plate_tie_break_help')
     limit_time: Time = Field(default=Time(minute=30), description='limit_time_help')
     limit_count: int = Field(default=30, description='limit_count_help')
     bondling_stone_class: BondlingClass = Field(default=BondlingClass.TOMB_GUARD, description='设置需要刷的契灵')

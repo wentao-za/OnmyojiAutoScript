@@ -13,7 +13,7 @@ from module.base.protect import random_sleep
 from module.exception import ScriptError, TaskEnd
 from module.logger import logger
 from tasks.BondlingFairyland.assets import BondlingFairylandAssets
-from tasks.BondlingFairyland.config import BondlingMode, BondlingClass, BondlingSwitchSoul, BondlingConfig, UserStatus
+from tasks.BondlingFairyland.config import BondlingMode, BondlingClass, BondlingSwitchSoul, BondlingConfig, BondlingPlatePriority, UserStatus
 from tasks.Component.GeneralBattle.config_general_battle import GeneralBattleConfig
 from tasks.Component.GeneralBattle.general_battle import BattleAction, BattleContext, ExitMatcher, GeneralBattle
 from tasks.Component.GeneralInvite.general_invite import GeneralInvite
@@ -30,11 +30,16 @@ class BondlingNumberMax(Exception):
     pass
 
 
+PLATE_COUNT_MAX = 200  # 识盘数量上限(游戏内 x/200), 超出视为识别异常
+
+
 class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, BondlingFairylandAssets, WeeklyPurchaseAssets):
     """ 契灵 """
 
     last_plate_count: int = None  # 上一次识别到的契灵盘子数量
     plate_interval: int = None  # 契灵盘子数量间隔(一般为1)
+    _effective_mode: BondlingMode = None  # 生效模式: 智能选盘解析后的 MODE2/3/4; 非 MODE_AUTO 时恒等于配置值
+    _auto_degraded: bool = False  # 本轮(单个契灵球)智能选盘识别失败已降级, 降级期间不再重复识别
 
     def random_sleep_before_action(self) -> bool:
         """沿用式神活动的行动前随机休息，并在休息后重新检查时间限制。"""
@@ -61,8 +66,8 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
 
     def _handle_result(self, context: BattleContext, cfg: GeneralBattleConfig) -> BattleAction:
         context.reward_no_battle_ts = None
-        bondling_mode = self.config.bondling_fairyland.bondling_config.bondling_mode
-        cap_again = bondling_mode in [BondlingMode.MODE3, BondlingMode.MODE4]
+        # 连战判断跟随生效模式(智能选盘时为识别解析出的 MODE2/3/4, 而非配置值)
+        cap_again = self._effective_mode in [BondlingMode.MODE3, BondlingMode.MODE4]
         clicked = False
         if cap_again:
             # 开启连续结契需要重置点击记录(连点10次)
@@ -171,6 +176,7 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
 
     def run(self):
         cong = self.config.bondling_fairyland
+        self._effective_mode = cong.bondling_config.bondling_mode  # 智能选盘在 switch_ball 中解析覆盖, 其余模式恒等于配置值
 
         if cong.bondling_config.check_enable:
             logger.hr('第一步, 检查契忆数量', 2)
@@ -457,6 +463,114 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
             self.set_next_run(task='BondlingFairyland', finish=True, success=True)
             raise TaskEnd
 
+    def _is_auto_mode(self) -> bool:
+        return self.config.bondling_fairyland.bondling_config.bondling_mode == BondlingMode.MODE_AUTO
+
+    @staticmethod
+    def _valid_or_zero(cu: int, res: int, total: int) -> int:
+        """识盘数量合法性校验(纯函数, 供离线测试): 解析失败或超出 [0, PLATE_COUNT_MAX] 按 0 处理, 单项异常不中断"""
+        if cu < 0 or cu > PLATE_COUNT_MAX or (cu == 0 and cu + res == total):
+            return 0
+        return cu
+
+    @staticmethod
+    def _majority_value(values: list) -> int:
+        """采样取众数(纯函数, 供离线测试); 无众数(各值互不相同)时取首个采样值"""
+        for v in set(values):
+            if values.count(v) >= 2:
+                return v
+        return values[0]
+
+    @staticmethod
+    def _select_plate(readings: dict, tie_break: BondlingPlatePriority) -> BondlingMode | None:
+        """按三档识盘数量选盘(纯函数, 供离线测试): 数量最多者胜, 平局按 tie_break 优先级(其余档位按低→中→高排后);
+        三档全部为 0 时返回 None。readings 形如 {MODE2: 低级, MODE3: 中级, MODE4: 高级}"""
+        priority = {
+            BondlingPlatePriority.LOW_FIRST: (BondlingMode.MODE2, BondlingMode.MODE3, BondlingMode.MODE4),
+            BondlingPlatePriority.MEDIUM_FIRST: (BondlingMode.MODE3, BondlingMode.MODE2, BondlingMode.MODE4),
+            BondlingPlatePriority.HIGH_FIRST: (BondlingMode.MODE4, BondlingMode.MODE2, BondlingMode.MODE3),
+        }.get(tie_break, (BondlingMode.MODE2, BondlingMode.MODE3, BondlingMode.MODE4))
+        best = None
+        for mode in priority:
+            if readings.get(mode, 0) > 0 and (best is None or readings[mode] > readings[best]):
+                best = mode
+        return best
+
+    def _read_plate_counts(self) -> dict:
+        """单帧识别三档识盘数量(百物/千咒/万象)。解析失败或超出合法范围的项按 0 处理, 不中断"""
+        readers = {
+            BondlingMode.MODE2: self.O_B_LOW_NUMBER,
+            BondlingMode.MODE3: self.O_B_MEDIUM_NUMBER,
+            BondlingMode.MODE4: self.O_B_HIGH_NUMBER,
+        }
+        self.screenshot()
+        readings = {}
+        raws = {}
+        for mode, ocr in readers.items():
+            cu, res, total = ocr.ocr(self.device.image)
+            raws[mode] = (cu, res, total)
+            readings[mode] = self._valid_or_zero(cu, res, total)
+        if any(v == 0 for v in readings.values()):
+            # 顶栏读不到数字多半是界面还没切到结契页, 这里把原始读数打出来便于定位
+            logger.info(f'识盘原始读数: 低级={raws[BondlingMode.MODE2]}, 中级={raws[BondlingMode.MODE3]}, 高级={raws[BondlingMode.MODE4]}')
+        return readings
+
+    def _wait_catch_ui(self, timeout: float = 15) -> bool:
+        """等待进入结契界面(以「挑战」按钮 I_BALL_FIRE 为准); 顶栏三档数量只在该界面存在"""
+        timer = Timer(timeout).start()
+        while not timer.reached():
+            if self.in_catch_ui(screenshot=True):
+                return True
+            sleep(0.5)
+        return False
+
+    def _detect_effective_mode(self) -> BondlingMode | None:
+        """智能选盘: 采样识别三档识盘数量并选出生效模式; 三档均为 0 时返回 None。
+
+        采样规则: 前两帧逐项一致且非 0 则采纳; 出现不一致或 0 结果时补采第三帧,
+        逐项取众数(0 结果若被第三帧非 0 有效值挽救则采纳挽救值)。
+        三档全 0 时按 2s/4s 递增等待重试, 排除切页动画期误识别。"""
+        if not self._wait_catch_ui(timeout=15):
+            logger.warning('智能选盘: 15 秒内未进入结契界面, 本次跳过识别')
+            return None
+        sleep(1)  # 等顶栏数字渲染稳定
+        tie_break = self.config.bondling_fairyland.bondling_config.plate_tie_break
+        modes = (BondlingMode.MODE2, BondlingMode.MODE3, BondlingMode.MODE4)
+        readings = {}
+        for attempt in range(3):
+            if attempt:
+                sleep(2 * attempt)
+            s1 = self._read_plate_counts()
+            s2 = self._read_plate_counts()
+            need_third = any(s1[m] != s2[m] or s1[m] == 0 for m in modes)
+            s3 = self._read_plate_counts() if need_third else None
+            readings = {}
+            for m in modes:
+                values = [s1[m], s2[m]] + ([s3[m]] if s3 is not None else [])
+                if s1[m] == s2[m] == 0 and s3 is not None and s3[m] != 0:
+                    readings[m] = s3[m]  # 0 结果被第三帧有效值挽救
+                else:
+                    readings[m] = self._majority_value(values)
+            if any(v > 0 for v in readings.values()):
+                break
+        logger.info(
+            f'识盘数量识别: 低级(百物)={readings[BondlingMode.MODE2]}, '
+            f'中级(千咒)={readings[BondlingMode.MODE3]}, 高级(万象)={readings[BondlingMode.MODE4]}')
+        selected = self._select_plate(readings, tie_break)
+        if selected is None:
+            logger.warning('智能选盘: 三档识盘数量均为 0')
+        else:
+            logger.info(f'智能选盘选中: {selected.value}')
+        return selected
+
+    def _switch_effective_mode(self, detected: BondlingMode) -> None:
+        """写入生效模式并切换结契设置; 盘子档位变化后重置数量追踪, 避免跨档误判"""
+        logger.info(f'智能选盘生效模式切换: {self._effective_mode} -> {detected}')
+        self._effective_mode = detected
+        self.last_plate_count = None
+        self.plate_interval = None
+        self.capture_setting(detected)
+
     def switch_ball(self):
         logger.hr('Start switch ball', 2)
         cong = self.config.bondling_fairyland
@@ -488,7 +602,19 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
                         logger.info('No bondling stone, exit')
                         break
                 # 检查结契设置
-                if not capture_setting_checked:
+                if self._is_auto_mode():
+                    self._auto_degraded = False
+                    detected = self._detect_effective_mode()
+                    if detected is None:
+                        # 多次采样仍读不到数量(界面异常/三档确实为空): 降级为低级盘继续,
+                        # 由 run_catch 的盘子检查决定是否真的没得打, 不让识别异常直接结束任务
+                        logger.error('智能选盘: 采样失败, 本轮降级为低级盘继续')
+                        self._auto_degraded = True
+                        detected = BondlingMode.MODE2
+                    if detected != self._effective_mode or not capture_setting_checked:
+                        self._switch_effective_mode(detected)
+                    capture_setting_checked = True
+                elif not capture_setting_checked:
                     self.capture_setting(bondling_config.bondling_mode)
                     capture_setting_checked = True
                 try:
@@ -596,7 +722,7 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
         self.lock_team()
 
         def check_plate_number():
-            match bondling_config.bondling_mode:
+            match self._effective_mode:
                 case BondlingMode.MODE2:
                     target_plate = self.O_B_LOW_NUMBER
                 case BondlingMode.MODE3:
@@ -615,6 +741,12 @@ class ScriptTask(GameUi, GeneralInvite, GeneralRoom, GeneralBattle, SwitchSoul, 
                     logger.warning(f'Plate number maybe recognize error, continue fire. last plate number:{self.last_plate_count}')
                     self.last_plate_count = self.last_plate_count - self.plate_interval  # 计算本次真实值
                     return True
+                # 智能选盘: 当前目标盘读数为 0, 重新识别是否还有其他档位可打
+                if self._is_auto_mode() and not self._auto_degraded:
+                    detected = self._detect_effective_mode()
+                    if detected is not None and detected != self._effective_mode:
+                        self._switch_effective_mode(detected)
+                        return True
                 logger.warning(f'No plate number, exit')
                 return False
             if self.last_plate_count and not self.plate_interval:

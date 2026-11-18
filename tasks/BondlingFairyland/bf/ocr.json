@@ -15,16 +15,16 @@
     "mode": "DigitCounter",
     "method": "Default",
     "keyword": "",
-    "description": "小盘子"
+    "description": "低级(百物式盘)"
   },
   {
     "itemName": "b_medium_number",
-    "roiFront": "734,19,99,25",
-    "roiBack": "734,19,99,25",
+    "roiFront": "730,19,99,25",
+    "roiBack": "730,19,99,25",
     "mode": "DigitCounter",
     "method": "Default",
     "keyword": "",
-    "description": "中盘子"
+    "description": "中级(千咒式盘)"
   },
   {
     "itemName": "b_high_number",
@@ -33,7 +33,7 @@
     "mode": "DigitCounter",
     "method": "Default",
     "keyword": "",
-    "description": "大盘子"
+    "description": "高级(万象式盘)"
   },
   {
     "itemName": "b_stone_number",
