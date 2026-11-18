@@ -7,6 +7,7 @@ from enum import IntEnum, Enum
 from pydantic import Field, field_validator, model_validator
 
 from module.config.multi_select import normalize_multi_select
+from module.logger import logger
 from tasks.Component.GeneralBattle.config_general_battle import GeneralBattleConfig
 from tasks.Component.config_base import ConfigBase, TimeDelta, Time, dynamic_hide
 from tasks.Component.config_scheduler import Scheduler
@@ -44,21 +45,20 @@ def boss_cn(boss_type: BossType | None) -> str:
 class MetaDemonMode(str, Enum):
     BOSS_BATTLE = '鬼王战斗'
     BOSS_ASSIST = '鬼王协助'
-    AWAKE = '门票刷取：觉醒七层'
-    EXPLORATION = '门票刷取：探索'
 
 
 class RefillTask(str, Enum):
     """掉落进度(x/50)未满时，转去刷本补票的任务（单选）。"""
     DISABLE = '不转刷'
+    TICKET = '鬼王门票'
     EXPLORATION = '探索'
     AWAKEN = '觉醒'
     OROCHI = '御魂八岐大蛇'
     BONDLING = '契灵之境'
 
 
-# 御魂与战斗参数的组别（三段式）：1-4 星归低星，5-6 星与氪金归高星，刷票任务独占一段
-LOADOUT_CATEGORIES = ('low_star', 'high_star', 'ticket_farming')
+# 御魂与战斗参数的组别（两段式）：1-4 星归低星，5-6 星与氪金归高星
+LOADOUT_CATEGORIES = ('low_star', 'high_star')
 
 # 旧六段式配置里，每个组别取哪个星级字段作为迁移来源（按顺序取第一个非空）
 LEGACY_STAR_FIELDS = {
@@ -78,25 +78,19 @@ def loadout_group(boss_type: BossType | None) -> str:
     return 'low_star' if int(boss_type) <= 4 else 'high_star'
 
 
-class ExplorationTarget(str, Enum):
-    ALL = '全部'
-    COIN = '金币'
-    EXP = '经验'
-    DARUMA = '达摩'
-
-
 class MetaDemonConfig(ConfigBase):
     mode: list[MetaDemonMode] = Field(
         default=[MetaDemonMode.BOSS_BATTLE], title='运行模式',
-        json_schema_extra={'ui_exclusive_groups': [['门票刷取：觉醒七层', '门票刷取：探索'], ['鬼王战斗', '鬼王协助']]},
-        description='勾选执行；两种门票刷取至多选一种；鬼王战斗与鬼王协助至多选一种，门票刷取优先执行')
+        json_schema_extra={'ui_exclusive_groups': [['鬼王战斗', '鬼王协助']]},
+        description='勾选执行；鬼王战斗与鬼王协助至多选一种。门票刷取已独立为「鬼王门票」任务')
     limit_time: Time = Field(default=Time(minute=45), description='limit_time_help')
     limit_count: int = Field(default=50, description='limit_count_help')
     auto_tea: bool = Field(default=False, description='疲劳度满时是否自动喝茶, 关闭则自动根据调度器等待间隔时间安排下一次调度')
     fire_sequence: str = Field(default='1 2 3 4', description='攻击顺序:从左到右,空格分隔(1:一星鬼王,2:二星鬼王...)\n例:3 2(先攻击三星鬼王然后二星鬼王)')
     powerful_list: str = Field(default='', description='开启强力鬼王列表(空格分隔),例:4 5(四星鬼王和五星鬼王开启强力追击)')
+    powerful_friend_boss: bool = Field(default=False, description='好友分享的鬼王副本自动开启强力追击;好友鬼王星级在界面上不可见,勾选后一律按开启处理,与「开启强力鬼王列表」的星级无关')
     synthesis_list: str = Field(default='1', description='鬼王合成列表(空格分隔),支持1-5星合成,例:1 2 3(合成一星,二星,三星鬼王)')
-    refill_task: RefillTask = Field(default=RefillTask.DISABLE, description='未勾选门票刷取模式时的兜底补票：掉落进度(x/50)未满且无鬼王可打时,转去刷本补票的任务(单选);所选任务的调度器未启用时按原逻辑退出')
+    refill_task: RefillTask = Field(default=RefillTask.DISABLE, description='掉落进度(x/50)未满且无鬼王可打时的兜底补票:转去执行的任务(单选);选「鬼王门票」即交由独立任务刷票,这与本任务自身的运行模式无关;所选任务的调度器未启用时按原逻辑退出')
     idle_wait_enable: bool = Field(default=False, description='无法继续战斗时不结束任务,驻留鬼王界面等待:票尽且补票用尽/门票星级与攻击顺序无交集/疲劳满且已开自动喝茶;期间轮询好友分享的鬼王并接战,疲劳或门票星级恢复后自动回到正常流程,直到下一任务开始前3分钟(没有其他启用任务时直到限时)')
     idle_wait_buffer_min: int = Field(default=3, ge=0, le=30, description='驻留提前收尾余量(分钟):下一任务开始前该分钟数结束驻留')
     idle_poll_interval: int = Field(default=8, ge=2, le=60, description='驻留期间轮询好友分享鬼王的间隔(秒)')
@@ -105,17 +99,27 @@ class MetaDemonConfig(ConfigBase):
     @field_validator('mode', mode='before')
     @classmethod
     def parse_modes(cls, value):
-        """兼容单选字符串 / JSON 列表 / 历史选项名，并校验互斥组。"""
-        selected = [MetaDemonMode('门票刷取：探索' if item == '门票刷取：探索绘卷' else item)
-                    for item in normalize_multi_select(value)]
-        tickets = [item for item in (MetaDemonMode.AWAKE, MetaDemonMode.EXPLORATION) if item in selected]
-        if len(tickets) > 1:
-            raise ValueError('觉醒和探索门票刷取至多选择一种')
+        """兼容单选字符串 / JSON 列表 / 历史选项名，并丢弃已下线的模式。
+
+        2026-11-10 起「门票刷取：觉醒七层 / 探索」两个模式下线，改由独立任务
+        「鬼王门票」承担。旧配置里残留的值必须**丢弃并告警**，不能抛 ValueError——
+        抛出去会让整份配置加载失败、任务直接起不来，代价远大于让用户重配一次。
+        """
+        selected = []
+        for item in normalize_multi_select(value):
+            if item == '门票刷取：探索绘卷':
+                item = '门票刷取：探索'
+            try:
+                selected.append(MetaDemonMode(item))
+            except ValueError:
+                logger.warning(f'运行模式「{item}」已下线，本次忽略；刷票请改用独立任务「鬼王门票」')
         bosses = [item for item in (MetaDemonMode.BOSS_BATTLE, MetaDemonMode.BOSS_ASSIST) if item in selected]
         if len(bosses) > 1:
             raise ValueError('鬼王战斗和鬼王协助至多选择一种')
-        # 门票刷取在前：分派层按列表顺序执行，先刷满票再进战斗
-        return tickets + bosses
+        if not bosses:
+            logger.warning('未选择任何有效运行模式，按「鬼王战斗」执行')
+            return [MetaDemonMode.BOSS_BATTLE]
+        return bosses
 
     @property
     def limit_time_v(self) -> timedelta:
@@ -154,6 +158,7 @@ class MetaDemonConfig(ConfigBase):
     def refill_task_v(self) -> str | None:
         """补票任务的大驼峰名；未配置返回 None。"""
         return {
+            RefillTask.TICKET: 'MetaDemonTicket',
             RefillTask.EXPLORATION: 'Exploration',
             RefillTask.AWAKEN: 'EvoZone',
             RefillTask.OROCHI: 'Orochi',
@@ -164,16 +169,11 @@ class MetaDemonConfig(ConfigBase):
 class MetaDemonGeneralConfig(ConfigBase):
     high_star_quick_loadout_enable: bool = Field(
         default=False, title="高星鬼王启用快速上阵",
-        description="仅五星、六星鬼王战斗生效；使用对应御魂配置中的分组名、预设名快速上阵，跳过式神录切魂与战斗准备预设。门票刷取仍按原配置执行。")
-    exploration_rotate: bool = Field(
-        default=False, title='探索自动添加候补式神',
-        description='与探索任务的自动添加候补式神一致：启用轮换并自动补充候补式神；关闭时关闭轮换。')
-    awake_buff_enable: bool = Field(default=False, title='觉醒启用加成')
-    exploration_target: ExplorationTarget = Field(default=ExplorationTarget.ALL, title='探索目标')
+        description="仅五星、六星鬼王战斗生效；使用对应御魂配置中的分组名、预设名快速上阵，跳过式神录切魂与战斗准备预设。")
 
 
 class MetaDemonSwitchSoulConfig(ConfigBase):
-    """三段式御魂配置：低星 / 高星 / 门票刷取，每段都支持按编号或按名称切换。"""
+    """两段式御魂配置：低星 / 高星，每段都支持按编号或按名称切换。"""
 
     low_star_enable: bool = Field(default=False, title='按编号切换')
     low_star_group_team: str = Field(default='-1,-1', title='分组、队号', description='switch_group_team_help')
@@ -183,10 +183,6 @@ class MetaDemonSwitchSoulConfig(ConfigBase):
     high_star_group_team: str = Field(default='-1,-1', title='分组、队号', description='switch_group_team_help')
     high_star_by_name: bool = Field(default=False, title='按名称切换', description='enable_switch_by_name_help')
     high_star_group_team_name: str = Field(default='', title='分组名、预设名')
-    ticket_farming_enable: bool = Field(default=False, title='按编号切换')
-    ticket_farming_group_team: str = Field(default='-1,-1', title='分组、队号', description='switch_group_team_help')
-    ticket_farming_by_name: bool = Field(default=False, title='按名称切换', description='enable_switch_by_name_help')
-    ticket_farming_group_team_name: str = Field(default='', title='分组名、预设名')
 
     def switch_for(self, category: str):
         """把某个组别的四字段折叠成框架的 SwitchSoulConfig。"""
@@ -248,7 +244,6 @@ class MetaDemon(ConfigBase):
     assistance_config: MetaDemonAssistanceConfig = Field(default_factory=MetaDemonAssistanceConfig)
     low_star_battle_conf: GeneralBattleConfig = Field(default_factory=GeneralBattleConfig)
     high_star_battle_conf: GeneralBattleConfig = Field(default_factory=GeneralBattleConfig)
-    ticket_farming_battle_conf: GeneralBattleConfig = Field(default_factory=GeneralBattleConfig)
 
     def battle_config(self, category: str) -> GeneralBattleConfig:
         """取某个组别的战斗参数；高星启用快速上阵时关掉战斗内预设（由快速上阵负责上阵）。"""
@@ -260,14 +255,14 @@ class MetaDemon(ConfigBase):
     @model_validator(mode='before')
     @classmethod
     def migrate_legacy_config(cls, data):
-        """把六段式旧配置迁移成三段式。
+        """把六段式旧配置迁移成两段式。
 
         第一步：`switch_soul`（含 one_star..six_stars / enable_*_preset / switch_once）
         按 1-4 星归低星、5-6 星归高星折叠成 `switch_soul_config`；
         每段取第一个非空的星级字段作为代表，`switch_once` 语义由
         `_active_loadout_group` 缓存取代，直接丢弃。
 
-        第二步：历史中间态 `preset_config` 展开成三段 `{category}_battle_conf`。
+        第二步：历史中间态 `preset_config` 展开成两段 `{category}_battle_conf`。
 
         两步合并在一个 validator 里，避免依赖多个 `mode='before'` 的隐式执行顺序。
         """
@@ -297,7 +292,7 @@ class MetaDemon(ConfigBase):
                         'preset_group': min(max(int(parts[0]), 1), 7),
                         'preset_team': min(max(int(parts[1]), 1), 5),
                     }
-            # ticket_farming 段没有历史配置来源，保持默认（不启用）
+            # 两段各自没有历史来源时保持默认（不启用）
             data['switch_soul_config'] = souls
 
         # ---- 第二步：preset_config（历史中间态）-> 三段 battle_conf ----

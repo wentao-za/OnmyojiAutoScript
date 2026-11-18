@@ -3,7 +3,7 @@
 # github https://github.com/runhey
 """超鬼王战斗域：召唤 → 合成 → 换魂 → 强力 → 打 → 回鬼王页。
 
-含好友副本（消费他人分享的鬼王）。**不含**门票获取（ticket_farming）
+含好友副本（消费他人分享的鬼王）。**不含**门票获取（独立任务「鬼王门票」）
 与主动分享（assistance），两者在别的模块。
 """
 import random
@@ -28,14 +28,18 @@ from tasks.GameUi.assets import GameUiAssets
 from tasks.GameUi.game_ui import GameUi
 from tasks.GlobalGame.assets import GlobalGameAssets
 import tasks.GameUi.task_pages as ipages
+# task_pages 未再导出 page_chess_result（default_pages.py:394），主循环奖励 case
+# 需要它做同一性匹配；match-case 的值模式必须是点路径（裸名会被当作捕获模式），
+# 所以按模块引用而不是 from-import 裸名。
+from tasks.GameUi import default_pages
 
 from tasks.MetaDemon.assets import MetaDemonAssets
 from tasks.MetaDemon.config import BossType, MetaDemon, boss_cn, loadout_group
 from tasks.MetaDemon.synthesis import parse_synthesis_material_level
-from tasks.MetaDemon.ticket_farming import TicketFarmingMixin, TicketStatus
+from tasks.MetaDemon.queue import TicketQueueMixin, TicketStatus
 
 
-class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, GameUi, MetaDemonAssets):
+class BossBattle(TicketQueueMixin, GeneralBattle, SwitchSoul, QuickLoadout, GameUi, MetaDemonAssets):
     """超鬼王战斗域。"""
 
     class State:
@@ -285,7 +289,7 @@ class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, Ga
                         self.start_battle()
                 case ipages.page_battle:
                     self.battle_wait(self.conf.battle_config(self._battle_category()).random_click_swipt_enable)
-                case ipages.page_reward | ipages.page_battle_result:
+                case ipages.page_reward | ipages.page_battle_result | default_pages.page_chess_result:
                     self.click(ipages.random_click(), interval=0.6)
                 case _:
                     # 判页失败大多是意外弹窗（礼包/公告/商城推送）盖住了界面。
@@ -312,8 +316,11 @@ class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, Ga
         # 直接打好友那只（协助次数上限由 start_battle 的超时兜底）。
         # render_wait=1.0：战后回页一瞬间卡片常来不及渲染，等 1 秒再判定
         if self.check_and_switch_friend_boss(render_wait=1.0):
-            powerful = '开启' if self.appear(self.I_MD_DISABLE_POWERFUL_FIRE, interval=0.4) else '关闭'
-            logger.info(f'好友副本：沿用当前御魂与强力追击设置（强力{powerful}），不切换')
+            # 不再在这里读一次强力素材打日志：`appear` 的计时器按素材名共享，
+            # 白读一次会污染后续同一素材的 interval 判定（全局坑 45 / 本章坑 15），
+            # 而状态切换统一在 start_battle 里做，这里只报配置意图即可
+            strong = '开' if self.conf.meta_demon_config.powerful_friend_boss else '沿用当前'
+            logger.info(f'好友副本：沿用当前御魂设置；强力追击={strong}，不切换御魂')
             return True
         self.synthesis_boss_ticket()
         # 门票：前置式已在分派层刷满，这里只判库存/开窗；不足时走反应式兜底补票
@@ -493,7 +500,7 @@ class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, Ga
 
         :param sequence: 限定可召唤的星级序列；None 表示用配置的 fire_sequence_v。
                          assistance 靠它只召唤六星。
-        前置契约：调用方（ticket_farming.ensure_ticket）保证弹窗处于打开态。
+        前置契约：调用方（queue.ensure_ticket）保证弹窗处于打开态。
         失败契约：返回 False 时弹窗**可能仍处于打开态**；只有 `_summon_empty`
         为 True（弹窗里一张可点的票都没有）才把弹窗交给 `exhaust_ticket` 处理，
         召唤超时、配置与库存不匹配两种情况由本方法自己收尾。
@@ -781,6 +788,77 @@ class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, Ga
         logger.warning('好友副本切换失败且没有挑战按钮，回退自己的流程')
         return False
 
+    def ensure_powerful_before_battle(self) -> bool | None:
+        """每场战斗前把强力追击校准到「本场该有的状态」（自家与好友共用同一个开关）。
+
+        **为什么每场都要判**：这个开关是粘滞的，战斗正常结算不会复位。好友副本按开关
+        强制开启后，下一场自家鬼王会继承「开」；自家鬼王按 `powerful_list` 关掉后，
+        也会带到好友副本。所以不能只在好友分支判一次，必须每场进战斗前校准一次。
+
+        目标态：
+        - 好友副本：`powerful_friend_boss` 开 → 强制开；关 → 返回 None（不干预，沿用当前）
+        - 自家鬼王：`cur_boss_type` 在 `powerful_list` 内 → 开；否则 → 关
+          （星级未知按「关」处理，与 `check_and_switch_powerful()` 口径一致）
+        返回 True/False = 本场目标态；None = 未干预（配置没要求 / 判据读不到）。
+
+        **素材极性（2026-11-09 更正，极易搞反）**：
+        - `I_MD_ENABLE_POWERFUL_FIRE`（蓝圈对勾）= **已开启**
+        - `I_MD_DISABLE_POWERFUL_FIRE`（暗铜圆环）= **未开启**
+        依据：`check_and_switch_powerful()` 的 `ui_click(ENABLE, DISABLE)` 是「一直点
+        开启态图标、直到禁用态出现」，只有这个极性才自洽；且 66 张截图里能判到该控件的
+        7 帧全是暗环（0.941），蓝圈对勾 0 命中——因为 `powerful_list` 默认为空，现场
+        长期处于未开启。
+
+        **为什么不用 `check_and_switch_powerful()`**：①它按 `cur_boss_type` 查
+        `powerful_list`，而好友副本的星级界面上不可见，此时 `cur_boss_type` 是上一只
+        自家鬼王的残留值；②它的 `ui_click` 是 `while 1` 无界循环，素材不命中会一路
+        空转到 45 秒卡死保护。这里用有界版本，且开启方向不依赖蓝圈素材命中。
+        """
+        cfg = self.conf.meta_demon_config
+        if self._friend_mode:
+            if not cfg.powerful_friend_boss:
+                return None
+            want = True
+            who = '好友副本'
+        else:
+            want = self.cur_boss_type is not None and self.cur_boss_type in cfg.powerful_list_v
+            who = f'自家鬼王（{boss_cn(self.cur_boss_type)}）'
+        # 补判可能刚切过副本，上一帧已过期，重新取一帧
+        self.screenshot()
+        if self.appear(self.I_MD_ENABLE_POWERFUL_FIRE):
+            current = True
+        elif self.appear(self.I_MD_DISABLE_POWERFUL_FIRE):
+            current = False
+        else:
+            logger.warning(f'{who}：未识别到强力追击开关，保持当前设置继续挑战')
+            return None
+        if current == want:
+            return want
+        logger.info(f'{who}：强力追击 {"开启" if want else "关闭"}（跨场粘滞，战斗前校准）')
+        if want:
+            # 开启方向点「暗环」本身，以「暗环连续 2 帧消失」为成功判据：
+            # 暗环是本控件唯一有离线实证的锚点，这样不依赖蓝圈对勾是否命中
+            done = self.ui_click_until_disappear(
+                self.I_MD_DISABLE_POWERFUL_FIRE,
+                interval=0.6,
+                timeout=6,
+                max_clicks=2,
+                confirm_frames=2,
+            )
+        else:
+            # 关闭方向只能以「蓝圈对勾消失」为判据
+            done = self.ui_click_until_disappear(
+                self.I_MD_ENABLE_POWERFUL_FIRE,
+                interval=0.6,
+                timeout=6,
+                max_clicks=2,
+                confirm_frames=2,
+            )
+        if not done:
+            logger.warning(f'{who}：强力追击 6 秒内未切换成功，保持原状态继续挑战')
+            return current
+        return want
+
     # ---------------------------------------------------------------- 战斗
 
     def start_battle(self):
@@ -793,6 +871,9 @@ class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, Ga
             time.sleep(2)
             if self.check_and_switch_friend_boss():
                 logger.info('挑战前补判命中好友分享，改打好友副本')
+        # 强力追击每场战斗前都校准一次：主流程、驻留轮询、挑战前补判三条入口
+        # 最后都汇聚到这里，而开关跨场粘滞（结算不复位），只听好友分支会漏
+        self.ensure_powerful_before_battle()
         # 有界：好友副本被打死、或协助次数到顶时挑战按钮会消失，
         # 无界 while 会一路空转到 device 层 45 秒卡死保护而重启
         timer = Timer(20).start()
@@ -804,6 +885,9 @@ class BossBattle(TicketFarmingMixin, GeneralBattle, SwitchSoul, QuickLoadout, Ga
                     self.conf.battle_config(self._battle_category()),
                     battle_key=self._meta_demon_battle_key(),
                 )
+                # 本场已结算，清掉好友模式：否则标志会一直挂着，下一场的自家鬼王
+                # 会被当成好友副本（跳过点挑战前的补判 + 被强制开强力追击）
+                self._friend_mode = False
                 break
             if self.appear(self.I_MD_DRINK_TEA, interval=1.2):  # 出现喝茶弹窗
                 if self.conf.meta_demon_config.auto_tea:

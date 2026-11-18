@@ -1,289 +1,29 @@
 # This Python file uses the following encoding: utf-8
-"""超鬼王门票域：前置刷票 + 反应式补票 + 掉落进度判定。
+"""超鬼王召唤队列域：开窗、判空、反应式补票、票尽驻留。
 
 职责边界
 --------
-- **怎么把票刷出来**：前置刷取（觉醒七层 / 探索），复用 EvoZone / Exploration
-  的既有战斗流程，只把御魂、战斗参数与限时从超鬼王配置注入。
-- **没票了怎么办**：反应式补票 —— 读召唤队列弹窗里的掉落进度 (x/50)，
-  未满则委派 `refill_task` 指定的任务（D5：与前置刷票共存，前置优先）。
-- **不含**选卡召唤（`boss_battle.summon_and_fire`）与主动分享（`assistance`）。
+- **有没有票**：打开「裂变之眼召唤队列」弹窗（`ensure_ticket`），把「可直接挑战 /
+  有票可选 / 本轮不能继续」三态交给 `boss_battle.summon_and_fire`。
+- **没票了怎么办**：读弹窗里的掉落进度 (x/50)，未满就把 `refill_task` 指定的任务
+  拉起来补票（`try_refill_ticket` → `config.task_call`）；补票用尽则按现场三态收尾，
+  必要时转入驻留等待。
+- **不负责**：选卡召唤（`boss_battle.summon_and_fire`）与主动分享（`assistance`）。
 
-与 self 版的两处关键差异（U1：self 不保证正确，均已回 dev 实测）
-------------------------------------------------------------
-1. self 只在 `AwakeTicketTask` 上覆盖 `_config`，但 `EvoZone.ScriptTask.run_alone()`
-   全程读 `self.config.evo_zone.evo_zone_config.layer` / `.general_battle_config`，
-   `_config` **从未被读取** —— 结果是仍然按用户自己 EvoZone 任务的层数与战斗参数跑，
-   而不是门票刷取要求的觉醒七层。这里改用 `_TaskConfigProxy` 在 `self.config`
-   这一层做替换，两条读法同时生效，且不污染用户配置（不写回 JSON）。
-2. self 的 `metademon_tickets_full` 依赖 `GeneralBattleAssets.O_METADEMON_PASS`，
-   test 副本缺该素材（dev 有），已按 U3 从 dev 同步 `GeneralBattle/assets.py`。
+**刷票不在这里**。把票真正刷出来是独立任务「鬼王门票」（`tasks/MetaDemonTicket`）
+的职责，本模块只做「战斗中没票了」这一步的判定与交棒 —— 这两件事 2026-11-10 之前
+各有一份拷贝（`tasks/MetaDemon/ticket_farming.py` 与 `tasks/MetaDemonTicket/ticket_farming.py`），
+已收敛为唯一入口 `MetaDemonTicket`。
 """
 import re
 import time
 from enum import Enum
 
-from cached_property import cached_property
-
 from module.base.timer import Timer
-from module.exception import TaskEnd
-from module.logger import logger
 from module.config.utils import convert_to_underscore
-from tasks.Component.GeneralBattle.assets import GeneralBattleAssets
-from tasks.EvoZone.config import EvoZone, EvoZoneConfig, Layer, UserStatus as AwakeUserStatus
-from tasks.EvoZone.script_task import ScriptTask as AwakeTask
-from tasks.Exploration.config import (
-    Exploration,
-    ExplorationConfig,
-    AutoRotate,
-    UpType,
-    UserStatus as ExplorationUserStatus,
-)
-from tasks.Exploration.script_task import ScriptTask as ExplorationTask
-from tasks.GameUi.assets import GameUiAssets
-from tasks.GameUi.default_pages import page_reward
-import tasks.GameUi.task_pages as pages
+from module.logger import logger
 
-from tasks.MetaDemon.assets import MetaDemonAssets
-from tasks.MetaDemon.config import ExplorationTarget, MetaDemonMode
 from tasks.MetaDemon.md_ui import MdUiMixin
-
-
-TICKET_MODES = (MetaDemonMode.AWAKE, MetaDemonMode.EXPLORATION)
-
-
-# --------------------------------------------------------------------- 满票检测
-
-
-class TicketsFull(Exception):
-    """奖励页门票已满，立即展开调用栈以阻止下一场战斗。"""
-
-
-def metademon_tickets_full(task) -> bool:
-    """读取当前奖励截图的门票/上限；无有效上限时不判满。"""
-    # I_REWARD is the red-daruma settlement image; I_UI_REWARD is the
-    # separate "获得奖励" banner and does not identify this battle reward screen.
-    if not task.appear(GeneralBattleAssets.I_REWARD):
-        return False
-    current, remaining, total = GeneralBattleAssets.O_METADEMON_PASS.ocr_digit_counter(task.device.image)
-    if total <= 0 or current < 0:
-        logger.warning('超鬼王门票 OCR 未识别到有效计数')
-        return False
-    logger.info(f'超鬼王门票: {current}/{total}')
-    return current >= total
-
-
-class TicketRewardMixin:
-    """在「每场战斗结算」与「导航进入奖励页」两处插入满票检测。
-
-    刷满票后必须立刻停止，否则会白打一场；用异常而不是返回值，
-    因为这两处都是别人（Exploration / GeneralBattle / 导航器）的调用栈。
-    """
-
-    def check_ticket_reward(self):
-        if getattr(self, '_ticket_farming_complete', False):
-            return
-        if metademon_tickets_full(self):
-            logger.info('门票已满')
-            raise TicketsFull
-
-    def _handle_reward(self, context, config):
-        self.check_ticket_reward()
-        return super()._handle_reward(context, config)
-
-    def install_ticket_reward_hook(self):
-        reward = self.navigator.resolve_page(page_reward)
-        if reward is None:
-            logger.warning('奖励页未解析到 session 页面，跳过导航级满票检测')
-            return
-        # 导航进入奖励页时也必须先 OCR，再执行原来的结算点击。
-        reward.on_enter_success.insert(0, lambda task: task.check_ticket_reward())
-
-
-class AwakeTicketTask(TicketRewardMixin, AwakeTask):
-    """觉醒七层刷票。
-
-    `run_alone()` 内部读 `self.config.evo_zone`，所以真正的配置替换由
-    `_TaskConfigProxy` 在 `self.config` 层完成；这里只需保证 `_config`
-    与代理暴露的是同一个对象（`run_ticket_farming` 会显式用它取御魂配置）。
-    """
-
-    @cached_property
-    def _config(self):
-        return self.config.evo_zone
-
-    def _infer_task_category(self):
-        return 'evo_zone'
-
-
-class ExplorationTicketTask(TicketRewardMixin, ExplorationTask):
-    """探索刷票。`BaseExploration` 全流程读 `_config`，代理与 `_config` 同时生效。"""
-
-    @cached_property
-    def _config(self):
-        return self.config.exploration
-
-    def _infer_task_category(self):
-        return 'exploration'
-
-    @property
-    def exp_page_handle_dict(self):
-        handlers = super().exp_page_handle_dict
-        original = handlers.get(page_reward)
-        if original is None:
-            logger.warning('探索页处理表里没有 page_reward，跳过该页的满票检测')
-            return handlers
-
-        def reward():
-            self.check_ticket_reward()
-            return original()
-
-        handlers[page_reward] = reward
-        return handlers
-
-    def activate_realm_raid(self, con_scrolls, con, current_page):
-        """门票刷取不检测结界票，也不触发个人突破调度。"""
-        return
-
-
-# ----------------------------------------------------------------- 配置适配
-
-
-def ticket_farming_config(meta, mode):
-    """仅把超鬼王专用字段适配为复用流程需要的设置，不读取独立任务配置。"""
-    common = meta.general_config
-    soul = meta.switch_soul_config.switch_for('ticket_farming')
-    battle = meta.ticket_farming_battle_conf
-    if mode == MetaDemonMode.AWAKE:
-        return EvoZone(
-            evo_zone_config=EvoZoneConfig(user_status=AwakeUserStatus.ALONE, layer=Layer.SEVEN,
-                limit_time=meta.meta_demon_config.limit_time, limit_count=2 ** 31 - 1,
-                soul_buff_enable=common.awake_buff_enable),
-            switch_soul_config=soul, general_battle_config=battle)
-    if mode == MetaDemonMode.EXPLORATION:
-        target = {ExplorationTarget.ALL: UpType.ALL, ExplorationTarget.COIN: UpType.COIN,
-                  ExplorationTarget.EXP: UpType.EXP, ExplorationTarget.DARUMA: UpType.DARUMAA}
-        return Exploration(
-            exploration_config=ExplorationConfig(user_status=ExplorationUserStatus.ALONE,
-                limit_time=meta.meta_demon_config.limit_time, minions_cnt=2 ** 31 - 1,
-                auto_rotate=AutoRotate.yes if common.exploration_rotate else AutoRotate.no,
-                up_type=target[common.exploration_target]),
-            switch_soul_config=soul, general_battle_config=battle)
-    raise ValueError(f'未知门票刷取模式: {mode}')
-
-
-class _TaskConfigProxy:
-    """把 `.evo_zone` / `.exploration` 换成门票刷取用的适配配置，其余属性透传。
-
-    为什么需要这层（U1 实测）：
-    - `EvoZone.ScriptTask.run_alone()` 读 `self.config.evo_zone.evo_zone_config.layer`、
-      `self.config.evo_zone.general_battle_config`；
-    - `BaseExploration.pre_process()` 读 `self.config.exploration.exploration_config`。
-
-    这两处都绕过 `_config`，所以只在子类覆盖 `_config` 是无效的。
-    而直接改 `config.model.evo_zone` 会污染用户配置（`save()` 时写回 JSON），
-    故用代理隔离：读走适配值，写与其余属性一律转发给真配置。
-    """
-
-    def __init__(self, config, **overrides):
-        object.__setattr__(self, '_config', config)
-        object.__setattr__(self, '_overrides', overrides)
-
-    def __getattr__(self, name):  # 仅在实例/类属性都找不到时触发
-        overrides = object.__getattribute__(self, '_overrides')
-        if name in overrides:
-            return overrides[name]
-        return getattr(object.__getattribute__(self, '_config'), name)
-
-    def __setattr__(self, name, value):
-        overrides = object.__getattribute__(self, '_overrides')
-        if name in overrides:
-            overrides[name] = value
-            return
-        setattr(object.__getattribute__(self, '_config'), name, value)
-
-
-# --------------------------------------------------------------- 前置刷票入口
-
-
-def tickets_full_before_farming(owner) -> bool:
-    """刷取前先在探索入口读一次门票，已满就不必白跑一趟。"""
-    owner.goto_page(pages.page_exploration)
-    for _ in range(3):
-        owner.screenshot()
-        if not owner.appear(GameUiAssets.I_CHECK_EXPLORATION):
-            continue
-        current, _, total = MetaDemonAssets.O_METADEMON_PASS_EXP.ocr_digit_counter(owner.device.image)
-        if current >= 0 and total > 0:
-            logger.info(f'门票刷取前检测: {current}/{total}')
-            return current >= total
-    logger.warning('探索入口未识别到有效超鬼王门票计数，继续刷取并由奖励页检测满票')
-    return False
-
-
-def run_ticket_farming(owner, mode) -> bool:
-    """前置刷票；御魂和战斗参数直接使用超鬼王门票刷取配置。
-
-    :return: True 表示门票已满、无需再刷（调用方可以直接进战斗）。
-    """
-    if mode not in TICKET_MODES:
-        raise ValueError(f'未知门票刷取模式: {mode}')
-    if tickets_full_before_farming(owner):
-        logger.info('超鬼王门票已满，跳过门票刷取')
-        return True
-
-    config = owner.config
-    meta = config.meta_demon
-    limit_time = meta.meta_demon_config.limit_time_v
-    adapted = ticket_farming_config(meta, mode)
-    if mode == MetaDemonMode.AWAKE:
-        runner = AwakeTicketTask(_TaskConfigProxy(config, evo_zone=adapted), owner.device)
-    else:
-        runner = ExplorationTicketTask(_TaskConfigProxy(config, exploration=adapted), owner.device)
-
-    runner.start_time = owner.start_time
-    runner.current_count = 0
-    runner.limit_count = 2 ** 31 - 1
-    runner.install_ticket_reward_hook()
-    buff_opened = False
-    try:
-        if mode == MetaDemonMode.AWAKE:
-            soul = runner._config.switch_soul_config
-            if soul.enable or soul.enable_switch_by_name:
-                runner.goto_page(pages.page_shikigami_records)
-                if soul.enable_switch_by_name:
-                    runner.run_switch_soul_by_name(soul.group_name, soul.team_name)
-                else:
-                    runner.run_switch_soul(soul.switch_group_team)
-            if meta.general_config.awake_buff_enable:
-                runner.goto_page(pages.page_main)
-                runner.open_buff()
-                runner.awake(is_open=True)
-                buff_opened = True
-                runner.close_buff()
-            runner.limit_time = limit_time
-            runner.run_alone()
-        else:
-            runner.pre_process()
-            runner.limit_time = limit_time
-            runner.exec_exp_page()
-    except TicketsFull:
-        return True
-    except TaskEnd:
-        # 复用流程里任何一环认为本轮结束，都不该把整条调用栈炸掉
-        logger.info('门票刷取流程自行结束')
-        return True
-    finally:
-        runner._ticket_farming_complete = True
-        if buff_opened:
-            runner.goto_page(pages.page_main)
-            runner.open_buff()
-            runner.awake(is_open=False)
-            runner.close_buff()
-    return False
-
-
-# --------------------------------------------------------------- 反应式补票
 
 
 class TicketStatus(str, Enum):
@@ -310,7 +50,7 @@ class RefillOutcome(str, Enum):
     UNKNOWN = 'unknown'        # 掉落进度识别失败，保守按原逻辑结束，不驻留
 
 
-class TicketFarmingMixin(MdUiMixin):
+class TicketQueueMixin(MdUiMixin):
     """召唤队列弹窗的开窗、判空与补票委派。
 
     前置契约：本 mixin 只负责「弹窗开没开、有没有票」，

@@ -5,7 +5,7 @@
 --------
 - 只做「把六星鬼王交出去」这件事：召唤六星 → 勾选指定好友 → 提交分享 → 轮询等待被击杀。
 - **不挑战**任何鬼王（`tick` 永不进入战斗），**不切御魂**，**不处理补票**以外的门票逻辑
-  —— 门票开窗与补票复用 `ticket_farming.ensure_ticket` / `exhaust_ticket`。
+  —— 门票开窗与补票复用 `queue.ensure_ticket` / `exhaust_ticket`。
 
 两条硬约束（来自上游 self 版，实测有效，保留）
 ------------------------------------------
@@ -24,7 +24,7 @@ from module.exception import RequestHumanTakeover, TaskEnd
 from module.logger import logger
 
 from tasks.MetaDemon.config import AssistanceRole, BossType
-from tasks.MetaDemon.ticket_farming import TicketStatus
+from tasks.MetaDemon.queue import TicketStatus
 import tasks.GameUi.task_pages as pages
 
 

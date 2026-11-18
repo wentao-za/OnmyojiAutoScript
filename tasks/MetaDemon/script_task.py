@@ -11,10 +11,13 @@
 3. 统一收尾：`set_next_run` + `finish_task`。
 
 子模块职责：
-- `ticket_farming`：前置刷票、反应式补票、召唤队列开窗；
+- `queue`：召唤队列开窗、判空、反应式补票、票尽驻留；
 - `boss_battle`：合成、召唤、换魂、强力、战斗、好友副本；
 - `assistance`：六星上供与分享；
 - `md_ui`：界面探针与弹窗原语（纯叶子）。
+
+刷票（把票真正刷出来）不在本任务里，属于独立任务「鬼王门票」
+（`tasks/MetaDemonTicket`）；本任务只负责「有票之后怎么打」。
 """
 from datetime import datetime
 
@@ -23,7 +26,6 @@ from module.logger import logger
 from tasks.MetaDemon.assistance import run_assistance
 from tasks.MetaDemon.boss_battle import BossBattle
 from tasks.MetaDemon.config import MetaDemonMode
-from tasks.MetaDemon.ticket_farming import TICKET_MODES, run_ticket_farming
 
 
 class ScriptTask(BossBattle):
@@ -41,10 +43,7 @@ class ScriptTask(BossBattle):
         success = True
         for mode in modes:
             self.start_time = datetime.now()
-            if mode in TICKET_MODES:
-                # 前置优先：先刷满票，再进战斗（D5）
-                run_ticket_farming(self, mode)
-            elif mode == MetaDemonMode.BOSS_BATTLE:
+            if mode == MetaDemonMode.BOSS_BATTLE:
                 success = self.run_battle_loop()
             elif mode == MetaDemonMode.BOSS_ASSIST:
                 success = run_assistance(self)

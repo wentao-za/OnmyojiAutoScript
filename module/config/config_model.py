@@ -245,12 +245,11 @@ class ConfigModel(ConfigBase):
                     break
         data['activity_shikigami'] = activity
 
-        # 不接入 MetaDemonTicket.config.split_legacy_meta_demon：dev 的 MetaDemon 仍在用
-        # ticket_farming_battle_conf 做前置刷票（tasks/MetaDemon/ticket_farming.py 的
-        # ticket_farming_config()）。该迁移以「meta_demon 里存在 ticket_farming_battle_conf
-        # 键」为触发条件，而 pydantic 保存时会回写全部字段、这个键必然存在，接入即必然把
-        # 刷票战斗配置 pop 进独立任务、重置为默认值。MetaDemonTicket 字段独立建档，不与
-        # meta_demon 共享配置段；确需迁移时再显式调用该函数。
+        # 2026-11-10：超鬼王内置刷票已下线，票的刷取统一由独立任务「鬼王门票」
+        # （meta_demon_ticket）承担。旧配置里残留的 mode 值由
+        # MetaDemon.config.parse_modes 容错丢弃（告警而非抛错），
+        # ticket_farming_battle_conf / switch_soul_config.ticket_farming_* 等
+        # 已删除字段由 pydantic 忽略，重配即可，不再做跨任务迁移。
         return data
 
     def __setattr__(self, key, value):

@@ -13,7 +13,8 @@ from module.config.utils import convert_to_underscore
 
 
 BATTLE_TASKS = frozenset(('Orochi', 'EvoZone', 'Exploration', 'FallenSun',
-                         'EternitySea', 'BondlingFairyland', 'OtherWorldTwilight', 'DraftDuel'))
+                         'EternitySea', 'BondlingFairyland', 'OtherWorldTwilight', 'DraftDuel',
+                         'MetaDemonTicket'))
 
 
 def instance_name(value):

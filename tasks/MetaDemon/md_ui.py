@@ -2,11 +2,11 @@
 """超鬼王任务的界面探针与弹窗处置原语。
 
 **本模块是纯叶子**：只依赖框架（`GameUiAssets` / `ipages` / `Duration`），
-不 import 任何业务模块（boss_battle / ticket_farming / assistance / synthesis），
+不 import 任何业务模块（boss_battle / queue / assistance / synthesis），
 否则会形成 `task_pages -> MetaDemon.assets` 之外的又一条环。
 
 职责边界：只描述「界面现在长什么样、点哪里能把它恢复」，**不含业务决策**。
-"15 秒内开不出就跳过本轮" 这类策略留在调用方（ticket_farming），
+"15 秒内开不出就跳过本轮" 这类策略留在调用方（queue），
 所以这里只有原语，没有状态机循环。
 """
 import time
