@@ -39,7 +39,7 @@ class SelectionTests(unittest.TestCase):
             owner._save_draft_checkpoint = Mock()
             frame = [-1]
             owner.screenshot = Mock(side_effect=lambda: frame.__setitem__(0, frame[0] + 1))
-            owner.appear = Mock(side_effect=lambda rule: (
+            owner.appear = Mock(side_effect=lambda rule, **kw: (
                 frame[0] == 2 if rule is owner.I_POST_DRAFT_RANK else
                 frame[0] < 2 if rule in (owner.I_POST_DRAFT_SELECT, owner.I_SELECT_NONE_1) else False))
             owner.O_SELECT_NUMBER = Mock(ocr=Mock(return_value='请选择第1名角色'))
@@ -82,7 +82,7 @@ class SelectionTests(unittest.TestCase):
         states = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 'rank']
         names = ['莹草', '鬼童丸', '茨木童子', '椒图', '辉夜姬']
         owner.screenshot = Mock(side_effect=lambda: frame.__setitem__(0, frame[0] + 1))
-        def appear(rule):
+        def appear(rule, **kw):
             state = states[frame[0]]
             if rule is owner.I_POST_DRAFT_RANK:
                 return state == 'rank'
@@ -112,7 +112,7 @@ class SelectionTests(unittest.TestCase):
         frame = [-1]
         states = [1, 1, 1, 1, 2, 2, 2, 'rank']
         owner.screenshot = Mock(side_effect=lambda: frame.__setitem__(0, frame[0] + 1))
-        def appear(rule):
+        def appear(rule, **kw):
             state = states[frame[0]]
             if rule is owner.I_POST_DRAFT_RANK:
                 return state == 'rank'

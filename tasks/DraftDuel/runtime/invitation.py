@@ -10,6 +10,7 @@ from tasks.Component.GeneralInvite.general_invite import (
 from tasks.GameUi.assets import GameUiAssets
 from tasks.GameUi.page import page_draft_duel
 from tasks.GameUi.default_pages import page_reward, random_click
+from tasks.DraftDuel.runtime.round_state import RUNTIME_CAPTAIN_CONFIRM_FRAMES
 
 
 class DraftDuelInvitationMixin:
@@ -23,7 +24,7 @@ class DraftDuelInvitationMixin:
                     (self.I_FIGHT_RESULT, self.I_DRAFT_SHARE, self.I_FIGHT_STATISTIC))
                 or page_reward.recognizer.evaluate(self)):
             return False
-        logger.info('DraftDuel lobby result/reward overlay detected; dismiss before lobby actions')
+        logger.info('DraftDuel 检测到结算/奖励遮罩，先关闭再操作大厅')
         self._click_draft_settlement_continue()
         return True
 
@@ -41,7 +42,7 @@ class DraftDuelInvitationMixin:
             self.device.stuck_record_clear()
             time.sleep(0.3)
             self.screenshot()
-        logger.warning('DraftDuel lobby result/reward overlays did not clear within bounded wait')
+        logger.warning('DraftDuel 结算/奖励遮罩在限时内未清理干净')
         return False
 
     def _invite_teammate(self):
@@ -49,7 +50,7 @@ class DraftDuelInvitationMixin:
         for attempt in range(1, 4):
             self.screenshot()
             if not self._clear_draft_lobby_overlays():
-                logger.warning(f'DraftDuel invite attempt {attempt}/3 blocked by result overlay')
+                logger.warning(f'DraftDuel 第{attempt}/3次邀请被结算遮罩挡住')
                 continue
             if (self.config.draft_duel.draft_duel_config.match_mode == DraftMatchMode.CAPTAIN
                     and self.appear(self.I_INVITE_CONTINUE)):
@@ -64,7 +65,7 @@ class DraftDuelInvitationMixin:
             if not self.appear(self.I_EMPTY_TEAMMATE) and self.is_in_room(False):
                 return True
             if not self.appear_then_click(self.I_EMPTY_TEAMMATE, interval=1):
-                logger.warning(f'DraftDuel invite entry not clicked: attempt={attempt}/3')
+                logger.warning(f'DraftDuel 邀请入口未点中：第{attempt}/3次')
                 continue
             deadline = time.monotonic() + 5
             while time.monotonic() < deadline:
@@ -82,8 +83,8 @@ class DraftDuelInvitationMixin:
                 if not self.appear(self.I_EMPTY_TEAMMATE) and self.is_in_room(False):
                     return True
                 time.sleep(0.3)
-            logger.warning(f'DraftDuel invite panel not confirmed; retry {attempt}/3')
-        logger.warning('DraftDuel invite failed after 3 attempts')
+            logger.warning(f'DraftDuel 邀请面板未确认，重试第{attempt}/3次')
+        logger.warning('DraftDuel 邀请 3 次均失败')
         return False
 
     def is_in_room(self, is_screenshot=True):
@@ -96,7 +97,8 @@ class DraftDuelInvitationMixin:
             return self.appear(self.I_LOBBY_TEAMMATE_WAIT) or self._member_match_started()
         if not self._in_draft_lobby():
             return False
-        return not self.appear(self.I_EMPTY_TEAMMATE)
+        # 空位「+」与「灰头像+齿轮」都表示座位上没有可用队友。
+        return not self._teammate_absent()
 
     def _in_draft_lobby(self) -> bool:
         """大厅统一使用全局页面标志，业务按钮不作为页面判断。"""
@@ -124,10 +126,10 @@ class DraftDuelInvitationMixin:
                 time.sleep(0.3)
                 continue
             if self.is_in_room(False):
-                logger.info('DraftDuel empty_teammate disappeared; teammate joined')
+                logger.info('DraftDuel empty_teammate 消失，队友已入队')
                 return True
             if time.monotonic() >= deadline:
-                logger.warning('DraftDuel teammate wait timed out; do not start matching')
+                logger.warning('DraftDuel 等待队友超时，不开始匹配')
                 return False
             last = getattr(self, '_draft_last_invite_at', None)
             retry = getattr(self, '_draft_invite_retry_seconds', FIRST_INVITE_RETRY_SECONDS)
@@ -137,9 +139,23 @@ class DraftDuelInvitationMixin:
                 self._invite_teammate()
             time.sleep(0.3)
 
+    def _start_as_captain(self, timeout=10) -> bool:
+        """以队长身份点「战」开始匹配；用于配置队员但运行时被推为队长的情况。"""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            self.device.stuck_record_clear()
+            self.screenshot()
+            if self.appear_then_click(self.I_LOBBY_BATTLE, interval=1):
+                logger.info('DraftDuel 已作为队长点击开始战斗')
+                return True
+            time.sleep(0.3)
+        logger.warning(f'DraftDuel 队长开战按钮 {timeout}s 内未点中')
+        return False
+
     def _enter_matchmaking(self) -> bool:
         """队员在当前页面等邀请；队长和单人仍先进入大厅。"""
         mode = self.config.draft_duel.draft_duel_config.match_mode
+        solo_start = False
         if mode == DraftMatchMode.MEMBER:
             self.prepare_battle_cooperation('DraftDuel')
             return self._wait_member_start()
@@ -150,7 +166,13 @@ class DraftDuelInvitationMixin:
             self.screenshot()
             if not self._clear_draft_lobby_overlays():
                 return False
-            if self.appear(self.I_EMPTY_TEAMMATE):
+            solo_start = self._teammate_quit_confirmed()
+            if solo_start:
+                if not self.config.draft_duel.draft_duel_config.solo_start_on_teammate_quit:
+                    logger.warning('DraftDuel 队友已退出(灰头像+齿轮)且配置禁止单人开战, 结束任务')
+                    return False
+                logger.warning('DraftDuel 队友已退出(灰头像+齿轮), 按单人开始匹配')
+            if not solo_start and self.appear(self.I_EMPTY_TEAMMATE):
                 last = getattr(self, '_draft_last_invite_at', None)
                 retry = getattr(self, '_draft_invite_retry_seconds', FIRST_INVITE_RETRY_SECONDS)
                 recent = isinstance(last, (int, float)) and time.time() - last < retry
@@ -163,12 +185,12 @@ class DraftDuelInvitationMixin:
             return False
         if not self._in_draft_lobby():
             return False
-        # 等待按钮期间队友可能离开，点击前再检查一次。
-        if mode == DraftMatchMode.CAPTAIN and not self.is_in_room(False):
+        # 等待按钮期间队友可能离开，点击前再检查一次；已确认退队的单人开战不再拦截。
+        if mode == DraftMatchMode.CAPTAIN and not solo_start and not self.is_in_room(False):
             return False
         clicked = bool(self.appear_then_click(self.I_LOBBY_BATTLE, interval=1))
         if clicked:
-            logger.info(f'DraftDuel {mode.value}: clicked lobby_battle')
+            logger.info(f'DraftDuel {mode.value}：已点击 lobby_battle')
         return clicked
 
     def _member_match_started(self) -> bool:
@@ -197,13 +219,23 @@ class DraftDuelInvitationMixin:
                 time.sleep(0.3)
                 continue
             if self._member_match_started():
-                logger.info('DraftDuel captain started; member entered draft or battle')
+                logger.info('DraftDuel 队长已开始，队员已进入选人或战斗')
                 return True
+            if self._runtime_is_captain():
+                # 队友退出或队长被系统转移后，本机看到的是「战」而不是「等待中」。
+                # 连续两帧确认，避免「等待中」单帧漏识别被当成队长；确认后直接接管开战，
+                # 否则只会空转到 MEMBER_START_TIMEOUT。
+                self._draft_captain_frames = getattr(self, '_draft_captain_frames', 0) + 1
+                if self._draft_captain_frames >= RUNTIME_CAPTAIN_CONFIRM_FRAMES:
+                    logger.warning('DraftDuel 运行时身份变为队长(队友已退出或队长已转移), 转入队长开战')
+                    return self._start_as_captain()
+            else:
+                self._draft_captain_frames = 0
             now = time.monotonic()
             if self.appear(self.I_LOBBY_TEAMMATE_WAIT) and not waiting_seen:
                 waiting_seen = True
                 deadline = now + self.MEMBER_START_TIMEOUT
-                logger.info('DraftDuel lobby_teammate_wait detected; wait for captain up to 600s')
+                logger.info('DraftDuel 检测到 lobby_teammate_wait，等待队长至多 600s')
             if now >= deadline:
                 self._finish_member_wait_timeout()
             if self.appear_accept():

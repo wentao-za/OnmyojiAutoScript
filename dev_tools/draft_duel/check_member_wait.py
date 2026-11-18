@@ -38,8 +38,11 @@ class MemberWaitTests(unittest.TestCase):
         owner = self.owner()
         owner.config.draft_duel.invite_config.default_invite = False
         owner._member_match_started.side_effect = [False, False, True]
-        owner.appear.side_effect = [False, True]
-        owner.appear_accept.side_effect = [True, False]
+        # 用「当前帧规则集」而不是顺序序列：运行时身份探针会在同一帧额外调 appear，
+        # 顺序序列会被多出的探针调用提前耗尽。
+        owner.appear = Mock(side_effect=lambda rule, **kw: (
+            rule is owner.I_LOBBY_TEAMMATE_WAIT and owner.screenshot.call_count >= 2))
+        owner.appear_accept = Mock(side_effect=lambda: owner.screenshot.call_count == 1)
         with patch('tasks.DraftDuel.runtime.invitation.time.monotonic', side_effect=[0, 1, 2]), \
                 patch('tasks.DraftDuel.runtime.invitation.time.sleep'):
             self.assertTrue(owner._wait_member_start())
@@ -64,7 +67,8 @@ class MemberWaitTests(unittest.TestCase):
 
     def test_missing_wait_marker_is_not_automatically_a_battle_start(self):
         owner = self.owner()
-        owner.appear.side_effect = [True, False, False]
+        # 「等待中」恒在时运行时身份探针必须判否，不能因为看到「战」就当作队长接管。
+        owner.appear.return_value = True
         owner._finish_member_wait_timeout = Mock(side_effect=TaskEnd)
         with patch('tasks.DraftDuel.runtime.invitation.time.monotonic', side_effect=[0, 10, 609, 610]), \
                 patch('tasks.DraftDuel.runtime.invitation.time.sleep'):
@@ -95,12 +99,12 @@ class MemberWaitTests(unittest.TestCase):
         owner = self.owner()
         # 旧“我的阵容”资源已被用户替换，保留无关大厅标志的回归场景。
         owner.I_POST_DRAFT_ROSTER = object()
-        owner.appear.side_effect = lambda rule: rule is owner.I_POST_DRAFT_ROSTER
+        owner.appear.side_effect = lambda rule, **kw: rule is owner.I_POST_DRAFT_ROSTER
         self.assertFalse(ScriptTask._member_match_started(owner))
 
     def test_start_detection_uses_selection_buttons_and_prioritizes_wait_state(self):
         owner = self.owner()
-        owner.appear.side_effect = lambda rule: rule is owner.I_SELECT_2
+        owner.appear.side_effect = lambda rule, **kw: rule is owner.I_SELECT_2
         self.assertTrue(ScriptTask._member_match_started(owner))
         owner.appear.side_effect = None
         owner.appear.return_value = True
@@ -109,7 +113,7 @@ class MemberWaitTests(unittest.TestCase):
     def test_member_room_confirmation_requires_wait_or_start_marker(self):
         owner = self.owner()
         self.assertFalse(owner.is_in_room(False))
-        owner.appear.side_effect = lambda rule: rule is owner.I_LOBBY_TEAMMATE_WAIT
+        owner.appear.side_effect = lambda rule, **kw: rule is owner.I_LOBBY_TEAMMATE_WAIT
         self.assertTrue(owner.is_in_room(False))
         owner.appear.side_effect = None
         owner.appear.return_value = False

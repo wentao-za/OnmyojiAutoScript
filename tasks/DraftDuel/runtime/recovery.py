@@ -80,8 +80,8 @@ class DraftDuelRecoveryMixin:
                 except PermissionError:
                     if attempt == 4:
                         if not getattr(self, '_draft_checkpoint_write_blocked', False):
-                            logger.warning(f'DraftDuel checkpoint replacement denied: {path}; '
-                                           'retain previous checkpoint and retry on next save')
+                            logger.warning(f'DraftDuel 检查点替换被拒绝：{path}；'
+                                           '保留原检查点并在下次保存时重试')
                         self._draft_checkpoint_write_blocked = True
                         return
                     time.sleep(0.05 * 2 ** attempt)
@@ -93,7 +93,7 @@ class DraftDuelRecoveryMixin:
             except FileNotFoundError:
                 pass
             except PermissionError:
-                logger.warning(f'DraftDuel temporary checkpoint cleanup denied: {temp}')
+                logger.warning(f'DraftDuel 临时检查点清理被拒绝：{temp}')
 
     def _restore_draft_checkpoint(self):
         path = self._draft_checkpoint_path()
@@ -141,10 +141,10 @@ class DraftDuelRecoveryMixin:
             self.draft_named_heads = tuple(zip(self.draft_selected, heads))
             self._draft_resume_phase = data.get('phase', 'lobby')
             self._draft_published_state = None
-            logger.info(f'DraftDuel restored checkpoint: {self._draft_resume_phase}')
+            logger.info(f'DraftDuel 已恢复检查点：{self._draft_resume_phase}')
             return True
         except (OSError, ValueError, KeyError, TypeError, EOFError, BadZipFile):
-            logger.warning('DraftDuel checkpoint unreadable; use current page without guessing roster')
+            logger.warning('DraftDuel 检查点不可读，按当前页面继续且不猜测名单')
             return False
 
     def _detect_draft_phase(self):

@@ -37,7 +37,7 @@ class RankMatchingTests(unittest.TestCase):
         page = {'index': -1}
         frames = [[owner.I_POST_DRAFT_RANK, owner.I_LOBBY_BATTLE], [owner.I_POST_DRAFT_FIGHT]]
         owner.screenshot = Mock(side_effect=lambda: page.update(index=page['index'] + 1))
-        owner.appear = Mock(side_effect=lambda rule: rule in frames[page['index']])
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[page['index']])
         owner.appear_then_click = Mock(side_effect=lambda *a, **kw: events.append('start') or True)
         with patch('tasks.DraftDuel.runtime.matchmaking.time.sleep'):
             self.assertTrue(owner._match_battle())
@@ -61,7 +61,7 @@ class RankMatchingTests(unittest.TestCase):
             [owner.I_POST_DRAFT_FIGHT],
         ]
         owner.screenshot = Mock(side_effect=lambda: page.update(index=page['index'] + 1))
-        owner.appear = Mock(side_effect=lambda rule: rule in frames[page['index']])
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[page['index']])
         clicks = []
         def click(rule, **kw):
             if rule is owner.I_AUTO_DOWN:
@@ -107,7 +107,7 @@ class RankMatchingTests(unittest.TestCase):
         owner = self.owner(mode)
         current = [-1]
         owner.screenshot = Mock(side_effect=lambda: current.__setitem__(0, current[0] + 1))
-        owner.appear = Mock(side_effect=lambda rule: rule in frames[current[0]])
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[current[0]])
         owner.appear_then_click = Mock(side_effect=lambda rule, **kw: rule in frames[current[0]])
         owner._capture_draft_heads = Mock(return_value=True)
         owner._finish_match_timeout = Mock(side_effect=TaskEnd('three attempts'))
@@ -149,7 +149,7 @@ class RankMatchingTests(unittest.TestCase):
         frames = [[GlobalGameAssets.I_UI_REWARD, owner.I_WAIT_FIGHT_LOBBY],
                   [GlobalGameAssets.I_UI_REWARD], [owner.I_WAIT_FIGHT_LOBBY]]
         owner.screenshot = Mock(side_effect=lambda: frame.__setitem__(0, frame[0]+1))
-        owner.appear = Mock(side_effect=lambda rule: rule in frames[frame[0]])
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[frame[0]])
         with patch('tasks.DraftDuel.runtime.matchmaking.time.sleep'):
             self.assertEqual(owner._match_battle(), 'lobby')
         self.assertEqual(owner.click.call_count, 2)
@@ -172,7 +172,7 @@ class RankMatchingTests(unittest.TestCase):
                       [owner.I_POST_DRAFT_RANK, owner.I_AUTO_RIGHT, owner.I_LOBBY_BATTLE],
                       [owner.I_POST_DRAFT_FIGHT]]
             owner.screenshot = Mock(side_effect=lambda: page.update(index=page['index']+1))
-            owner.appear = Mock(side_effect=lambda rule: rule in frames[page['index']])
+            owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[page['index']])
             def dismiss(_):
                 self.assertLess(page['index'], 2)
                 owner.appear_then_click.assert_not_called()
@@ -237,13 +237,21 @@ class RankMatchingTests(unittest.TestCase):
         self.assertTrue(result)
         owner.appear_then_click.assert_not_called()
 
-    def test_member_leaves_when_leader_left_even_with_wait_or_exit_menu(self):
+    def test_member_leaves_when_teammate_seat_shows_quit(self):
         a = ScriptTask
         owner, result = self.matching('队员', [[
-            a.I_LEADER_EXIT, a.I_FIGHT_WAIT, a.I_EXIT_CANCEL]])
+            a.I_TEAMMATE_QUIT, a.I_FIGHT_WAIT, a.I_EXIT_CANCEL]])
         self.assertEqual(result, 'finished')
-        owner._leave_draft_team.assert_called_once_with('队长已离队')
+        owner._leave_draft_team.assert_called_once_with('协同方已退出队伍')
         owner.appear_then_click.assert_not_called()
+
+    def test_member_ignores_captain_transfer_button(self):
+        # 「转移队长」只说明本机是队长，不再是离队判据（2026-11-18 起）
+        a = ScriptTask
+        owner, result = self.matching('队员', [[a.I_LEADER_EXIT],
+                                              [GeneralBattleAssets.I_PREPARE_DARK]])
+        self.assertTrue(result)
+        owner._leave_draft_team.assert_not_called()
 
     def test_leader_does_not_use_member_leave_detection(self):
         owner, result = self.matching('队长', [[
@@ -263,7 +271,7 @@ class RankMatchingTests(unittest.TestCase):
         states = [[], [owner.I_EXIT, owner.I_EXIT_MOMENT, owner.I_EXIT_CANCEL],
                   [GameUiAssets.I_CHECK_TOWN]]
         owner.screenshot = Mock(side_effect=lambda: frame.__setitem__(0, frame[0] + 1))
-        owner.appear = Mock(side_effect=lambda rule: rule in states[frame[0]])
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule in states[frame[0]])
         owner.appear_then_click = Mock(side_effect=lambda rule, **kw: rule in states[frame[0]])
         with patch('tasks.DraftDuel.runtime.matchmaking.time.sleep'):
             with self.assertRaises(TaskEnd):

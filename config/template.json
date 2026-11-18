@@ -1924,7 +1924,8 @@
     "draft_duel_config": {
       "match_mode": "单人",
       "match_wait_seconds": 60,
-      "round_count": 1
+      "round_count": 1,
+      "solo_start_on_teammate_quit": true
     },
     "invite_config": {
       "friend_list": "",

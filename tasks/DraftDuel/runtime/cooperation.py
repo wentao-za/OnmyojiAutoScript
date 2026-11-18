@@ -27,7 +27,7 @@ class DraftDuelCooperationMixin:
                 'abort_reason': reason,
             })
         except Exception as exc:
-            logger.warning(f'DraftDuel cannot publish round abort: {exc}')
+            logger.warning(f'DraftDuel 无法发布轮次中止：{exc}')
 
     def _sync_draft_state(self, require_small_game=False, require_auto=False, allow_partial=False) -> bool:
         """复用通用协同数据库，交换同一局备选和每轮已确认上阵信息。"""
@@ -124,7 +124,7 @@ class DraftDuelCooperationMixin:
             self._log_sync_wait(f'等待协同脚本 {peer} 进入第{getattr(self, "draft_small_game", 0)}小局')
         else:
             if getattr(self, '_draft_sync_wait_reason', None):
-                logger.info(f'DraftDuel cooperation roster ready: {peer}')
+                logger.info(f'DraftDuel 协同名单已就绪：{peer}')
             self._draft_sync_wait_reason = None
         return same_game if require_small_game else True
 
@@ -199,7 +199,195 @@ class DraftDuelCooperationMixin:
         self._save_draft_checkpoint('rank')
         return True
 
+    def _rescue_roster_from_room(self):
+        """名单同步失败后，从房间页「阵容详情」弹窗重识别最终五人名单（方案 E 一期）。
+
+        详情窗五列与第 1~5 名选人顺序一致（2026-11-18 oas3/oas4 双阵容实测），
+        名单以弹窗 OCR 为准；`_draft_transcript` 仅在对应列 OCR 失败时回填
+        （实测存在「日志确认选人、游戏实际未生效」的偏差，记录不可全信）。
+        识别结果不完整或含未知名称时保守放弃，维持现有等待/超时行为。
+        """
+        deadline = time.monotonic() + 30
+        own = list(getattr(self, 'draft_selected', []))
+        logger.info('DraftDuel 名单同步失败，开始从阵容详情弹窗重识别')
+        self.device.stuck_record_clear()
+        self.screenshot()
+        if not self._is_draft_rank_page():
+            logger.warning('DraftDuel 中止名单恢复：当前不在协同对弈房间页')
+            return
+        if not self.appear(self.I_ROSTER_DETAIL):
+            # 只在弹窗关闭时点顶部「我的阵容」牌；弹窗已开时盲点会落进弹窗内部，
+            # 可能误开式神详情，导致后续识别与点击全部错位。
+            self.click(self.C_ROSTER_BAR)
+            if not self._wait_roster_view(self.I_ROSTER_DETAIL,
+                                          time.monotonic() + 4, leave_check=True):
+                if not self._is_draft_rank_page():
+                    logger.warning('DraftDuel 中止名单恢复：首次点击后房间页消失，不再重试点击')
+                    return
+                logger.warning('DraftDuel 首次点击未打开阵容详情，重试一次')
+                self.click(self.C_ROSTER_BAR)
+        if not self._wait_roster_view(self.I_ROSTER_DETAIL, deadline, leave_check=True):
+            logger.warning('DraftDuel 中止名单恢复：阵容详情弹窗未打开')
+            return
+        if not self._ensure_roster_mine(deadline):
+            self._close_roster_detail(deadline)
+            return
+        if not self._settle_roster_view(self.I_ROSTER_MINE_ON):
+            logger.warning('DraftDuel 中止名单恢复：「我的」视图切换后未稳定')
+            self._close_roster_detail(deadline)
+            return
+        names = self._ocr_roster_names()
+        peer_names = ()
+        if self.appear_then_click(self.I_ROSTER_PEER_OFF, interval=1):
+            if self._wait_roster_view(self.I_ROSTER_PEER_ON, deadline) \
+                    and self._settle_roster_view(self.I_ROSTER_PEER_ON):
+                peer_names = self._ocr_roster_names()
+            else:
+                logger.warning('DraftDuel 队友视图切换未确认')
+        if not self._close_roster_detail(deadline):
+            logger.warning('DraftDuel 中止名单恢复：弹窗未能关闭，保持原名单')
+            return
+        overlap = [name for name in names if name and name in peer_names]
+        if overlap:
+            logger.warning(f'DraftDuel 中止名单恢复：本方与队友名单出现交集 {overlap}，'
+                           f'疑似读到对方视图，保持原名单')
+            return
+        final = self._canonical_rescued_roster(names)
+        if final is None:
+            return
+        if final == own:
+            logger.info(f'DraftDuel 名单与本机记录一致 {final}，等待协同方自恢复')
+        else:
+            logger.warning(f'DraftDuel 以阵容详情为准更新名单 {own} -> {final}')
+            self.draft_selected = tuple(final)
+        if peer_names:
+            shown = '、'.join(peer_names)
+            logger.info(f'DraftDuel 队友阵容 {shown}')
+
+    def _ocr_roster_names(self):
+        """按列读取阵容详情弹窗的五个式神名。"""
+        names = []
+        for rule in (self.O_ROSTER_NAME_1, self.O_ROSTER_NAME_2, self.O_ROSTER_NAME_3,
+                     self.O_ROSTER_NAME_4, self.O_ROSTER_NAME_5):
+            names.append(str(rule.ocr(self.device.image) or '').strip())
+        return names
+
+    def _canonical_rescued_roster(self, names):
+        """OCR 五列 → 归一化名单；失败列用 transcript 同轮记录回填，仍失败则放弃。"""
+        transcript = getattr(self, '_draft_transcript', {})
+        final = []
+        for index, raw in enumerate(names):
+            name = normalize_name(raw) if raw else None
+            if name is None:
+                record = transcript.get(index + 1)
+                fallback = record.get('pick') if isinstance(record, dict) else None
+                if fallback and normalize_name(fallback) == fallback:
+                    logger.warning(f'DraftDuel 第{index + 1}列 OCR 不可读（{raw!r}），'
+                                   f'从选人记录回填：{fallback}')
+                    name = fallback
+            if name is None:
+                logger.warning(f'DraftDuel 中止名单恢复：第{index + 1}列无法归一化'
+                               f'（OCR={raw!r}），保持原名单')
+                return None
+            final.append(name)
+        if len(set(final)) != 5:
+            logger.warning(f'DraftDuel 中止名单恢复：识别名单有重复 {final}，保持原名单')
+            return None
+        return final
+
+    def _wait_roster_view(self, rule, deadline, leave_check=False):
+        """等待某素材出现；leave_check 时连续多帧既无素材又无房间页则判离场。"""
+        absent = 0
+        while time.monotonic() < deadline:
+            self.device.stuck_record_clear()
+            self.screenshot()
+            if self.appear(rule):
+                return True
+            if leave_check:
+                # 弹窗打开会遮挡 I_POST_DRAFT_RANK，连续缺席才判离场，防动画帧误判。
+                absent = 0 if self._is_draft_rank_page() else absent + 1
+                if absent >= 4:
+                    logger.warning('DraftDuel 中止名单恢复：房间页已消失'
+                                   '（可能已进入匹配，或误开了其他界面）')
+                    return False
+            time.sleep(0.3)
+        return False
+
+    def _ensure_roster_mine(self, deadline):
+        """弹窗可能停留在队友视图，确保切回「我的」后再采集本机名单。"""
+        if self.appear(self.I_ROSTER_MINE_ON):
+            return True
+        while time.monotonic() < deadline:
+            self.device.stuck_record_clear()
+            self.screenshot()
+            if self.appear(self.I_ROSTER_MINE_ON):
+                return True
+            if self.appear(self.I_ROSTER_PEER_ON):
+                self.appear_then_click(self.I_ROSTER_MINE_OFF, interval=1)
+            time.sleep(0.3)
+        logger.warning('DraftDuel 中止名单恢复：未能定位「我的」阵容视图')
+        return False
+
+    def _close_roster_detail(self, deadline):
+        """关闭阵容详情弹窗并确认回到房间页。
+
+        弹窗的关闭 X 与房间页「排名」按钮几乎同坐标（实测关闭落点 (1211,125)
+        正压在「排名」菱牌上），所以点击必须限量：最多两次，第二次要求
+        「距上次点击 ≥1.2s 且弹窗连续两帧仍可见」，避免关窗动画期间连点
+        落到下层「排名」上，把房间页换成排名面板（外层会空转到 600s 超时）。
+        """
+        end = max(deadline, time.monotonic()) + 10
+        clicks = 0
+        last_click = 0.0
+        streak = 0
+        while time.monotonic() < end:
+            self.device.stuck_record_clear()
+            self.screenshot()
+            if self._is_draft_rank_page():
+                return True
+            if not self.appear(self.I_ROSTER_DETAIL):
+                streak = 0
+                time.sleep(0.3)
+                continue
+            streak += 1
+            retry_ready = (clicks == 1 and streak >= 2
+                           and time.monotonic() - last_click >= 1.2)
+            if clicks == 0 or retry_ready:
+                self.appear_then_click(self.I_ROSTER_CLOSE)
+                clicks += 1
+                last_click = time.monotonic()
+                streak = 0
+                time.sleep(0.6)
+                continue
+            time.sleep(0.3)
+        if self.appear(self.I_ROSTER_DETAIL):
+            logger.warning('DraftDuel 关闭按钮无效，尝试点击弹窗外区域关闭')
+            self.click(self.C_SAFE_AREA)
+            time.sleep(0.6)
+            self.device.stuck_record_clear()
+            self.screenshot()
+            if self._is_draft_rank_page():
+                return True
+            if self.appear(self.I_ROSTER_DETAIL):
+                logger.warning('DraftDuel 关闭弹窗失败，放弃本轮恢复（避免误点「排名」）')
+                return False
+            logger.warning('DraftDuel 弹窗已关闭但未确认回到房间页，按已关闭处理')
+            return True
+        # 弹窗已不在而房间页判据未命中：多为动画/判据滞后，按已关闭处理。
+        return True
+
+    def _settle_roster_view(self, rule, settle=0.4):
+        """视图切换后等待重绘，并用新截图二次确认按钮态。
+
+        按钮高亮与名单行重绘不同步，切完立即 OCR 可能把上一视图的名单
+        读成当前视图（把队友阵容写成自己的）。
+        """
+        time.sleep(settle)
+        self.device.stuck_record_clear()
+        self.screenshot()
+        return bool(self.appear(rule))
+
     def _log_sync_wait(self, reason):
         if getattr(self, '_draft_sync_wait_reason', None) != reason:
-            logger.info(f'DraftDuel cooperation waiting: {reason}')
+            logger.info(f'DraftDuel 协同等待：{reason}')
             self._draft_sync_wait_reason = reason

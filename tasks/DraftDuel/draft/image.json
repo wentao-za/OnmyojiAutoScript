@@ -183,7 +183,7 @@
     "itemName": "leader_exit",
     "imageName": "draft_leader_exit.png",
     "roiFront": "776,166,47,50",
-    "roiBack": "760,134,85,105",
+    "roiBack": "760,134,415,105",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",
@@ -271,7 +271,7 @@
   },
   {
     "itemName": "hand_card_area",
-    "imageName": "",
+    "imageName": "hand_card_area.png",
     "roiFront": "8,486,1021,223",
     "roiBack": "8,486,1021,223",
     "method": "Template matching",
@@ -348,5 +348,75 @@
     "threshold": 0.8,
     "profile": "High",
     "description": "属性详情"
+  },
+  {
+    "itemName": "teammate_quit",
+    "imageName": "draft_teammate_quit.png",
+    "roiFront": "904,181,34,34",
+    "roiBack": "470,130,490,110",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "队友已退队(灰头像+右下角齿轮), 一条ROI覆盖两个座位"
+  },
+  {
+    "itemName": "roster_detail",
+    "imageName": "draft_roster_detail.png",
+    "roiFront": "563,24,149,42",
+    "roiBack": "540,10,240,70",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "阵容详情弹窗标题"
+  },
+  {
+    "itemName": "roster_close",
+    "imageName": "draft_roster_close.png",
+    "roiFront": "1182,104,40,40",
+    "roiBack": "1140,70,140,110",
+    "method": "Masked template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "弹窗右上关闭X（掩码排除四角背景）"
+  },
+  {
+    "itemName": "roster_mine_on",
+    "imageName": "draft_roster_mine_on.png",
+    "roiFront": "1081,637,82,82",
+    "roiBack": "1050,615,170,105",
+    "method": "Masked template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "「我的」金色选中态"
+  },
+  {
+    "itemName": "roster_mine_off",
+    "imageName": "draft_roster_mine_off.png",
+    "roiFront": "1092,645,59,64",
+    "roiBack": "1050,625,170,95",
+    "method": "Masked template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "「我的」暗色未选态"
+  },
+  {
+    "itemName": "roster_peer_on",
+    "imageName": "draft_roster_peer_on.png",
+    "roiFront": "1153,640,82,79",
+    "roiBack": "1136,615,135,105",
+    "method": "Masked template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "「队友」金色选中态"
+  },
+  {
+    "itemName": "roster_peer_off",
+    "imageName": "draft_roster_peer_off.png",
+    "roiFront": "1167,651,56,60",
+    "roiBack": "1145,625,135,95",
+    "method": "Masked template matching",
+    "threshold": 0.8,
+    "profile": "High",
+    "description": "「队友」暗色未选态"
   }
 ]

@@ -52,5 +52,50 @@
     "method": "Default",
     "keyword": "",
     "description": "胜场数"
+  },
+  {
+    "itemName": "roster_name_1",
+    "roiFront": "230,160,192,45",
+    "roiBack": "230,160,192,45",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "阵容详情弹窗第1列式神名"
+  },
+  {
+    "itemName": "roster_name_2",
+    "roiFront": "420,160,192,45",
+    "roiBack": "420,160,192,45",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "阵容详情弹窗第2列式神名"
+  },
+  {
+    "itemName": "roster_name_3",
+    "roiFront": "612,160,192,45",
+    "roiBack": "612,160,192,45",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "阵容详情弹窗第3列式神名"
+  },
+  {
+    "itemName": "roster_name_4",
+    "roiFront": "803,160,192,45",
+    "roiBack": "803,160,192,45",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "阵容详情弹窗第4列式神名"
+  },
+  {
+    "itemName": "roster_name_5",
+    "roiFront": "994,160,192,45",
+    "roiBack": "994,160,192,45",
+    "mode": "Single",
+    "method": "Default",
+    "keyword": "",
+    "description": "阵容详情弹窗第5列式神名"
   }
 ]

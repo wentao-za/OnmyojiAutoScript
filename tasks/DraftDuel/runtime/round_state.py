@@ -4,6 +4,14 @@ import time
 from module.logger import logger
 from tasks.GameUi.assets import GameUiAssets
 
+# 队友退队判据：座位保留、头像变灰、右下角出现齿轮（2026-11-18 实机四帧标定：
+# 命中帧 1.000，正常帧 ≤0.309，另一座位 ≤0.136；亮度/模糊/JPEG 扰动后仍 ≥0.968）
+TEAMMATE_QUIT_THRESHOLD = 0.80
+TEAMMATE_QUIT_CONFIRM_FRAMES = 2
+TEAMMATE_QUIT_FRAME_INTERVAL = 0.3
+# 运行时身份纠偏：连续两帧都只看到「战」才认队长，防止「等待中」单帧漏识别被当成队长
+RUNTIME_CAPTAIN_CONFIRM_FRAMES = 2
+
 
 class DraftDuelRoundStateMixin:
     def _is_draft_selection_page(self):
@@ -23,6 +31,54 @@ class DraftDuelRoundStateMixin:
             return False
         return any(self.appear(rule) for rule in (
             self.I_LOBBY_BATTLE, self.I_LOBBY_TEAMMATE_WAIT))
+
+    def _teammate_seat_quit(self, screenshot=True):
+        """队友座位是否为「已退队」形态（头像变灰 + 右下角齿轮）。
+
+        一条 ROI 同时覆盖两个座位：自己在线时自己那份不会显示齿轮，
+        所以命中任一座位即可判定队友已退，不必先判断哪边是自己。
+        未开战即退队走「+」空位形态，由 I_EMPTY_TEAMMATE 判定，见 _teammate_absent。
+        """
+        if screenshot:
+            self.screenshot()
+        return bool(self.appear(self.I_TEAMMATE_QUIT, threshold=TEAMMATE_QUIT_THRESHOLD))
+
+    def _teammate_quit_confirmed(self):
+        """连续 TEAMMATE_QUIT_CONFIRM_FRAMES 帧命中齿轮才认定队友已退。
+
+        组队大厅/番战页都适用；结果页、奖励页遮罩会盖住座位，遮罩帧跳过后补采，
+        但不计入命中次数。任一帧未命中即判否；遮罩久不消失时按上限退出，不死循环。
+        """
+        hits = 0
+        attempts = 0
+        limit = TEAMMATE_QUIT_CONFIRM_FRAMES + 3
+        while hits < TEAMMATE_QUIT_CONFIRM_FRAMES and attempts < limit:
+            attempts += 1
+            self.device.stuck_record_clear()
+            self.screenshot()
+            if self._dismiss_draft_lobby_overlay() is True:
+                continue
+            if not self._teammate_seat_quit(False):
+                return False
+            hits += 1
+            if hits < TEAMMATE_QUIT_CONFIRM_FRAMES:
+                time.sleep(TEAMMATE_QUIT_FRAME_INTERVAL)
+        return hits >= TEAMMATE_QUIT_CONFIRM_FRAMES
+
+    def _teammate_absent(self):
+        """座位上没有可用队友：未开战的「+」空位，或已退队的灰头像+齿轮。"""
+        return bool(self.appear(self.I_EMPTY_TEAMMATE)) or self._teammate_seat_quit(False)
+
+    def _runtime_is_captain(self, screenshot=False):
+        """以界面按钮判定运行时身份：队长看到「战」，队员看到「等待中」，同一 ROI 互斥。
+
+        用作配置身份的运行时纠偏：队长被系统转给本机后，配置仍写着 MEMBER。
+        """
+        if screenshot:
+            self.screenshot()
+        battle = self.appear(self.I_LOBBY_BATTLE)
+        wait = self.appear(self.I_LOBBY_TEAMMATE_WAIT)
+        return bool(battle and not wait)
 
     def _initialize_duel_state(self):
         """初始化内存容器；初始化本身不代表观察到新一轮。"""
@@ -78,13 +134,13 @@ class DraftDuelRoundStateMixin:
                 self.draft_completed_rounds = getattr(self, 'draft_completed_rounds', 0) + 1
                 self._draft_round_had_battle = False
                 target = self.config.draft_duel.draft_duel_config.round_count
-                logger.info(f'DraftDuel completed big rounds: {self.draft_completed_rounds}/{target}')
+                logger.info(f'DraftDuel 已完成大轮：{self.draft_completed_rounds}/{target}')
                 if self.draft_completed_rounds >= target:
                     self._leave_draft_team(f'已完成{self.draft_completed_rounds}大轮协斗')
                     return
             self._initialize_duel_state()
             self.draft_big_round = getattr(self, 'draft_big_round', 0) + 1
-            logger.info(f'DraftDuel new big round: {self.draft_big_round}')
+            logger.info(f'DraftDuel 新大轮：{self.draft_big_round}')
         if in_lobby:
             self._draft_wait_lobby_seen = True
         elif getattr(self, '_draft_wait_lobby_seen', False) and (
@@ -109,4 +165,4 @@ class DraftDuelRoundStateMixin:
                 self.draft_peer_rounds = ()
                 self.draft_unresolved_slots = []
             self._draft_deployment_state = None
-            logger.info(f'DraftDuel small game {self.draft_small_game} in current big round')
+            logger.info(f'DraftDuel 本大轮第{self.draft_small_game}小局')

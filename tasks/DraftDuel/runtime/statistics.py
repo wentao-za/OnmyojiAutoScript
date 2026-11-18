@@ -62,7 +62,7 @@ class DraftDuelStatisticsMixin:
             if stable >= 2:
                 self.draft_victory_count = value
                 self._victory_valid_after = finished
-                logger.info(f'DraftDuel victory_count={value}, finished_small_games={finished}')
+                logger.info(f'DraftDuel 番胜数={value}，已完成小局={finished}')
                 pending = getattr(self, '_pending_battle_stats', None)
                 if pending and self._can_record_stats():
                     before = pending['before']
@@ -70,11 +70,11 @@ class DraftDuelStatisticsMixin:
                         if before is not None else 'unknown'
                     battle_stats.resolve_result(pending['event_id'], result, value)
                     self._pending_battle_stats = None
-                    logger.info(f'DraftDuel recorded small-game result: {result}')
+                    logger.info(f'DraftDuel 记录小局结果：{result}')
                 self._victory_observed_after = finished
                 return
         self._victory_observed_after = finished
-        logger.warning('DraftDuel victory_count unreadable; retain last valid value')
+        logger.warning('DraftDuel 番胜数不可读，保留上次有效值')
 
     def _record_small_game_stats(self):
         if len(getattr(self, 'draft_selected', ())) != 5:
@@ -135,5 +135,5 @@ class DraftDuelStatisticsMixin:
                                   policy_ids={'draft': 'legacy', 'field': 'legacy'},
                                   draft_rounds=draft_rounds, peer_draft_rounds=peer_draft_rounds)
         self._stats_round_finalized = True
-        logger.info(f'DraftDuel round recorded: final_victory_count={self.draft_victory_count}, '
-                    f'completed={completed}')
+        logger.info(f'DraftDuel 轮次已记录：final_victory_count={self.draft_victory_count}，'
+                    f'已完成小局={completed}')

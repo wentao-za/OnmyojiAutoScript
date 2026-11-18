@@ -121,7 +121,8 @@ class DraftDuelMigrationTests(unittest.TestCase):
             'battle_timeout_seconds':3600,
         })
         self.assertEqual(settings.draft_duel_config.model_dump(),
-                         {'match_mode':'队长', 'match_wait_seconds': 60, 'round_count': 1})
+                         {'match_mode':'队长', 'match_wait_seconds': 60, 'round_count': 1,
+                          'solo_start_on_teammate_quit': True})
         for item in vars(DraftDuelAssets).values():
             file = getattr(item, 'file', None)
             if isinstance(file, str) and file:

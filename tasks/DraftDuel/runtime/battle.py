@@ -33,7 +33,7 @@ class DraftDuelBattleMixin:
             return None
         result = 'win' if win else 'loss'
         if result != getattr(self, '_draft_small_game_result', None):
-            logger.info(f'DraftDuel statistic result: {result}')
+            logger.info(f'DraftDuel 结算结果：{result}')
         self._draft_small_game_result = result
         return result
 
@@ -57,7 +57,7 @@ class DraftDuelBattleMixin:
         self._resolve_statistic_result()
         self._draft_end_recorded = True
         self._save_draft_checkpoint('settlement')
-        logger.info(f'DraftDuel small game ended: {self.draft_finished_small_games}')
+        logger.info(f'DraftDuel 小局结束：{self.draft_finished_small_games}')
 
     def _battle_and_settlement(self):
         """标志持续消失才等待结算；真实结算页面确认结束，重现则恢复战斗。"""
@@ -77,10 +77,10 @@ class DraftDuelBattleMixin:
                     battle_clicks_reset = True
                 if not seen or settling:
                     deadline = now + self.SMALL_GAME_BATTLE_WINDOW
-                    logger.info('DraftDuel entered/resumed small-game battle; wait window=300s')
+                    logger.info('DraftDuel 进入/继续小局战斗，等待窗口=300s')
                 elif now >= deadline:
                     deadline = now + self.SMALL_GAME_BATTLE_WINDOW
-                    logger.info('DraftDuel still in battle after 300s; extend another 300s')
+                    logger.info('DraftDuel 战斗超过 300s 仍在进行，再等 300s')
                 self._sync_draft_state()
                 self._draft_round_had_battle = True
                 self._draft_battle_seen = True
@@ -115,6 +115,6 @@ class DraftDuelBattleMixin:
                         self._save_draft_checkpoint('rank')
                         return 'rank'
                 if now >= deadline and (settling or not seen):
-                    logger.warning('DraftDuel battle/settlement made no confirmed progress')
+                    logger.warning('DraftDuel 战斗/结算无确认进展')
                     return None
             time.sleep(0.3)

@@ -25,7 +25,7 @@ class MatchmakingTests(unittest.TestCase):
                 owner = object.__new__(ScriptTask)
                 owner.config = SimpleNamespace(draft_duel=SimpleNamespace(
                     draft_duel_config=SimpleNamespace(match_mode=mode)))
-                owner.appear = Mock(side_effect=lambda rule: rule is owner.I_INVITE_CONTINUE)
+                owner.appear = Mock(side_effect=lambda rule, **kw: rule is owner.I_INVITE_CONTINUE)
                 owner.appear_then_click = Mock(return_value=True)
                 owner.click = Mock()
                 owner._click_draft_settlement_continue()
@@ -36,7 +36,7 @@ class MatchmakingTests(unittest.TestCase):
         owner = object.__new__(ScriptTask)
         owner.config = SimpleNamespace(draft_duel=SimpleNamespace(
             draft_duel_config=SimpleNamespace(match_mode=DraftMatchMode.MEMBER)))
-        owner.appear = Mock(side_effect=lambda rule: rule is owner.I_INVITE_CONTINUE)
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule is owner.I_INVITE_CONTINUE)
         owner.appear_then_click = Mock()
         owner.click = Mock()
         self.assertFalse(owner._dismiss_draft_lobby_overlay())
@@ -50,7 +50,7 @@ class MatchmakingTests(unittest.TestCase):
         owner.screenshot = Mock()
         owner.click = Mock()
         owner.appear_then_click = Mock()
-        owner.appear = Mock(side_effect=lambda rule: rule is owner.I_INVITE_CONTINUE)
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule is owner.I_INVITE_CONTINUE)
         frames = [0]
         def started():
             frames[0] += 1
@@ -71,7 +71,7 @@ class MatchmakingTests(unittest.TestCase):
         owner.device = Mock()
         owner.screenshot = Mock()
         owner._clear_draft_lobby_overlays = Mock(return_value=True)
-        owner.appear = Mock(side_effect=lambda rule: rule is owner.I_INVITE_CONTINUE)
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule is owner.I_INVITE_CONTINUE)
         owner.appear_then_click = Mock(return_value=True)
         owner.invite_friends = Mock()
         owner.click = Mock()
@@ -159,7 +159,7 @@ class MatchmakingTests(unittest.TestCase):
             page = [0]
             frames = [[overlay, GameUiAssets.I_DRAFT_DUEL], [GameUiAssets.I_DRAFT_DUEL],
                       [GameUiAssets.I_DRAFT_DUEL]]
-            owner.appear = Mock(side_effect=lambda rule: rule in frames[page[0]])
+            owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[page[0]])
             owner.screenshot = Mock(side_effect=lambda: page.__setitem__(0, page[0]+1))
             with patch('tasks.DraftDuel.runtime.invitation.time.sleep'):
                 self.assertTrue(owner._goto_draft_lobby())
@@ -177,7 +177,7 @@ class MatchmakingTests(unittest.TestCase):
         page = [-1]
         frames = [[DraftDuelAssets.I_FIGHT_RESULT], [DraftDuelAssets.I_LOBBY_TEAMMATE_WAIT], []]
         owner.screenshot = Mock(side_effect=lambda: page.__setitem__(0, page[0]+1))
-        owner.appear = Mock(side_effect=lambda rule: rule in frames[page[0]])
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule in frames[page[0]])
         with patch('tasks.DraftDuel.runtime.invitation.time.sleep'):
             self.assertTrue(owner._wait_member_start())
         owner.click.assert_called_once()
@@ -197,7 +197,7 @@ class MatchmakingTests(unittest.TestCase):
 
     def test_invite_retries_panel_open_and_sends_only_after_panel_appears(self):
         owner = self.invite_owner()
-        owner.appear = Mock(side_effect=lambda rule: (
+        owner.appear = Mock(side_effect=lambda rule, **kw: (
             owner.appear_then_click.call_count >= 2 if rule is owner.I_INVITE_ENSURE
             else rule is owner.I_EMPTY_TEAMMATE))
         with patch('tasks.DraftDuel.runtime.invitation.time.monotonic', side_effect=range(100)), \
@@ -209,7 +209,7 @@ class MatchmakingTests(unittest.TestCase):
 
     def test_invite_stops_after_three_failed_panel_attempts(self):
         owner = self.invite_owner()
-        owner.appear = Mock(side_effect=lambda rule: rule is owner.I_EMPTY_TEAMMATE)
+        owner.appear = Mock(side_effect=lambda rule, **kw: rule is owner.I_EMPTY_TEAMMATE)
         with patch('tasks.DraftDuel.runtime.invitation.time.monotonic', side_effect=range(100)), \
                 patch('tasks.DraftDuel.runtime.invitation.time.sleep'):
             self.assertFalse(owner._invite_teammate())
@@ -246,6 +246,10 @@ class MatchmakingTests(unittest.TestCase):
         owner.appear.return_value = True
         owner.appear_accept.return_value = False
         owner.is_in_room.return_value = True
+        # 齿轮判据与运行时身份在 Mock 上必须显式给否，否则 truthy Mock 会被当成「队友已退」。
+        owner._teammate_quit_confirmed.return_value = False
+        owner._teammate_seat_quit.return_value = False
+        owner._runtime_is_captain.return_value = False
         owner._invite_teammate.return_value = True
         owner._wait_for_teammate.return_value = True
         owner._wait_member_start.return_value = True
@@ -334,6 +338,25 @@ class MatchmakingTests(unittest.TestCase):
         self.assertFalse(ScriptTask._enter_matchmaking(owner))
         owner.appear_then_click.assert_not_called()
 
+    def test_confirmed_teammate_quit_starts_solo_without_invitation(self):
+        # 齿轮确认退队后不再邀请、也不再被点击前的 is_in_room 复检拦下。
+        owner = self.owner(DraftMatchMode.CAPTAIN)
+        owner._teammate_quit_confirmed.return_value = True
+        owner.is_in_room.return_value = False
+        self.assertTrue(ScriptTask._enter_matchmaking(owner))
+        owner._invite_teammate.assert_not_called()
+        owner._wait_for_teammate.assert_not_called()
+        owner.appear_then_click.assert_called_once_with(owner.I_LOBBY_BATTLE, interval=1)
+
+    def test_confirmed_teammate_quit_honors_solo_start_switch(self):
+        owner = self.owner(DraftMatchMode.CAPTAIN)
+        owner.config.draft_duel = DraftDuel(draft_duel_config={
+            'match_mode': DraftMatchMode.CAPTAIN, 'solo_start_on_teammate_quit': False})
+        owner._teammate_quit_confirmed.return_value = True
+        self.assertFalse(ScriptTask._enter_matchmaking(owner))
+        owner._invite_teammate.assert_not_called()
+        owner.appear_then_click.assert_not_called()
+
     def test_member_does_not_match_with_a_stranger(self):
         owner = self.owner(DraftMatchMode.MEMBER)
         owner._goto_draft_lobby.return_value = False
@@ -377,7 +400,7 @@ class MatchmakingTests(unittest.TestCase):
 
     def test_invitation_panel_hiding_empty_slot_is_not_a_joined_teammate(self):
         owner = self.owner(DraftMatchMode.CAPTAIN)
-        owner.appear.side_effect = lambda rule: rule is owner.I_INVITE_ENSURE
+        owner.appear.side_effect = lambda rule, **kw: rule is owner.I_INVITE_ENSURE
         self.assertFalse(ScriptTask.is_in_room(owner, False))
 
 

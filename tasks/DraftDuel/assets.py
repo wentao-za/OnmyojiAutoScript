@@ -15,6 +15,8 @@ class DraftDuelAssets:
 	# Click Rule Assets
 	# 误点开式神技能弹窗后的关闭用安全点击区域
 	C_SAFE_AREA = RuleClick(roi_front=(10,650,60,60), roi_back=(10,650,60,60), name="safe_area")
+	# 协同对弈房间页顶部阵容条点击区（点开阵容详情弹窗）
+	C_ROSTER_BAR = RuleClick(roi_front=(471,26,403,63), roi_back=(471,26,403,63), name="roster_bar")
 
 
 	# Image Rule Assets
@@ -65,7 +67,7 @@ class DraftDuelAssets:
 	# 取消离队 
 	I_EXIT_CANCEL = RuleImage(roi_front=(580,358,99,37), roi_back=(557,336,146,80), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_exit_cancel.png")
 	# 队长退出 
-	I_LEADER_EXIT = RuleImage(roi_front=(776,166,47,50), roi_back=(760,134,85,105), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_leader_exit.png")
+	I_LEADER_EXIT = RuleImage(roi_front=(776,166,47,50), roi_back=(760,134,415,105), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_leader_exit.png")
 	# 上阵阶段 
 	I_POST_DRAFT_FIGHT = RuleImage(roi_front=(561,27,30,64), roi_back=(542,9,66,108), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_post_draft_fight.png")
 	# 队友选择中 
@@ -83,8 +85,7 @@ class DraftDuelAssets:
 	#  
 	I_SELECT_ENSURE_READY = RuleImage(roi_front=(1095,546,146,78), roi_back=(1062,503,207,166), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_select_ensure_ready.png")
 	# 手牌搜索区域：仅使用back，无固定图片模板 
-	I_HAND_CARD_AREA = RuleImage(roi_front=(8,486,1021,223), roi_back=(8,486,1021,223), threshold=0.8, method="Template matching", profile="High", file="")
-	I_HAND_CARD_AREA.name = "HAND_CARD_AREA"
+	I_HAND_CARD_AREA = RuleImage(roi_front=(8,486,1021,223), roi_back=(8,486,1021,223), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/hand_card_area.png")
 	# 取消自动 
 	I_AUTO_RIGHT = RuleImage(roi_front=(1000,619,58,71), roi_back=(957,579,142,138), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_auto_right.png")
 	# 自动上阵 
@@ -99,6 +100,20 @@ class DraftDuelAssets:
 	I_HAND_SELECTED_CROSS = RuleImage(roi_front=(419,511,29,27), roi_back=(250,490,600,70), threshold=0.8, method="Masked template matching", profile="High", file="./tasks/DraftDuel/draft/draft_hand_selected_cross.png")
 	# 属性详情 
 	I_SHIKIGAMI_DETAILS = RuleImage(roi_front=(732,539,37,33), roi_back=(334,524,819,63), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_shikigami_details.png")
+	# 队友已退队(灰头像+右下角齿轮), 一条ROI覆盖两个座位 
+	I_TEAMMATE_QUIT = RuleImage(roi_front=(904,181,34,34), roi_back=(470,130,490,110), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_teammate_quit.png")
+	# 阵容详情弹窗标题 
+	I_ROSTER_DETAIL = RuleImage(roi_front=(563,24,149,42), roi_back=(540,10,240,70), threshold=0.8, method="Template matching", profile="High", file="./tasks/DraftDuel/draft/draft_roster_detail.png")
+	# 弹窗右上关闭X（掩码排除四角背景） 
+	I_ROSTER_CLOSE = RuleImage(roi_front=(1182,104,40,40), roi_back=(1140,70,140,110), threshold=0.8, method="Masked template matching", profile="High", file="./tasks/DraftDuel/draft/draft_roster_close.png")
+	# 「我的」金色选中态 
+	I_ROSTER_MINE_ON = RuleImage(roi_front=(1081,637,82,82), roi_back=(1050,615,170,105), threshold=0.8, method="Masked template matching", profile="High", file="./tasks/DraftDuel/draft/draft_roster_mine_on.png")
+	# 「我的」暗色未选态 
+	I_ROSTER_MINE_OFF = RuleImage(roi_front=(1092,645,59,64), roi_back=(1050,625,170,95), threshold=0.8, method="Masked template matching", profile="High", file="./tasks/DraftDuel/draft/draft_roster_mine_off.png")
+	# 「队友」金色选中态 
+	I_ROSTER_PEER_ON = RuleImage(roi_front=(1153,640,82,79), roi_back=(1136,615,135,105), threshold=0.8, method="Masked template matching", profile="High", file="./tasks/DraftDuel/draft/draft_roster_peer_on.png")
+	# 「队友」暗色未选态 
+	I_ROSTER_PEER_OFF = RuleImage(roi_front=(1167,651,56,60), roi_back=(1145,625,135,95), threshold=0.8, method="Masked template matching", profile="High", file="./tasks/DraftDuel/draft/draft_roster_peer_off.png")
 
 
 	# Ocr Rule Assets
@@ -114,5 +129,15 @@ class DraftDuelAssets:
 	O_FIGHT_WAIT_TIME = RuleOcr(roi=(614,61,59,40), area=(614,61,59,40), mode="Digit", method="Default", keyword="", name="fight_wait_time")
 	# 胜场数 
 	O_VICTORY_COUNT = RuleOcr(roi=(132,95,165,71), area=(132,95,165,71), mode="Single", method="Default", keyword="", name="victory_count")
+	# 阵容详情弹窗第1列式神名 
+	O_ROSTER_NAME_1 = RuleOcr(roi=(230,160,192,45), area=(230,160,192,45), mode="Single", method="Default", keyword="", name="roster_name_1")
+	# 阵容详情弹窗第2列式神名 
+	O_ROSTER_NAME_2 = RuleOcr(roi=(420,160,192,45), area=(420,160,192,45), mode="Single", method="Default", keyword="", name="roster_name_2")
+	# 阵容详情弹窗第3列式神名 
+	O_ROSTER_NAME_3 = RuleOcr(roi=(612,160,192,45), area=(612,160,192,45), mode="Single", method="Default", keyword="", name="roster_name_3")
+	# 阵容详情弹窗第4列式神名 
+	O_ROSTER_NAME_4 = RuleOcr(roi=(803,160,192,45), area=(803,160,192,45), mode="Single", method="Default", keyword="", name="roster_name_4")
+	# 阵容详情弹窗第5列式神名 
+	O_ROSTER_NAME_5 = RuleOcr(roi=(994,160,192,45), area=(994,160,192,45), mode="Single", method="Default", keyword="", name="roster_name_5")
 
 

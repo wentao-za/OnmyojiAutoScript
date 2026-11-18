@@ -5,5 +5,12 @@
     "roiBack": "10,650,60,60",
     "profile": "Default",
     "description": "误点开式神技能弹窗后的关闭用安全点击区域"
+  },
+  {
+    "itemName": "roster_bar",
+    "roiFront": "471,26,403,63",
+    "roiBack": "471,26,403,63",
+    "profile": "Default",
+    "description": "协同对弈房间页顶部阵容条点击区（点开阵容详情弹窗）"
   }
 ]

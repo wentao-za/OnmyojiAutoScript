@@ -14,10 +14,16 @@ class DraftDuelCleanupMixin:
         self._leave_draft_team('三次匹配超时')
 
     def _leave_draft_team(self, reason: str, *, success=True):
-        """明确选择离队，确认返回町中后完成任务。"""
+        """明确选择离队，确认返回町中后完成任务。
+
+        下次运行时间在等待返回之前推进：队员退队后落点是庭院而不是町中，
+        I_CHECK_TOWN 等不到，30 秒超时 raise 会跳过其后的 set_next_run，
+        使 next_run 停在旧的过去值，调度器每次排空都重新排上本任务。
+        """
         logger.info(f'DraftDuel {reason}，离队返回町中')
         self._publish_draft_abort(reason)
         self._finalize_round_stats(completed=False, reason=reason)
+        self.set_next_run(task='DraftDuel', finish=success, success=success)
         deadline = time.monotonic() + 30
         while True:
             self.device.stuck_record_clear()
@@ -28,7 +34,6 @@ class DraftDuelCleanupMixin:
                 raise TaskEnd(f'协同对弈{reason}，离队返回町中未确认')
             handle_draft_duel_exit(self)
             time.sleep(0.3)
-        self.set_next_run(task='DraftDuel', finish=success, success=success)
         self._clear_draft_checkpoint()
         self.config.notifier.push(title='协同对弈', content=f'{reason}，已离队返回町中并结束任务。')
         raise TaskEnd(f'协同对弈{reason}，已离队返回町中')

@@ -28,6 +28,10 @@ class DraftDuelConfig(ConfigBase):
         title='完成大轮数', default=1, ge=1,
         description='draft_duel_round_count_help',
     )
+    solo_start_on_teammate_quit: bool = Field(
+        title='队友退出后单人开战', default=True,
+        description='draft_duel_solo_start_on_teammate_quit_help',
+    )
     @model_validator(mode='before')
     @classmethod
     def migrate_team_role(cls, value):
