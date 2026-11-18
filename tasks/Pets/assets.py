@@ -20,7 +20,7 @@ class PetsAssets:
 	# 宠物食材放置
 	C_PET_FOOD_LAY = RuleClick(roi_front=(191,159,298,115), roi_back=(191,159,298,115), name="pet_food_lay")
 	# 安全点击区域
-	C_PET_SAFE_CLICK_AREA = RuleClick(roi_front=(437,501,452,158), roi_back=(437,501,452,158), name="pet_safe_click_area")
+	C_PET_SAFE_CLICK_AREA = RuleClick(roi_front=(570,544,319,115), roi_back=(570,544,319,115), name="pet_safe_click_area")
 
 
 	# Image Rule Assets
@@ -39,11 +39,11 @@ class PetsAssets:
 	# 宠物后院 
 	I_PET_BACKYARD = RuleImage(roi_front=(15,626,70,63), roi_back=(5,593,103,114), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_backyard.png")
 	# 上方食材放置 
-	I_PET_UP_FOOD = RuleImage(roi_front=(819,389,37,20), roi_back=(808,382,60,40), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_up_food.png")
+	I_PET_UP_FOOD = RuleImage(roi_front=(822,389,30,20), roi_back=(817,384,40,30), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_up_food.png")
 	# 下方食材放置 
-	I_PET_DOWN_FOOD = RuleImage(roi_front=(334,550,59,33), roi_back=(315,539,100,60), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_down_food.png")
+	I_PET_DOWN_FOOD = RuleImage(roi_front=(334,550,59,33), roi_back=(320,539,90,60), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_down_food.png")
 	# 收取宠物币确认 
-	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(707,333,38,37), roi_back=(582,303,304,95), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_collect_coins_check.png")
+	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(651,336,38,37), roi_back=(582,303,304,95), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_collect_coins_check.png")
 	# 宠物食材页面 
 	I_PET_FOOD = RuleImage(roi_front=(557,32,129,41), roi_back=(546,22,153,65), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_food.png")
 	# 放置宠物食材确认 

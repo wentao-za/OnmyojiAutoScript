@@ -39,7 +39,9 @@ class ScriptTask(GameUi, PetsAssets):
 
     def food_card(self):
         """宠物食材卡投喂"""
-        logger.hr('pet card', 3)
+        # level 3 细分阶段标题：按 OAS_development.md §3.6 用中文即可
+        # （仅 level 0/1 需中英文对照）。
+        logger.hr('宠物挂卡', 3)
 
         # 1. 进入后院（先确保在宠物小屋，失败后重试一次）
         if not self.appear(self.I_PET_COURTYARD):
@@ -109,11 +111,15 @@ class ScriptTask(GameUi, PetsAssets):
             logger.warning(f'[{position_name}] 无法打开食材面板，跳过该位置')
             return False
 
-        # 2. 点击食材并确认摆放正确，最多 3 次
+        # 2. 点击食材并确认摆放正确，最多 3 次。
+        #    观察窗用 5s 而不是 3s：日志里反复出现"第 1 次点击 3s 内无标志、
+        #    紧接着一次点击 1.4s 就出标志"（11-11 11:13 间隔 1.379s、
+        #    11-10 02:31 间隔 1.674s、11-10 09:52 间隔 1.369s），说明 3s
+        #    会把"首次点击被客户端吞掉"误判成食材不足，白烧一次点击额度。
         placed = False
         for attempt in range(3):
             self.click(self.C_PET_FOOD_LAY, interval=1)
-            if self._wait_food_placed(timeout=3.0):
+            if self._wait_food_placed(timeout=5.0):
                 placed = True
                 break
             logger.warning(
@@ -121,21 +127,88 @@ class ScriptTask(GameUi, PetsAssets):
                 f'未检测到猫粮或狗粮摆放正确标志（可能食材不足）'
             )
 
-        # 3. 无论成功与否，都尝试点击确认按钮清理界面状态
-        #    成功时关闭正常确认弹窗；失败时若游戏弹出了“食材不足”类提示
-        #    且带确认按钮，也一并关掉，避免遮挡后续下方放置操作。
-        self.ui_click_until_disappear(self.I_PET_FOOD_CHECK)
-
+        # 3. 收尾：把"放上了"和"提交成功"分开判。
+        #    有卡 = 面板里出现了摆放标志，但卡要等右下"确认"提交给服务器、
+        #    且确认把面板关掉才算真放上；无卡 = 点击放置无任何反馈，只能
+        #    红叉退出。红叉只负责退出面板，任何路径都不得拿它当成功证据。
         if not placed:
+            if not self._close_food_panel_by_back():
+                logger.warning(f'[{position_name}] 食材面板未能关闭，后续点击可能被遮挡')
             logger.warning(
                 f'[{position_name}] 食材未成功放置（已重试 3 次，可能猫粮/狗粮不足），'
                 f'跳过该位置继续后续流程'
             )
-            self.ui_click_until_disappear(self.I_UI_BACK_RED)
             return False
 
-        logger.info(f'[{position_name}] 食材放置成功')
-        return True
+        if self._confirm_food_panel():
+            logger.info(f'[{position_name}] 食材放置成功')
+            return True
+
+        # 确认没把面板关掉 = 卡没提交。此时面板可能还开着，红叉退出；
+        # 即使红叉点掉了面板，也只是关闭 UI，不代表放置成功。
+        logger.warning(
+            f'[{position_name}] 确认按钮未生效（面板未关闭），本次放置未完成，'
+            f'红叉退出食材面板'
+        )
+        self._close_food_panel_by_back()
+        return False
+
+    def _wait_panel_closed(self, timeout: float = 6.0) -> bool:
+        """只观察不点击，等待食材面板消失。
+
+        与 `ui_click_until_disappear` 的关键差别：那个函数在 `max_clicks`
+        用尽后**立刻**返回，不给"点击已生效但画面未刷新"留时间；这里纯
+        轮询，专门用来给单次点击一个完整的响应窗口。
+        """
+        timer = Timer(timeout).start()
+        while not timer.reached():
+            self.screenshot()
+            if not self.appear(self.I_PET_FOOD):
+                return True
+            sleep(0.5)
+        return False
+
+    def _confirm_food_panel(self) -> bool:
+        """点右下"确认"提交食材卡，返回面板是否因确认而关闭。
+
+        节奏是"点一次 → 等满 6s → 仍不关才再点一次"，不是连击。原因：
+        确认按钮与放置按钮同源，都存在首次点击被客户端吞掉、或提交后
+        画面 3~4s 才刷新的情况（放置按钮的日志证据见 `_place_food_at`）。
+        `ui_click_until_disappear` 用 `interval=1` 连点，3 次点击会全落在
+        未响应窗口内，等于只点了一次，还把点击额度烧光——`click_record`
+        同名按钮 ≥10 次、两个按钮各 ≥6 次都会抛 `GameTooManyClickError`
+        （见 OAS_pitfalls.md 坑位 60）。
+
+        所以这里次数压到 2、等待拉到 6s+3s：跨上下两个位置确认按钮最多
+        4 次，远离硬限；每次点击都有完整响应窗口，能区分"被吞"和"确实
+        提交不上去"。
+        """
+        for attempt in (1, 2):
+            if not self.appear_then_click(self.I_PET_FOOD_CHECK, interval=1):
+                logger.warning('确认按钮未命中（面板上找不到确认按钮规则）')
+                return False
+            if self._wait_panel_closed(timeout=6):
+                return True
+            logger.info(f'确认第 {attempt}/2 次点击后 6s 内面板未关闭')
+
+        # 宽限：提交请求可能仍在路上，再纯等一次，不追加点击。
+        return self._wait_panel_closed(timeout=3)
+
+    def _close_food_panel_by_back(self) -> bool:
+        """用右上角红叉关闭食材面板，返回面板是否已消失。
+
+        只负责"退出面板"，不构成任何提交成功的证据——调用方不得据此判定
+        放置成功（坑位 60：旧版拿它当成功，卡没提交却打印"放置成功"）。
+        判据必须用 `I_PET_FOOD`（面板标题）消失，不能用被点的红叉自身：
+        无卡时按钮恒在，拿它当判据会一直点下去撞 10 次硬限（坑位 59）。
+        """
+        self.ui_click_until_disappear(
+            self.I_UI_BACK_RED, interval=1,
+            visible=lambda: self.appear(self.I_PET_FOOD),
+            timeout=5, max_clicks=2, confirm_frames=2,
+        )
+        self.screenshot()
+        return not self.appear(self.I_PET_FOOD)
 
     def _wait_food_placed(self, timeout: float = 5.0) -> bool:
         """等待食材摆放正确的标志出现（猫粮或狗粮任一）。

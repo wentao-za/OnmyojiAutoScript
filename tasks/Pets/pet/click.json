@@ -22,8 +22,8 @@
   },
   {
     "itemName": "pet_safe_click_area",
-    "roiFront": "437,501,452,158",
-    "roiBack": "437,501,452,158",
+    "roiFront": "570,544,319,115",
+    "roiBack": "570,544,319,115",
     "profile": "Default",
     "description": "安全点击区域"
   }

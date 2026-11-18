@@ -72,8 +72,8 @@
   {
     "itemName": "pet_up_food",
     "imageName": "pet_pet_up_food.png",
-    "roiFront": "819,389,37,20",
-    "roiBack": "808,382,60,40",
+    "roiFront": "822,389,30,20",
+    "roiBack": "817,384,40,30",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -83,7 +83,7 @@
     "itemName": "pet_down_food",
     "imageName": "pet_pet_down_food.png",
     "roiFront": "334,550,59,33",
-    "roiBack": "315,539,100,60",
+    "roiBack": "320,539,90,60",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "Default",
@@ -92,7 +92,7 @@
   {
     "itemName": "pet_collect_coins_check",
     "imageName": "pet_pet_collect_coins_check.png",
-    "roiFront": "707,333,38,37",
+    "roiFront": "651,336,38,37",
     "roiBack": "582,303,304,95",
     "method": "Template matching",
     "threshold": 0.8,
