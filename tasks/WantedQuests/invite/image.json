@@ -202,7 +202,7 @@
   {
     "itemName": "wq_cooperation_type_gold_2",
     "imageName": "wq_cooperation_type_gold.png",
-    "roiFront": "425,513,180,90",
+    "roiFront": "524,527,59,48",
     "roiBack": "370,467,271,173",
     "method": "Template matching",
     "threshold": 0.8,
@@ -252,7 +252,7 @@
   {
     "itemName": "wq_cooperation_type_gold_3",
     "imageName": "wq_cooperation_type_gold.png",
-    "roiFront": "792,531,59,48",
+    "roiFront": "792,527,59,48",
     "roiBack": "636,466,290,161",
     "method": "Template matching",
     "threshold": 0.8,

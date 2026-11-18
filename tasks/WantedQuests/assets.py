@@ -61,7 +61,7 @@ class WantedQuestsAssets:
 	# 从左到右第一个协作任务的类型为体力 
 	I_WQ_COOPERATION_TYPE_SUSHI_1 = RuleImage(roi_front=(256,530,57,43), roi_back=(89,461,296,192), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_sushi.png")
 	# 从左到右第二个协作任务的类型为金币 
-	I_WQ_COOPERATION_TYPE_GOLD_2 = RuleImage(roi_front=(425,513,180,90), roi_back=(370,467,271,173), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_gold.png")
+	I_WQ_COOPERATION_TYPE_GOLD_2 = RuleImage(roi_front=(524,527,59,48), roi_back=(370,467,271,173), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_gold.png")
 	# 从左到右第二个协作任务的类型为勾玉 
 	I_WQ_COOPERATION_TYPE_JADE_2 = RuleImage(roi_front=(490,505,180,90), roi_back=(402,474,271,173), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_jade.png")
 	# 从左到右第二个协作任务的类型为狗粮 
@@ -71,7 +71,7 @@ class WantedQuestsAssets:
 	# 从左到右第二个协作任务的类型为体力 
 	I_WQ_COOPERATION_TYPE_SUSHI_2 = RuleImage(roi_front=(419,514,181,97), roi_back=(384,473,271,173), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_sushi.png")
 	# 从左到右第三个协作任务的类型为金币 
-	I_WQ_COOPERATION_TYPE_GOLD_3 = RuleImage(roi_front=(792,531,59,48), roi_back=(636,466,290,161), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_gold.png")
+	I_WQ_COOPERATION_TYPE_GOLD_3 = RuleImage(roi_front=(792,527,59,48), roi_back=(636,466,290,161), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_gold.png")
 	# 从左到右第三个协作任务的类型为勾玉 
 	I_WQ_COOPERATION_TYPE_JADE_3 = RuleImage(roi_front=(693,511,180,90), roi_back=(638,467,290,161), threshold=0.8, method="Template matching", profile="Default", file="./tasks/WantedQuests/invite/wq_cooperation_type_jade.png")
 	# 从左到右第三个协作任务的类型为狗粮 
