@@ -5,7 +5,8 @@ import time
 from cached_property import cached_property
 from datetime import datetime
 
-from module.exception import TaskEnd
+from module.base.timer import Timer
+from module.exception import GameStuckError, GameTooManyClickError, TaskEnd
 from module.logger import logger
 from module.atom.ocr import RuleOcr
 
@@ -17,11 +18,21 @@ from tasks.Component.GeneralBattle.general_battle import ExitMatcher, GeneralBat
 from tasks.Component.GeneralBattle.config_general_battle import GeneralBattleConfig
 from tasks.Component.SwitchSoul.switch_soul import SwitchSoul
 from tasks.Component.GeneralBuff.config_buff import BuffClass
-from tasks.WeeklyTrifles.assets import WeeklyTriflesAssets
+
+
+class ShareSecretTimeout(Exception):
+    """秘闻分享整段超时（内部信号，在 `share_secret()` 内消化，不外抛）。"""
 
 
 class ScriptTask(GameUi, GeneralBattle, SwitchSoul, SecretAssets):
     lay_list = ['壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖', '拾']
+
+    # 秘闻分享整段超时（秒）。正常路径（进秘闻 → 点分享 → 点微信 → 领奖励）
+    # 约 20~40 秒，取 120 秒留足转场与网络余量。
+    # 超时即放弃分享，不抛异常、不重试：分享只是附赠环节，若放任它触发 device 层
+    # GameStuckError，框架会重启游戏并按失败状态重跑整个秘闻副本（script.py
+    # _handle_task_exception 对 GameStuckError 的处理就是重启 + 10 秒等待）。
+    SHARE_SECRET_TIMEOUT = 120
 
     def _exit_matcher(self) -> ExitMatcher:
         return self.I_SE_FIRE
@@ -84,7 +95,7 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, SecretAssets):
             layer = self.find_battle()
             logger.info(f'Current layer: {layer}')
             if not layer:
-                if self.appear(WeeklyTriflesAssets.I_WT_SE_SHARE):
+                if self.appear(self.I_SE_SHARE_BUTTON):
                     logger.warning('You have completed the weekly trifles, skip')
                     break
                 text = self.O_SE_TOTAL_TIME.ocr_single(self.device.image)
@@ -132,6 +143,12 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, SecretAssets):
                 success = self.run_general_battle(self.battle_config, battle_key="secret")
                 continue
 
+        # 秘闻分享：接在本周秘闻副本流程之后执行（原先挂在「每周琐事」里）。
+        # 放在关加成之前，因为此刻人还停在秘闻页，少一次「秘闻 → 庭院 → 秘闻」往返；
+        # 分享失败/超时只记一条错误日志，不改变本任务的收尾结果。
+        if con.secret_share:
+            self.share_secret()
+
         if con.secret_gold_50 or con.secret_gold_100:
             self.goto_page(page_main)
             self.open_buff()
@@ -144,6 +161,102 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, SecretAssets):
             self.finish_task_navigation()
         self.set_next_run(task='Secret', success=True, finish=True)
         raise TaskEnd('Secret')
+
+    # ------------------------------------------------------------ 秘闻分享
+
+    def share_secret(self) -> bool:
+        """秘闻分享（从「每周琐事」迁移而来）：超时即放弃，不抛异常、不重试。
+
+        返回 True 表示分享环节正常走完（含「本周已领」「本周未通关」等正常早退），
+        False 表示超时或异常被吞掉。返回值只用于日志，不参与任务收尾判定。
+
+        容错约定：卡住不是错误，是已知的界面不确定性，到点就结束这一环节；只留一条
+        error 说明原因，不打异常栈、不重试、不重新拉起游戏。必须吞掉
+        `GameStuckError` / `GameTooManyClickError`：这两个异常一旦冒到框架层，
+        `script.py::_handle_task_exception` 会重启游戏并按失败状态重跑整个秘闻副本，
+        代价远大于放弃一次分享。
+        """
+        timer = Timer(self.SHARE_SECRET_TIMEOUT).start()
+        try:
+            self._share_secret_flow(timer)
+            return True
+        except ShareSecretTimeout:
+            logger.error(f'秘闻分享超时：{self.SHARE_SECRET_TIMEOUT} 秒内未完成，跳过本次分享并结束该环节，不重试')
+        except (GameStuckError, GameTooManyClickError) as e:
+            # device 层在抛出前已清自己的记录，这里再清一次是兜底：收尾还要 goto_page，
+            # 残留的 detect/click 记录会让导航立刻二次触发同一个异常。
+            self.device.stuck_record_clear()
+            self.device.click_record_clear()
+            logger.error(f'秘闻分享中断：界面长时间无响应（{type(e).__name__}），跳过本次分享并结束该环节，不重试')
+        except Exception as e:
+            self.device.stuck_record_clear()
+            self.device.click_record_clear()
+            logger.error(f'秘闻分享中断：{type(e).__name__}: {e}，跳过本次分享并结束该环节，不重试')
+        return False
+
+    def _share_secret_flow(self, timer: Timer) -> None:
+        """秘闻分享主流程。超时抛 `ShareSecretTimeout`，其余异常由调用方统一吞掉。
+
+        与「每周琐事」原实现的三处差异：①每个轮询循环顶部检查整段超时，不再用
+        无界 `while` 空转到 device 层判死；②不再自己调 `finish_task_navigation()`，
+        收尾交给 `run()`，否则会打断后面的关加成；③日志改中文。
+        """
+        logger.hr('秘闻分享', 2)
+        self.goto_page(page_secret_zones)
+        # 一路点进秘闻详情：先「进入秘闻」，再「分享」，直到微信分享面板出现
+        share_clicked = False
+        while 1:
+            if timer.reached():
+                raise ShareSecretTimeout
+            self.screenshot()
+            if self.appear(self.I_SE_SHARE_WECHAT):
+                self.wait_until_stable(self.I_SE_SHARE_WECHAT, skip_first_screenshot=True)
+                break
+            if self.appear_then_click(self.I_SE_SHARE_ENTER, interval=1):
+                continue
+            if self.appear_then_click(self.I_SE_SHARE_BUTTON, interval=5):
+                share_clicked = True
+                continue
+            if self.appear(self.I_SE_SHARE_RANK) and not share_clicked:
+                # 出现排名却没有分享按钮：本周没通关，无从分享
+                self.wait_until_stable(self.I_SE_SHARE_BUTTON, skip_first_screenshot=True)
+                if self.appear(self.I_SE_SHARE_BUTTON):
+                    continue
+                logger.warning('本周尚未通关秘闻，跳过分享')
+                return
+        logger.info('已进入秘闻详情')
+        # 判本周是否已领过：勾玉图标在＝还没领，不在＝已领
+        self.screenshot()
+        if not self.appear(self.I_SE_SHARE_JADE):
+            logger.info('本周秘闻分享奖励已领取过，跳过')
+            return
+        self._share_secret_click(timer)
+
+    def _share_secret_click(self, timer: Timer) -> bool:
+        """点开分享面板 → 点微信 → 等奖励。返回 False 表示奖励没等到（多为已领过）。"""
+        while 1:
+            if timer.reached():
+                raise ShareSecretTimeout
+            self.screenshot()
+            if self.appear(self.I_SE_SHARE_QR):
+                break
+            if self.appear_then_click(self.I_SE_SHARE_WECHAT, interval=2.5):
+                continue
+        logger.info('分享面板已打开')
+        reward_timer = Timer(7).start()
+        while 1:
+            if timer.reached():
+                raise ShareSecretTimeout
+            self.screenshot()
+            if self.ui_reward_appear_click():
+                logger.info('已领取秘闻分享奖励')
+                return True
+            if self.appear_then_click(self.I_SE_SHARE_QR,
+                                      self.C_SE_SHARE_CLICK, interval=4.8):
+                continue
+            if reward_timer.reached():
+                logger.warning('分享奖励未出现，可能本周已领取过')
+                return False
 
     def find_battle(self, screenshot: bool = False) -> int or None:
         """

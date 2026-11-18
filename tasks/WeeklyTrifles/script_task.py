@@ -12,7 +12,6 @@ from tasks.GameUi.game_ui import GameUi
 from tasks.GameUi.page import (
     page_main,
     page_area_boss,
-    page_secret_zones,
     page_summon,
     page_guild,
     random_click,
@@ -29,8 +28,6 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
             self._share_collect()
         if con.share_area_boss:
             self._share_area_boss()
-        if con.share_secret:
-            self._share_secret()
         if con.save_touch_fish:
             self._save_touch_fish()
         if con.broken_amulet:
@@ -200,46 +197,6 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         if not obtained:
             # 点击分享
             self.click_share(self.I_WT_AB_WECHAT)
-        self.finish_task_navigation()
-
-    def _share_secret(self):
-        """
-        秘闻分享
-        :return:
-        """
-        logger.hr('Share secret')
-        self.goto_page(page_secret_zones)
-        # 一路进去
-        valid = False
-        while 1:
-            self.screenshot()
-            if self.appear(self.I_WT_SE_WECHAT):
-                self.wait_until_stable(self.I_WT_SE_WECHAT, skip_first_screenshot=True)
-                break
-            if self.appear_then_click(self.I_WT_ENTER_SE, interval=1):
-                continue
-            if self.appear_then_click(self.I_WT_SE_SHARE, interval=5):
-                valid = True
-                continue
-            if self.appear(self.I_WT_SE_RANK) and (not valid):
-                # 如果出现排名但是没有出现分享，那就是还没打，退出
-                self.wait_until_stable(self.I_WT_SE_SHARE, skip_first_screenshot=True)
-                if self.appear(self.I_WT_SE_SHARE):
-                    continue
-                logger.warning('This week has not been obtained')
-                self.finish_task_navigation()
-                return
-        logger.info('Enter secret')
-        # 判断是否已经领取
-        self.screenshot()
-        obtained = False
-        if not self.appear(self.I_WT_SE_JADE):
-            obtained = True
-            logger.warning('This week has been obtained')
-        # 点击分享
-        if not obtained:
-            self.click_share(self.I_WT_SE_WECHAT)
-        # 返回
         self.finish_task_navigation()
 
     def _broken_amulet(self, dest_num: int):

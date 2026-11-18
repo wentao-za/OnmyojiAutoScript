@@ -1,5 +1,7 @@
 from module.atom.image import RuleImage
+from module.atom.frame import RuleFrame, Image, Ocr, Click
 from module.atom.click import RuleClick
+from module.atom.scatter import RuleScatter
 from module.atom.long_click import RuleLongClick
 from module.atom.swipe import RuleSwipe
 from module.atom.ocr import RuleOcr
@@ -56,5 +58,25 @@ class SecretAssets:
 	# Swipe Rule Assets
 	# 向下滑动 
 	S_SE_DOWN_SEIPE = RuleSwipe(roi_front=(229,520,124,27), roi_back=(217,390,145,35), mode="default", name="se_down_seipe")
+
+
+	# Click Rule Assets
+	# 分享面板内点空白关闭
+	C_SE_SHARE_CLICK = RuleClick(roi_front=(470,111,337,44), roi_back=(470,111,337,44), name="se_share_click")
+
+
+	# Image Rule Assets
+	# 秘闻进入
+	I_SE_SHARE_ENTER = RuleImage(roi_front=(1145,598,100,100), roi_back=(1145,598,100,100), threshold=0.8, method="Template matching", profile="High", file="./tasks/Secret/share/share_se_share_enter.png")
+	# 秘闻分享按钮
+	I_SE_SHARE_BUTTON = RuleImage(roi_front=(911,570,46,43), roi_back=(886,547,92,95), threshold=0.8, method="Template matching", profile="High", file="./tasks/Secret/share/share_se_share_button.png")
+	# 微信分享
+	I_SE_SHARE_WECHAT = RuleImage(roi_front=(855,627,45,37), roi_back=(618,584,653,116), threshold=0.8, method="Template matching", profile="High", file="./tasks/Secret/share/share_se_share_wechat.png")
+	# 勾玉（未领取标志）
+	I_SE_SHARE_JADE = RuleImage(roi_front=(1126,533,35,39), roi_back=(1118,525,50,55), threshold=0.8, method="Template matching", profile="High", file="./tasks/Secret/share/share_se_share_jade.png")
+	# 排行
+	I_SE_SHARE_RANK = RuleImage(roi_front=(1017,572,45,44), roi_back=(989,556,103,81), threshold=0.8, method="Template matching", profile="High", file="./tasks/Secret/share/share_se_share_rank.png")
+	# 二维码
+	I_SE_SHARE_QR = RuleImage(roi_front=(473,161,336,96), roi_back=(404,112,483,168), threshold=0.65, method="Template matching", profile="High", file="./tasks/Secret/share/share_se_share_qr.png")
 
 
