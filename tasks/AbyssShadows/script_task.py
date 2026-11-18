@@ -432,32 +432,15 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, QuickLoadout, AbyssShadowsAs
             _next = self.get_next()
             if _next is None:
                 break
-            self._completion_enemy_type = _next.get_enemy_type()
             self.execute(_next)
             self.flash_list()
 
     def get_next(self) -> [Code, None]:
-        pending = next((ps for ps in self.ps_list
-                        if ps not in self.done_list and ps not in self.unavailable_list), None)
-        if self.config.model.abyss_shadows.process_manage.try_complete_enemy_count:
-            current_type = getattr(self, '_completion_enemy_type', None)
-            if current_type is None and self.done_list:
-                current_type = self.done_list[-1].get_enemy_type()
-            # 连续配置的同类目标优先；切换类型前先补足副将/精英数量。
-            if (current_type in (EnemyType.GENERAL, EnemyType.ELITE)
-                    and (pending is None or pending.get_enemy_type() != current_type)):
-                count = sum(code.get_enemy_type() == current_type for code in self.done_list)
-                if count < self.min_count[current_type]:
-                    for area in AreaType:
-                        for num in range(1, 7):
-                            code = Code(f'{IndexMap[area.name].value}-{num}')
-                            if (code.get_enemy_type() == current_type
-                                    and code not in self.done_list
-                                    and code not in self.unavailable_list):
-                                logger.info(f'Complete {current_type.name} before switching type: {count}/{self.min_count[current_type]}, next={code}')
-                                return code
-                    logger.warning(f'No available {current_type.name} targets to complete count; continue configured order')
-        # 获取下一个任务目标
+        # 获取下一个任务目标：严格按 attack_order 的书写顺序执行，不中途插队。
+        # NOTE 2026-11-14 下线「切换类型前先补足副将/精英数量」的中途插队逻辑：
+        # 原逻辑在「当前类型还剩、但配置里下一个已是别的类型」时会跨区扫同类敌人（A→D、1→6），
+        # 把一段连续的同区目标拆成两截，表现为「第一个区域没打完就去打其它区域」。
+        # 补全 2/4/6 档位仍然保留，但只在整个 attack_order 走完之后进行（见下方分支）。
         for ps in self.ps_list:
             if ps not in self.done_list and ps not in self.unavailable_list:
                 return ps
