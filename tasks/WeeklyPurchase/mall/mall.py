@@ -15,7 +15,7 @@ from tasks.GameUi.page import page_main, page_mall, page_mall_recommend
 class Mall(Medal, Charisma, Honor, Consignment, Scales, Bondlings):
 
     def execute_mall(self):
-        logger.hr('Mall', 1)
+        logger.hr('商店(mall)', 1)
         self.goto_page(page_mall_recommend, confirm_wait=2.5, accepted_pages=(page_mall,))
 
         # 寄售屋

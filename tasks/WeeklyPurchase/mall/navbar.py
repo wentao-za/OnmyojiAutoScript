@@ -141,9 +141,9 @@ class MallNavbar(GameUi, WeeklyPurchaseAssets):
         # match = re.search(r'\d+', result)
         # result = int(match.group())
         if not isinstance(result, int):
-            logger.warning(f'Get mall resource {index} error, result: {result}')
+            logger.warning(f'获取商店资源 {index} 失败，OCR 结果: {result}')
         if result == 0:
-            logger.warning(f'Get mall resource {index} error, result: {result}')
+            logger.warning(f'获取商店资源 {index} 失败，OCR 结果: {result}')
         return result
 
     def mall_check_money(self, index: int, least: int) -> bool:

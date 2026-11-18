@@ -28,14 +28,14 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
     def execute_guild(self, con: GuildStore = None):
         if not con.enable:
             return
-        logger.hr('Start guild', 1)
+        logger.hr('帮派商店(guild store)', 1)
         self._weekly_purchase_guild_navigation = True
         self._weekly_purchase_shrine_random_clicked = False
         try:
             self.goto_page(page_guild_store)
         finally:
             self._weekly_purchase_guild_navigation = False
-        logger.info('Enter guild store success')
+        logger.info('进入帮派商店成功')
         time.sleep(0.5)
         swipe_cnt, max_swipe = 0, random.randint(3, 5)
         mystery_ret, scrap_ret, skin_ret, gift_ret = False, False, False, False
@@ -51,20 +51,20 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
                 skin_ret = self._guild_skin_ticket()
             self.swipe(self.S_GUILD_STORE, interval=1.5)
             time.sleep(2)
-            logger.attr(max_swipe - swipe_cnt, 'remain swipe times')
+            logger.attr(max_swipe - swipe_cnt, '剩余滑动次数')
             swipe_cnt += 1
         # 回去
         self.goto_page(page_shirin)
 
     def _guild_honor_gift(self):
         # 功勋礼包
-        logger.hr('Guild honor gift', 2)
+        logger.hr('功勋礼包', 2)
         self.screenshot()
         if not self.buy_check_money(self.O_GUILD_TOTAL, 210):
             return False
         number = self.check_remain(self.I_GUILD_HONOR_GIFT)
         if number == 0:
-            logger.warning('No mystery amulet can buy')
+            logger.warning('功勋礼包无可购买次数')
             return False
         self.buy_more(self.I_GUILD_HONOR_GIFT)
         time.sleep(0.5)
@@ -72,13 +72,13 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
 
     def _guild_mystery_amulet(self):
         # 蓝票
-        logger.hr('Guild mystery amulet', 2)
+        logger.hr('蓝票', 2)
         self.screenshot()
         if not self.buy_check_money(self.O_GUILD_TOTAL, 240):
             return False
         number = self.check_remain(self.I_GUILD_BLUE)
         if number == 0:
-            logger.warning('No mystery amulet can buy')
+            logger.warning('蓝票无可购买次数')
             return False
         self.buy_more(self.I_GUILD_BLUE, number)
         time.sleep(0.5)
@@ -86,13 +86,13 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
 
     def _guild_black_daruma_scrap(self):
         # 黑碎
-        logger.hr('Guild black daruma scrap', 2)
+        logger.hr('黑达摩碎片', 2)
         self.screenshot()
         if not self.buy_check_money(self.O_GUILD_TOTAL, 200):
             return False
         number = self.check_remain(self.I_GUILD_SCRAP)
         if number == 0:
-            logger.warning('No black daruma can buy')
+            logger.warning('黑达摩碎片无可购买次数')
             return False
         self.buy_one(self.I_GUILD_SCRAP, self.I_GUILD_CHECK_SCRAP)
         time.sleep(0.5)
@@ -100,9 +100,9 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
 
     def _guild_skin_ticket(self, num: int = 0):
         # 皮肤券
-        logger.hr('Guild skin ticket', 2)
+        logger.hr('皮肤券', 2)
         if num == 0:
-            logger.warning('No buy skin ticket')
+            logger.warning('皮肤券数量为 0，跳过购买')
             return False
         self.screenshot()
         if not self.buy_check_money(self.O_GUILD_TOTAL, 50):
@@ -110,7 +110,7 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
         # 检查功勋商店皮肤券 本周剩余数量
         number = self.check_remain(self.I_GUILD_SKIN)
         if number == 0:
-            logger.warning('No skin ticket can buy')
+            logger.warning('皮肤券无可购买次数')
             return False
         # 购买功勋商店皮肤券
         self.buy_more(self.I_GUILD_SKIN, number)
@@ -120,8 +120,8 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
     def check_remain(self, image: RuleImage) -> int:
         self.O_GUILD_REMAIN.roi[0] = image.roi_front[0] - 38
         self.O_GUILD_REMAIN.roi[1] = image.roi_front[1] + 83
-        logger.info(f'Image roi {image.roi_front}')
-        logger.info(f'GUILD REMAIN roi {self.O_GUILD_REMAIN.roi}')
+        logger.info(f'素材 roi {image.roi_front}')
+        logger.info(f'剩余数量 roi {self.O_GUILD_REMAIN.roi}')
         self.screenshot()
         result = self.O_GUILD_REMAIN.ocr(self.device.image)
         logger.warning(result)
@@ -131,7 +131,7 @@ class Guild(Buy, GameUi, WeeklyPurchaseAssets):
             result = int(result)
         except:
             result = 0
-        logger.info('Remain: %s' % result)
+        logger.info('剩余数量: %s' % result)
         return int(result)
 
 

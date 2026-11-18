@@ -18,7 +18,7 @@ class Bondlings(Buy, MallNavbar):
         if not con:
             con = self.config.weekly_purchase.bondlings
         if not con.enable:
-            logger.info('Bondlings is disable')
+            logger.info('契灵商店未启用')
             return
         self._enter_bondlings()
 
@@ -49,7 +49,7 @@ class Bondlings(Buy, MallNavbar):
         """
         logger.hr(buy_button.name, 3)
         if buy_number == 0:
-            logger.info('Buy number is 0')
+            logger.info('购买数量为 0')
             return
         self.screenshot()
 
@@ -62,7 +62,7 @@ class Bondlings(Buy, MallNavbar):
 
         # 检查是否出现了购买按钮
         if not self.appear(buy_button):
-            logger.warning('Buy button is not appear')
+            logger.warning('未发现购买按钮')
             return
         # 检查剩余数量
         _remain = remain_number.ocr(self.device.image)
@@ -70,24 +70,24 @@ class Bondlings(Buy, MallNavbar):
             logger.warning('本周契灵御魂已经买光')
             return
         if _remain < buy_number:
-            logger.warning(f'Remain number is {_remain}, buy number is {buy_number}')
+            logger.warning(f'剩余数量为 {_remain}，购买数量改为 {buy_number}')
             buy_number = _remain
         # 检查金钱
         cu, re, total = self.O_BL_CHECK_MONEY.ocr(self.device.image)
         if cu + re != total:
-            logger.warning('Check money is error')
-            logger.warning(f'cu: {cu}, re: {re}, total: {total}')
+            logger.warning('货币校验失败')
+            logger.warning(f'主值: {cu}, 零头: {re}, 合计: {total}')
             return
         money_enough = cu >= buy_money * buy_number
         if not money_enough:
-            logger.warning(f'Money is not enough {cu}')
+            logger.warning(f'货币不足 {cu}')
             # 判断够不够买2个
             if cu < buy_money * 2:
-                logger.warning('Money is not enough 2')
+                logger.warning('货币不足以购买 2 个')
                 return
             buy_number = cu // buy_money
         # 购买
-        logger.info(f'Buy number is {buy_number}')
+        logger.info(f'购买数量为 {buy_number}')
         if buy_number >= buy_max:
             buy_cycles_number = buy_number // buy_max
             buy_res_number = buy_number % buy_max

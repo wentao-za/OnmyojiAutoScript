@@ -26,13 +26,13 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
 
     def execute_itachi_coin_shop(self, con: ItachiCoinShopConfig) -> None:
         if not con.itachi_coin_buy_jade:
-            logger.info('Itachi coin purchase is disabled')
+            logger.info('鼬乐币购买未启用')
             return
 
-        logger.hr('Start Itachi coin shop', 1)
+        logger.hr('鼬乐币商店(itachi coin shop)', 1)
         self.goto_page(page_entertainment)
         if not self._wait_entertainment_overlay_closed():
-            logger.warning('Itachi Park overlay did not close; skip coin purchase')
+            logger.warning('鼬乐园附属页未关闭，跳过鼬乐币购买')
             return
 
         self.goto_page(page_itachi_shop)
@@ -41,18 +41,18 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
         for _ in range(self.MAX_GIFT_PURCHASES):
             gift = self._find_itachi_gift(purchased_gifts)
             if gift is None:
-                logger.info('No remaining Itachi gift name matched; stop purchase')
+                logger.info('没有匹配到剩余鼬乐礼盒名称，停止购买')
                 break
             name, area = gift
             if not self._open_front_gift_once(name, area):
-                logger.warning(f'Itachi gift dialog did not open: {name}')
+                logger.warning(f'鼬乐礼盒购买弹窗未打开: {name}')
                 break
             if not self._buy_opened_gift():
                 break
             purchased += 1
             purchased_gifts.add(name)
 
-        logger.info(f'Itachi coin gifts purchased: {purchased}')
+        logger.info(f'已购买鼬乐礼盒数量: {purchased}')
         self.goto_page(page_entertainment)
 
     def _wait_entertainment_overlay_closed(self) -> bool:
@@ -95,7 +95,7 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
                 area = (int(x + scan.roi[0]), int(y + scan.roi[1]),
                         int(right - x), int(bottom - y))
                 if area[2] > 0 and area[3] > 0:
-                    logger.info(f'Itachi gift matched: {rule.keyword}, area={area}')
+                    logger.info(f'鼬乐礼盒匹配成功: {rule.keyword}, area={area}')
                     return rule.keyword, area
         return None
 
@@ -115,17 +115,17 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
         if isinstance(result, tuple) and len(result) >= 3:
             current, _, total = result[:3]
             if total > 0:
-                logger.info(f'Itachi coin: {current}/{total}')
+                logger.info(f'鼬乐币: {current}/{total}')
                 return int(current), int(total)
-        logger.warning(f'Itachi coin OCR failed: {result}')
+        logger.warning(f'鼬乐币 OCR 识别失败: {result}')
         return None
 
     def _read_buy_cost(self) -> int | None:
         result = self.O_ITACHI_BUY_COST.ocr(self.device.image)
         if isinstance(result, int) and result > 0:
-            logger.info(f'Itachi gift cost: {result}')
+            logger.info(f'鼬乐礼盒价格: {result}')
             return result
-        logger.warning(f'Itachi gift cost OCR failed: {result}')
+        logger.warning(f'鼬乐礼盒价格 OCR 识别失败: {result}')
         return None
 
     def _buy_opened_gift(self) -> bool:
@@ -154,10 +154,10 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
                 dialog_absent_since = time.monotonic()
                 continue
             if time.monotonic() - dialog_absent_since >= self.PURCHASE_RETURN_GRACE:
-                logger.warning('Itachi gift purchase failed or coin is insufficient')
+                logger.warning('鼬乐礼盒购买失败或鼬乐币不足')
                 return False
 
-        logger.warning('Itachi gift purchase result timeout')
+        logger.warning('等待鼬乐礼盒购买结果超时')
         return False
 
     def _dismiss_purchase_reward(self) -> bool:
@@ -167,7 +167,7 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
             if not self.appear(self.I_UI_REWARD, threshold=0.6):
                 return True
             self.ui_reward_appear_click()
-        logger.warning('Itachi gift reward did not close')
+        logger.warning('鼬乐礼盒奖励页未关闭')
         return False
 
     def _verify_coin_cost(
@@ -181,10 +181,10 @@ class ItachiCoinShop(Buy, GameUi, WeeklyPurchaseAssets):
             return
         consumed = before_coin[0] - after_coin[0]
         if consumed == cost:
-            logger.info(f'Itachi gift purchase confirmed: consumed={consumed}')
+            logger.info(f'鼬乐礼盒购买已确认: consumed={consumed}')
         else:
             logger.warning(
-                'Itachi gift coin change mismatch: '
+                '鼬乐礼盒鼬乐币变化不符: '
                 f'before={before_coin[0]}, after={after_coin[0]}, '
                 f'cost={cost}'
             )

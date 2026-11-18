@@ -19,7 +19,7 @@ class Medal(FriendshipPoints):
         if not con:
             con = self.config.weekly_purchase.medal_room
         if not con.enable:
-            logger.info('Medal is not enable')
+            logger.info('勋章商店未启用')
             return
         self._enter_medal()
 

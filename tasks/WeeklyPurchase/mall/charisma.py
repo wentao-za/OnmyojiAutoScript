@@ -14,10 +14,10 @@ class Charisma(FriendshipPoints):
 
     def execute_charisma(self, con: CharismaConfig = None):
         if not con:
-            logger.info('Charisma is not enable')
+            logger.info('魅力值商店未启用')
             con = self.config.weekly_purchase.charisma
         if not con.enable:
-            logger.info('Charisma is not enable')
+            logger.info('魅力值商店未启用')
             return
         self._enter_charisma()
 
