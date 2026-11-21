@@ -16,6 +16,7 @@ from tasks.GameUi.game_ui import GameUi
 from tasks.GameUi.page import page_main, page_summon, page_guild, page_mall, page_mall_recommend, page_friends, page_courtyard_affairs
 from tasks.DailyTrifles.config import DailyTriflesConfig
 from tasks.DailyTrifles.assets import DailyTriflesAssets
+from tasks.DailyTrifles.desktop_search import DesktopGuildSearch
 from tasks.Component.Summon.summon import Summon
 
 from module.logger import logger
@@ -26,7 +27,7 @@ import re
 from typing import Any, Optional, List, Callable
 
 
-class ScriptTask(GameUi, Summon, DailyTriflesAssets):
+class ScriptTask(DesktopGuildSearch, GameUi, Summon, DailyTriflesAssets):
 
     def run(self):
         con = self.config.daily_trifles.trifles_config
@@ -50,9 +51,9 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
         raise TaskEnd('DailyTrifles')
 
     def run_one_summon(self):
-        logger.hr('daily summon', 2)
+        logger.hr('每日召唤', 2)
         if self.config.daily_trifles.today_is_done('summon'):
-            logger.info('Today is done, skip')
+            logger.info('今日已完成，跳过')
             return
         self.goto_page(page_summon)
         config = self.config.daily_trifles.trifles_config
@@ -74,7 +75,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
             if not config.draw_mystery_pattern:
                 config.draw_mystery_pattern = True
                 logger.info(
-                    f"reset draw_mystery_pattern to True, next_run: {next_run}")
+                    f'重置 draw_mystery_pattern 为 True，下次运行：{next_run}')
         else:
             # 如果还是在同一月份，则没必要再绘制神秘图案
             config.draw_mystery_pattern = False
@@ -101,7 +102,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 self.screenshot()
                 if self.appear(self.I_RECALL_TICKET):
                     break
-                logger.info("Select preset group RECALL")
+                logger.info('选择预设阵容 RECALL')
 
             self.screenshot()
             if self.appear(self.I_RECALL_TICKET):
@@ -110,7 +111,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 self.config.notifier.push(title='今忆召唤抽卡失败', content='每日任务,今忆召唤抽卡失败!!!')
                 return
 
-        logger.info('Summon one RECALL')
+        logger.info('召唤一次 RECALL')
         self.wait_until_appear(self.I_RECALL_TICKET)
         while True:
             ticket_info = self.O_RECALL_TICKET_AREA.ocr(self.device.image)
@@ -123,10 +124,10 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 if match:
                     ticket_info = int(match.group())
                 else:
-                    logger.warning(f'Invalid ticket_info value: {ticket_info}, expected a numeric string')
+                    logger.warning(f'ticket_info 值无效：{ticket_info}，期望为数字字符串')
                     ticket_info = 0  # 将无效值设置为默认值 0
             if ticket_info <= 0:
-                logger.warning('There is no any one RECALL ticket')
+                logger.warning('没有可用的 RECALL 召唤券')
                 return
             # 某些情况下滑动异常
             self.S_RANDOM_SWIPE_1.name = 'S_RANDOM_SWIPE'
@@ -156,12 +157,12 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                         continue
                     self.summon()
                     continue
-            logger.info('Summon one success')
+            logger.info('召唤成功')
 
     def run_guild_donate(self):
-        logger.hr('guild donate', 2)
+        logger.hr('寮祈愿捐赠', 2)
         if self.config.daily_trifles.today_is_done('guild_donate'):
-            logger.info('Today is done, skip')
+            logger.info('今日已完成，跳过')
             return
         self.goto_page(page_guild_wish)
         timeout_timer = Timer(2).start()
@@ -201,7 +202,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 has_reward = True
                 continue
         if not has_reward:
-            logger.info('No reward can get, exit')
+            logger.info('没有可领取的奖励，退出')
             return
         timeout_timer.reset()
         while not timeout_timer.reached():
@@ -234,15 +235,20 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
             # 从按照交换搜索切换到按名称搜索
             self.switch_select(self.I_DT_GW_SEARCH_BY_NAME, self.I_DT_GW_SEARCH_BY_SWAP, self.I_DT_GW_SELECT_BY_NAME)
             self.appear_then_click(self.I_DT_GW_CLEAR_SEARCH)  # 清除搜索框内容
-            self.ui_click(self.C_DT_GW_INPUT_SEARCH, self.I_DT_GW_CONFIRM, interval=1.5)  # 点击搜索框
-            self.click(self.C_DT_GW_CLICK_INPUT)  # 点击名称输入框
-            self.device.adb.send_keys(name)  # 输入名称
-            self.ui_click_until_disappear(self.I_DT_GW_CONFIRM, interval=1.5)  # 点击确定
+            if self.device.is_desktop:  # 桌面客户端不弹输入法、不走 adb，走独立实现
+                if not self.guild_donate_search(name):
+                    all_done = False
+                    continue
+            else:
+                self.ui_click(self.C_DT_GW_INPUT_SEARCH, self.I_DT_GW_CONFIRM, interval=1.5)  # 点击搜索框
+                self.click(self.C_DT_GW_CLICK_INPUT)  # 点击名称输入框
+                self.device.adb.send_keys(name)  # 输入名称
+                self.ui_click_until_disappear(self.I_DT_GW_CONFIRM, interval=1.5)  # 点击确定
             donate_btn = self.I_DT_GW_DONATE
             if name_check:  # 若有多个相同前缀名称, 则需要取出一样的或最相近的名称
                 name_roi = self.find_target_name(name)
                 if name_roi is None:
-                    logger.warning(f'{name} check failed, maybe not wish or not find')
+                    logger.warning(f'{name} 名称校验失败，可能未祈愿或未找到')
                     all_done = False
                     continue
                 # 设置赠与按钮back与对应name同一行
@@ -267,7 +273,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
             if self.appear_then_click(self.I_UI_CONFIRM, interval=0.6):
                 continue
             if self.appear(self.I_DT_GW_SEARCH_EMPTY):
-                logger.warning('Maybe not wish or not find, skip')
+                logger.warning('可能未祈愿或未找到，跳过')
                 if self.config.daily_trifles.guild_donate.notify_enable:
                     self.config.notifier.push(title='好友搜索失败', content=f'{name} 搜索失败, 没有搜索到对应用户, 无法捐赠')
                 return False
@@ -275,12 +281,12 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 timeout_timer.reset()
                 continue
             if self.appear(self.I_DT_GW_INSUFFICIENT, interval=0.6):
-                logger.warning('Not enough fragment to donate, skip')
+                logger.warning('碎片不足，跳过捐赠')
                 if self.config.daily_trifles.guild_donate.notify_enable:
                     self.config.notifier.push(title='捐赠碎片不足', content=f'捐给{name}的碎片不足, 请上线查看')
                 return False
             if self.appear(self.I_DT_GW_FULL, interval=1.2):
-                logger.info(f'Donate success!')
+                logger.info('捐赠成功')
                 return True
         return False
 
@@ -331,12 +337,12 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 continue
 
     def run_luck_msg(self):
-        logger.hr('luck msg', 2)
+        logger.hr('吉闻', 2)
         if self.config.daily_trifles.today_is_done('luck_msg'):
-            logger.info('Today is done, skip')
+            logger.info('今日已完成，跳过')
             return
         self.goto_page(page_friends_luck)
-        logger.info('Start luck msg')
+        logger.info('开始吉闻')
         check_timer = Timer(2)
         check_timer.start()
         while 1:
@@ -347,10 +353,10 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
             if self.appear_then_click(self.I_ONE_CLICK_BLESS, interval=1):
                 continue
             if self.ui_reward_appear_click():
-                logger.info('Get reward of luck msg')
+                logger.info('领取吉闻奖励')
                 break
             if check_timer.reached():
-                logger.warning('There is no any luck msg')
+                logger.warning('没有吉闻消息')
                 break
 
         self.finish_task_navigation()
@@ -358,7 +364,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
 
     def run_store(self):
         if self.check_store_all_done():
-            logger.info('Store all done, skip')
+            logger.info('商店今日已全部完成，跳过')
             return
         self.goto_page(page_mall_recommend, confirm_wait=3, accepted_pages=(page_mall,))
         if self.config.daily_trifles.trifles_config.store_sign:
@@ -368,28 +374,28 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
         self.finish_task_navigation()
 
     def run_store_sign(self):
-        logger.hr('store sign', 2)
+        logger.hr('商店签到', 2)
         if self.config.daily_trifles.today_is_done('store_sign'):
-            logger.info('Today is done, skip')
+            logger.info('今日已完成，跳过')
             return
         self.config.daily_trifles.done_record.store_sign_dt = datetime.now()
         self.goto_page(page_store_gift_room)
         self.screenshot()
         self.appear_then_click(self.I_GIFT_RECOMMEND, interval=1)
-        logger.info('Enter store sign')
+        logger.info('进入商店签到')
         sleep(1)  # 等个动画
         self.screenshot()
         if not self.appear(self.I_GIFT_SIGN):
-            logger.warning('There is no gift sign')
+            logger.warning('未找到签到按钮')
             return
 
         if self.ui_get_reward(self.I_GIFT_SIGN, click_interval=2.5):
-            logger.info('Get reward of gift sign')
+            logger.info('领取签到奖励')
 
     def run_buy_sushi(self):
-        logger.hr('store sushi', 2)
+        logger.hr('购买寿司', 2)
         if self.config.daily_trifles.today_is_done('sushi'):
-            logger.info('Today is done, skip')
+            logger.info('今日已完成，跳过')
             return
         # 进入Special
         while 1:
@@ -435,7 +441,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 if count >= self.config.daily_trifles.trifles_config.buy_sushi_count:
                     break
                 self.ui_click_until_disappear(self.I_STORE_COST_TYPE_JADE, interval=2)
-                logger.info(f"Buy Sushi With {price} Jade")
+                logger.info(f'花费 {price} 勾玉购买寿司')
                 continue
 
             if self.appear(self.I_SPECIAL_SUSHI):
@@ -449,7 +455,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
 
     def run_courtyard_affairs(self):
         """庭院事务"""
-        logger.hr('courtyard affairs', 2)
+        logger.hr('庭院事务', 2)
         self.goto_page(page_main)
         timeout_timer = Timer(3).start()
         while not timeout_timer.reached():
@@ -459,7 +465,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
                 timeout_timer.reset()
                 break
         if timeout_timer.reached():
-            logger.info('Not have courtyard affairs, exit')
+            logger.info('没有庭院事务，退出')
             return
         while True:
             self.screenshot()
@@ -473,7 +479,7 @@ class ScriptTask(GameUi, Summon, DailyTriflesAssets):
 
     def run_pickup_email(self):
         """领取邮件"""
-        logger.hr('pick up email', 2)
+        logger.hr('领取邮件', 2)
         self.goto_page(page_main)
         timeout_timer = Timer(3).start()
         # 「获得奖励」会盖住邮件列表，使下面所有按钮连续失配，循环因此提前判退，

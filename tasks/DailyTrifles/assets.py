@@ -81,6 +81,8 @@ class DailyTriflesAssets:
 	I_DT_GW_ONE_COLLECT = RuleImage(roi_front=(921,605,51,48), roi_back=(866,557,164,137), threshold=0.8, method="Template matching", profile="High", file="./tasks/DailyTrifles/dt/dt_dt_gw_one_collect.png")
 	# 赠送 
 	I_DT_GW_GIVE = RuleImage(roi_front=(979,316,44,75), roi_back=(924,160,142,276), threshold=0.8, method="Template matching", profile="High", file="./tasks/DailyTrifles/dt/dt_dt_gw_give.png")
+	# 搜索 
+	I_DT_GW_SEARCH_BTN = RuleImage(roi_front=(1040,89,80,35), roi_back=(1035,87,90,40), threshold=0.8, method="Template matching", profile="High", file="./tasks/DailyTrifles/dt/dt_dt_gw_search_btn.png")
 
 
 	# Image Rule Assets
