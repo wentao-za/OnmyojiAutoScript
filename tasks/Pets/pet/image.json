@@ -92,7 +92,7 @@
   {
     "itemName": "pet_collect_coins_check",
     "imageName": "pet_pet_collect_coins_check.png",
-    "roiFront": "651,336,38,37",
+    "roiFront": "809,345,38,37",
     "roiBack": "582,303,304,95",
     "method": "Template matching",
     "threshold": 0.8,

@@ -43,7 +43,7 @@ class PetsAssets:
 	# 下方食材放置 
 	I_PET_DOWN_FOOD = RuleImage(roi_front=(334,550,59,33), roi_back=(320,539,90,60), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_down_food.png")
 	# 收取宠物币确认 
-	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(651,336,38,37), roi_back=(582,303,304,95), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_collect_coins_check.png")
+	I_PET_COLLECT_COINS_CHECK = RuleImage(roi_front=(809,345,38,37), roi_back=(582,303,304,95), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_collect_coins_check.png")
 	# 宠物食材页面 
 	I_PET_FOOD = RuleImage(roi_front=(557,32,129,41), roi_back=(546,22,153,65), threshold=0.8, method="Template matching", profile="Default", file="./tasks/Pets/pet/pet_pet_food.png")
 	# 放置宠物食材确认 

@@ -88,7 +88,7 @@ class ScriptTask(GameUi, PetsAssets):
         """
         self.click(coin_click, interval=1)
         if not self.wait_until_appear(self.I_PET_COLLECT_COINS_CHECK, wait_time=3):
-            logger.info(f'{coin_click.name} 点击后无确认弹窗（可能无可收金币），继续')
+            logger.info(f'{coin_click.name} 点击后未匹配到收币弹窗图标（可能无可收金币），继续')
             return
         # 逐个重试点空白处关闭弹窗，直到弹窗消失（最多 3 秒）
         timer = Timer(3).start()
@@ -99,6 +99,16 @@ class ScriptTask(GameUi, PetsAssets):
                 break
             sleep(0.3)
 
+    def _dismiss_leftover_popup(self):
+        """点一次后院空白处，清掉可能残留的收币弹窗。
+
+        收币弹窗没有稳定可用的图像判据时（模板失配、阈值未达），无法确认它
+        是否在场；C_PET_SAFE_CLICK_AREA 落在后院空地，弹窗不在场时点击无副作用。
+        只点一次：点击记录里同名按钮累计 10 次会抛 GameTooManyClickError
+        （OAS_pitfalls.md 坑位 60），这里每次进入食材面板最多消耗 1 次额度。
+        """
+        self.click(self.C_PET_SAFE_CLICK_AREA, interval=1)
+
     def _place_food_at(self, position_icon, position_name: str) -> bool:
         """在指定位置放置食材。
 
@@ -106,10 +116,19 @@ class ScriptTask(GameUi, PetsAssets):
         正确标志。此时最多重试 3 次，仍失败则记录日志并返回 False，
         由调用方继续后续流程，不在此处卡住。
         """
-        # 1. 打开食材面板
+        # 1. 打开食材面板。
+        #    收币弹窗（"亲密度已满"）带全屏暗化蒙版，会把食材入口压暗到匹配分
+        #    不足：2026-11-20 08:41 实测弹窗在场时 I_PET_UP_FOOD 在 roi_back 内
+        #    只有 0.7356（阈值 0.8），该 ROI 像素均值 BGR≈(13.9,13.4,14.5)。
+        #    收币判据一旦失配（I_PET_COLLECT_COINS_CHECK 未命中），弹窗就没人
+        #    关闭并一直盖在上面，该位置必然打不开。所以先清一次残留弹窗再重试。
         if not self.ui_click_until_appear_or_timeout(position_icon, self.I_PET_FOOD, interval=2, timeout=20):
-            logger.warning(f'[{position_name}] 无法打开食材面板，跳过该位置')
-            return False
+            logger.warning(f'[{position_name}] 无法打开食材面板，清除残留弹窗后重试')
+            self._dismiss_leftover_popup()
+            if not self.ui_click_until_appear_or_timeout(
+                    position_icon, self.I_PET_FOOD, interval=2, timeout=10):
+                logger.warning(f'[{position_name}] 清除残留弹窗后仍无法打开食材面板，跳过该位置')
+                return False
 
         # 2. 点击食材并确认摆放正确，最多 3 次。
         #    观察窗用 5s 而不是 3s：日志里反复出现"第 1 次点击 3s 内无标志、
