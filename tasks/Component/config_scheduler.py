@@ -9,6 +9,9 @@ class Scheduler(ConfigBase):
     enable: bool = Field(default=False, description='enable_help')
     next_run: DateTime = Field(default=DateTime.fromisoformat("2023-01-01 00:00:00"), description='next_run_help')
     priority: int = Field(default=5, description='priority_help')
+    # 每天允许该任务启动的时间段；起止相同表示全天不限制（默认 00:00:00 / 00:00:00）
+    time_window_start: Time = Field(default=Time(hour=0), description='time_window_start_help')
+    time_window_end: Time = Field(default=Time(hour=0), description='time_window_end_help')
 
     success_interval: TimeDelta = Field(default=TimeDelta(days=1), description='success_interval_help')
     failure_interval: TimeDelta = Field(default=TimeDelta(days=1), description='failure_interval_help')

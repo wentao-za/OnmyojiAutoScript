@@ -19,6 +19,7 @@ from module.config.config_menu import ConfigMenu
 from module.config.config_model import ConfigModel
 from module.config.config_state import ConfigState
 from module.config.scheduler import TaskScheduler
+from module.config.task_window import apply_time_window
 from module.config.utils import *
 from module.notify.notify import Notifier
 
@@ -369,6 +370,15 @@ class Config(ConfigState, ConfigManual, ConfigWatcher, ConfigMenu):
                 next_run += timedelta(seconds=random_float)
             else:
                 next_run = parse_tomorrow_server(scheduler.server_update, scheduler.delay_date, random_float)
+
+        # 任务时间段：必须放在 server_update 强制分支与 float_time 随机浮动之后，
+        # 否则浮动延迟会把结果再次推出窗口。窗口始终优先，冲突时由日志给出告警。
+        forced_time_point = target is not None or (
+            server
+            and hasattr(scheduler, 'server_update')
+            and scheduler.server_update != time(hour=9)
+        )
+        next_run = apply_time_window(task, scheduler, next_run, forced=forced_time_point)
 
         # 将这些连接起来，方便日志输出
         kv = dict_to_kv(

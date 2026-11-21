@@ -15,6 +15,7 @@ from pathlib import Path
 from pydantic import BaseModel, ValidationError, Field
 
 from module.config.utils import *
+from module.config.task_window import apply_time_window
 from module.logger import logger
 
 # 导入配置的Python文件
@@ -465,6 +466,17 @@ class ConfigModel(ConfigBase):
         from module.config.settings_presentation import present_settings
         return present_settings(task, result)
 
+    @staticmethod
+    def _apply_window_to_next_run(task: str, scheduler) -> None:
+        """修改时间段后立即把已排定的 next_run 拉回窗口内，避免用户改完看不到变化。
+
+        只平移 next_run，不重算间隔：改窗口不应改变任务的 success_interval 语义。
+        """
+        current = scheduler.next_run
+        if not isinstance(current, datetime):
+            return
+        scheduler.next_run = apply_time_window(task, scheduler, current)
+
     def script_set_arg(self, task: str, group: str, argument: str, value) -> bool:
         # 验证参数
         task = convert_to_underscore(task)
@@ -544,6 +556,10 @@ class ConfigModel(ConfigBase):
             candidate = group_object.model_validate({**group_object.model_dump(), argument: value})
             value = getattr(candidate, argument)
             setattr(group_object, argument, value)
+            if group == 'scheduler' and argument in ('time_window_start', 'time_window_end'):
+                scheduler = getattr(task_object, 'scheduler', None)
+                if scheduler is not None:
+                    self._apply_window_to_next_run(task, scheduler)
             logger.info(f'Set arg {self.config_name}.{task}.{group}.{argument}.{value}')
             self.save()  # 我是没有想到什么方法可以使得属性改变自动保存的
             return True
