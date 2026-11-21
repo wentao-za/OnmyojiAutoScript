@@ -6,6 +6,7 @@
     "roiBack": "1170,606,78,83",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "点击分享"
   },
   {
@@ -15,6 +16,7 @@
     "roiBack": "1159,12,65,152",
     "method": "Template matching",
     "threshold": 0.7,
+    "profile": "High",
     "description": "百鬼夜行图"
   },
   {
@@ -24,6 +26,7 @@
     "roiBack": "1163,12,63,155",
     "method": "Template matching",
     "threshold": 0.7,
+    "profile": "High",
     "description": "百妖风物鉴"
   },
   {
@@ -33,6 +36,7 @@
     "roiBack": "280,600,440,100",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "微信分享"
   },
   {
@@ -42,15 +46,17 @@
     "roiBack": "404,112,483,168",
     "method": "Template matching",
     "threshold": 0.65,
+    "profile": "High",
     "description": "二维码"
   },
   {
     "itemName": "wt_share",
     "imageName": "collect_wt_share.png",
-    "roiFront": "331,282,60,53",
-    "roiBack": "133,243,270,120",
+    "roiFront": "819,606,39,38",
+    "roiBack": "680,554,270,120",
     "method": "Template matching",
     "threshold": 0.8,
+    "profile": "High",
     "description": "式神图鉴头像旁边的分享按钮"
   }
 ]

@@ -52,7 +52,7 @@
   {
     "itemName": "ui_back_yellow",
     "imageName": "ui_ui_back_yellow.png",
-    "roiFront": "26,17,47,46",
+    "roiFront": "34,18,40,40",
     "roiBack": "0,0,100,100",
     "method": "Template matching",
     "threshold": 0.8,

@@ -32,7 +32,7 @@ class GameUiAssets:
 	# 
 	C_RANDOM_LEFT = RuleClick(roi_front=(34,169,140,437), roi_back=(34,169,140,437), name="random_left")
 	# 
-	C_RANDOM_RIGHT = RuleClick(roi_front=(1100,158,140,437), roi_back=(1100,158,140,437), name="random_right")
+	C_RANDOM_RIGHT = RuleClick(roi_front=(1100,158,141,324), roi_back=(1100,158,141,324), name="random_right")
 	# 庭院角色操作菜单的空白收起落点（无任何 UI）
 	C_BLANK_CLICK = RuleClick(roi_front=(940,124,40,40), roi_back=(940,124,40,40), name="blank_click")
 
@@ -67,7 +67,7 @@ class GameUiAssets:
 	# 百鬼棋局排名页返回大厅 
 	I_CHESS_RANK_GOTO_LOBBY = RuleImage(roi_front=(66,646,133,42), roi_back=(66,646,133,42), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_chess_rank_goto_lobby.png")
 	#  
-	I_CLOSE_RED = RuleImage(roi_front=(1169,60,33,25), roi_back=(1077,19,151,144), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_close_red.png")
+	I_CLOSE_RED = RuleImage(roi_front=(1169,60,33,25), roi_back=(1075,1,205,162), threshold=0.8, method="Template matching", profile="High", file="./tasks/GameUi/page/page_close_red.png")
 
 
 	# Image Rule Assets

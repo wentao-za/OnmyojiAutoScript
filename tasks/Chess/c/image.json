@@ -213,7 +213,7 @@
     "itemName": "back_red",
     "imageName": "c_back_red.png",
     "roiFront": "977,67,41,46",
-    "roiBack": "954,37,266,182",
+    "roiBack": "947,0,333,221",
     "method": "Template matching",
     "threshold": 0.8,
     "profile": "High",
